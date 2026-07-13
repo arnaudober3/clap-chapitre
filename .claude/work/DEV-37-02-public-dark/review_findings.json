@@ -1,5 +1,0 @@
-[
-  { "severity": "minor", "file": "src/theme/ThemeProvider.jsx", "line": 113,
-    "description": "eslint react-refresh/only-export-components (2 warnings): file exports ThemeProvider plus useTheme and useResolvedTheme hooks. Idiomatic provider+hooks pattern; HMR-only, zero runtime impact.",
-    "suggested_fix": "None required. Optionally move hooks to a separate module." }
-]

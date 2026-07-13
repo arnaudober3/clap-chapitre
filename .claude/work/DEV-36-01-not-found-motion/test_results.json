@@ -1,6 +1,0 @@
-{
-  "command": "vitest run",
-  "passed": 2,
-  "failed": [],
-  "all_green": true
-}

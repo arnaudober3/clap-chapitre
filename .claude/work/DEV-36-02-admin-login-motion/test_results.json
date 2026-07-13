@@ -1,9 +1,0 @@
-{
-  "command": "npx vitest run",
-  "files": 3,
-  "tests": 9,
-  "passed": 9,
-  "failed": 0,
-  "lint": "clean",
-  "date": "2026-07-11"
-}

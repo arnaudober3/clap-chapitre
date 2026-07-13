@@ -1,6 +1,0 @@
-{
-  "command": "npm run test:run",
-  "passed": 58,
-  "failed": [],
-  "all_green": true
-}

@@ -5,8 +5,11 @@ node_modules
 dist
 dist-ssr
 
-# DEV-19 design handoff bundle (large reference export, not app source)
-.claude/work/DEV-19/handoff
+# Claude AI
+.claude/*
+
+# graphify stray cache (root graphify-out/ is tracked)
+src/graphify-out/
 
 # logs
 *.log
