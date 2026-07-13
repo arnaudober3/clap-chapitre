@@ -1,0 +1,40 @@
+{
+  "feature": "DEV-36-02-admin-login-motion",
+  "linear_issue": "DEV-36",
+  "spec": "specs/DEV-36-02-admin-login-motion.md",
+  "created": "2026-07-11",
+  "status": "done",
+  "tasks": [
+    {
+      "id": "AL-1",
+      "title": "Animate the admin login card with the existing Reveal layer",
+      "scope": [
+        "src/admin/LoginPage.jsx",
+        "src/admin/LoginPage.css",
+        "src/admin/LoginPage.test.jsx"
+      ],
+      "depends_on": [],
+      "acceptance_criteria": [
+        "Imports the existing `Reveal` default export from `src/components/Reveal.jsx`.",
+        "The login card fades/rises in via `Reveal`; its header and the form rows (two fields + submit) stagger via the `delay` (`.d1`-`.d4`) prop.",
+        "No edit to `src/index.css`. Reduced-motion/print are inherited from the global `.reveal` rules. Any login-specific keyframe (only if added) lives in `src/admin/LoginPage.css` with matching `@media (prefers-reduced-motion: reduce)` + `@media print` overrides.",
+        "The card's existing classes/styling (shadow, radius, padding, fonts, colors) and layout are preserved — Reveal wraps/decorates, it does not replace the `adm-login-card` styling.",
+        "Form behavior is unchanged: `autoFocus` on username, inputs/button disabled while loading, error banner on failure, `navigate('/admin')` on success.",
+        "`src/admin/LoginPage.test.jsx` renders the page in a MemoryRouter and asserts its key copy/controls are present."
+      ],
+      "tests": [
+        "LoginPage renders the 'Administration' eyebrow, the 'Météo Nicolas' title, the Identifiant and Mot de passe fields, and the 'Se connecter' submit button.",
+        "Submit button is disabled when username/password are empty (existing behavior still holds after wrapping).",
+        "`npm run test` passes; `npm run lint` and `npm run build` pass.",
+        "Manual (Verify stage): the login card fades/rises in with staggered rows; reduce-motion and print show it fully visible; login still works."
+      ]
+    }
+  ],
+  "out_of_scope": [
+    "404 page (subtask 01) and admin editor/sidebar (subtask 03).",
+    "Any change to src/index.css or the shared motion primitives.",
+    "Auth logic, validation, copy, layout, color, or routing changes.",
+    "Re-testing Reveal's reduced-motion / no-observer guarantees (covered in src/components/Reveal.test.jsx)."
+  ],
+  "open_questions": []
+}

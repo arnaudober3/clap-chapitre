@@ -1,0 +1,14 @@
+{
+  "defect": "Weird 'refreshment' (flicker) when entering two incorrect logins in a row.",
+  "hypothesis": "The error banner was wrapped in Reveal, so it carried the scroll-reveal .reveal/.in classes plus a data-shown display:none toggle. On the second submit setError('') set display:none (abrupt blink-off) and, when the next error resolved, it snapped back on already-in (no fade) — an inconsistent, jarring hard blink-off/blink-on between the two failures.",
+  "testable": true,
+  "test_added": "src/admin/LoginPage.test.jsx",
+  "files_changed": [
+    "src/admin/LoginPage.jsx",
+    "src/admin/LoginPage.css",
+    "src/admin/LoginPage.test.jsx"
+  ],
+  "verified": "test",
+  "stopped": false,
+  "stop_reason": null
+}

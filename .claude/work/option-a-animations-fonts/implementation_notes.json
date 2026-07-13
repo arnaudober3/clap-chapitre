@@ -1,0 +1,72 @@
+{
+  "feature": "option-a-animations-fonts",
+  "stopped": false,
+  "stop_reason": null,
+  "tasks_completed": ["MS-1", "MS-2", "MS-3", "MS-4"],
+  "files_changed": [
+    "index.html",
+    "src/index.css",
+    "src/App.jsx",
+    "src/NotFoundPage.jsx",
+    "src/components/Hero.jsx",
+    "src/components/RangeList.jsx",
+    "src/components/Advice.jsx",
+    "src/components/Reveal.jsx",
+    "src/components/CountUp.jsx",
+    "src/admin/theme.js",
+    "src/admin/AdminPage.jsx",
+    "src/admin/LoginPage.css",
+    "specs/option-a-animations-fonts.md"
+  ],
+  "files_added": [
+    "src/components/Reveal.jsx",
+    "src/components/CountUp.jsx"
+  ],
+  "tests_added": [],
+  "open_questions_resolved": {
+    "admin_font_swap": "YES - Newsreader + IBM Plex Mono applied to admin/theme.js, admin/AdminPage.jsx, admin/LoginPage.css (font only; no reveal/count-up motion on admin, per out_of_scope).",
+    "hero_ambient_sky_drift": "YES - the existing hero gradient overlay div now carries a .sky class that supplies only the `drift` animation (30s loop). No color/geometry change to the gradient. Disabled under prefers-reduced-motion and print.",
+    "test_harness": "No test runner exists (package.json has no `test` script). Acceptance bar = build + lint green plus mechanical grep checks; purely visual/behavioral criteria are listed under manual_verification."
+  },
+  "verification_run": {
+    "npm_run_lint": "pass (0 errors, 1 pre-existing warning in src/main.jsx: react-refresh/only-export-components; file is outside all task scopes and was not touched)",
+    "npm_run_build": "pass (vite build, 71 modules, built in ~0.6s)",
+    "grep_old_fonts_src_and_index_html": "0 occurrences of 'Instrument Serif' and 0 of 'JetBrains Mono'",
+    "dist_index_html_fonts": "loads Newsreader (ital,opsz,wght axes) + IBM+Plex+Mono (400;500;600) with display=swap; old link removed",
+    "dist_css_motion_primitives": ".reveal / .bar-fill / .dot / @keyframes drift / .sky / prefers-reduced-motion all present in built CSS",
+    "dist_css_print_block": "@media print forces .reveal{opacity:1;transform:none}, .bar-fill{scaleX(1)}, .dot{opacity:1;transform:none} so printed output is never blank"
+  },
+  "deviations": [
+    {
+      "area": "CountUp trigger timing",
+      "detail": "Spec item 3 says row/hero numbers count up 'when their block reveals'. CountUp instead owns its own RAF and starts on mount (self-contained), per the hard constraint that CountUp must own its animation state so App's post-mount isAdmin re-render cannot reset/blank it. This means below-the-fold row numbers may finish counting before the row scrolls into view. Final text is byte-identical (Math.round(to)+suffix). Trade-off chosen deliberately to satisfy the re-render-safety constraint over exact reveal-gating."
+    },
+    {
+      "area": "RangeList empty-row opacity vs reveal fade",
+      "detail": "Rows carried an inline opacity (empty ? 0.45 : 1). Inline opacity outranks the .reveal/.reveal.in class rules, which would have killed the fade for every row. Fix: filled rows now get NO inline opacity (reveal drives their 0->1 fade); empty/placeholder rows keep inline opacity:0.45 and therefore appear immediately at their dimmed final look without a fade. Empty rows are dimmed placeholders, so no visible-content regression. No color/spacing/layout change.",
+      "needs_manual_verification": false
+    },
+    {
+      "area": "Ambient .sky implementation",
+      "detail": "To honor 'no color change', .sky in index.css supplies ONLY `animation: drift 30s ease-in-out infinite` and is applied to the EXISTING hero overlay div (which keeps its original inline radial-gradient). The reference's .sky rule (which sets its own multi-stop colored gradient + inset:-30% + z-index) was intentionally NOT copied, since that would alter hero visuals/colors. Motion behavior matches; visuals unchanged."
+    },
+    {
+      "area": "Wind stat count-up rounding",
+      "detail": "Hero wind stat now renders via CountUp to={day.wind} suffix=' km/h'. Per the hard constraint the acceptance is 'final text == Math.round(to)+suffix'. Wind is entered via a stepper (typically integer) so this is normally byte-identical; if a fractional wind were ever stored it would round to nearest integer (allowed by the stated constraint)."
+    },
+    {
+      "area": "git add scope",
+      "detail": "Used a targeted stage (index.html, src/, specs/) rather than `git add -A`. The untracked read-only handoff artifacts (.lmdn-handoff/ and la-meteo-de-nico-handoff.zip) were intentionally left unstaged since they are reference material, not part of this feature. .claude/ is gitignored."
+    }
+  ],
+  "manual_verification": [
+    "Entrance reveals: masthead (d1), hero (d2), list header (d3), rows (staggered 0.05s each), note, footer fade+rise on first paint; below-fold rows reveal on scroll.",
+    "Gauge draw: each almanac row temperature bar scales from the left as the row reveals (.bar-fill inside .reveal.in).",
+    "Thermo dots: the two hero endpoint dots pop in ~0.55s after the hero reveals (.dot inside .reveal.in).",
+    "Ambient drift: hero gradient overlay drifts continuously (~30s loop).",
+    "Reduced motion (prefers-reduced-motion: reduce): all reveals start visible/static, no count-up loop (final value immediate), no drift, gauges/dots at final state.",
+    "Print: page fully visible (not blank) with all reveal/gauge/dot elements forced to final state.",
+    "New type renders: serif in Newsreader (headline numbers use serif italic), mono/labels in IBM Plex Mono.",
+    "CountUp survives App's post-mount isAdmin re-render without resetting/blanking."
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "command": "npx vitest run",
+  "passed": 66,
+  "failed": ["src/admin/styles.test.js"],
+  "all_green": false,
+  "note": "styles.test.js fails with 'The URL must be of scheme file' (import.meta.url / fileURLToPath resolution) in this environment, both sandboxed and unsandboxed and on the pristine tree — a pre-existing test-env issue unrelated to the toggle-placement fix. All 66 other tests, including the new LoginPage and AdminPage toggle assertions, pass."
+}

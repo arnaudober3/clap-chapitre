@@ -1,0 +1,37 @@
+{
+  "feature": "DEV-13-01-notification-enable-timeout",
+  "linear_issue": "DEV-13",
+  "spec": "specs/DEV-13-01-notification-enable-timeout.md",
+  "created": "2026-07-13",
+  "status": "reviewing",
+  "tasks": [
+    {
+      "id": "MS-1",
+      "title": "Bound the serviceWorker.ready wait so enableDailyReminder/bootstrap never hang",
+      "scope": ["src/services/notifications.ts"],
+      "depends_on": [],
+      "acceptance_criteria": [
+        "enableDailyReminder() resolves even when navigator.serviceWorker.ready never settles (bounded by a short timeout, ~3s).",
+        "When permission is not 'granted', enableDailyReminder() still returns early without waiting on serviceWorker.ready.",
+        "When a service worker is active, enabling still posts { type: 'CHECK_REMINDERS' } to registration.active.",
+        "A rejection from navigator.serviceWorker.ready is swallowed and does not reject enableDailyReminder().",
+        "bootstrap() applies the same bounded wait and never hangs on serviceWorker.ready.",
+        "Public signatures of enableDailyReminder() and bootstrap() are unchanged (Promise<void>)."
+      ],
+      "tests": [
+        "enableDailyReminder resolves within the timeout when serviceWorker.ready never resolves",
+        "enableDailyReminder posts CHECK_REMINDERS to the active worker when ready resolves before the timeout",
+        "enableDailyReminder returns early and does not touch serviceWorker when permission is not granted",
+        "enableDailyReminder resolves when serviceWorker.ready rejects",
+        "bootstrap resolves within the timeout when serviceWorker.ready never resolves for a granted permission"
+      ]
+    }
+  ],
+  "out_of_scope": [
+    "NotificationScreen UI and its requesting/finally logic",
+    "requestPermission path",
+    "notification-logic.ts reminder scheduling",
+    "vite-plugin-pwa service-worker registration config"
+  ],
+  "open_questions": []
+}

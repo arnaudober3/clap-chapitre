@@ -1,0 +1,30 @@
+{
+  "feature": "DEV-14-01-recenter-footer-avatar-n",
+  "linear_issue": "DEV-14",
+  "spec": "specs/DEV-14-01-recenter-footer-avatar-n.md",
+  "created": "2026-07-11",
+  "status": "reviewing",
+  "tasks": [
+    {
+      "id": "MS-1",
+      "title": "Recentrer optiquement la lettre « N » de l'avatar du footer",
+      "scope": ["src/components/Advice.jsx", "src/components/Advice.test.jsx"],
+      "depends_on": [],
+      "acceptance_criteria": [
+        "Le « N » est optiquement centré dans le cercle 36×36 (horizontal + vertical).",
+        "Taille, borderRadius 50%, fond HF.ink, texte HF.paper, police Newsreader italic 20px inchangés.",
+        "La compensation de centrage optique est portée par le div avatar de façon vérifiable (line-height, transform ou padding)."
+      ],
+      "tests": [
+        "L'avatar rend bien la lettre « N ».",
+        "L'avatar applique une compensation de centrage optique (ex. lineHeight défini et/ou transform/padding) plutôt que de s'appuyer uniquement sur placeItems."
+      ]
+    }
+  ],
+  "out_of_scope": [
+    "Modifier taille, couleurs, police ou contenu texte de l'avatar (verrouillé par le seam).",
+    "Le bloc texte, le layout et le Reveal du composant Advice.",
+    "Tout autre usage de la lettre « N » ailleurs dans l'app."
+  ],
+  "open_questions": []
+}

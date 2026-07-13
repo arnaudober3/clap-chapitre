@@ -1,0 +1,15 @@
+{
+  "defect": "Dark-mode sun glyph stroke (rendered near-white #fff0c0, eyedroppered ~rgb(245,206,116)) looks drafty against the bright golden disc; user wants a darker, more distinct stroke.",
+  "hypothesis": "The dark-mode sun/partly outline stroke was lifted all the way to near-white cream (#fff0c0); on the bright #f3c33d disc the rim washes out and the rays look faint, so the sun reads as a drafty blob.",
+  "testable": true,
+  "test_added": "src/components/WeatherIcon.test.jsx",
+  "files_changed": [
+    "src/components/WeatherIcon.jsx",
+    "src/components/WeatherIcon.test.jsx",
+    ".claude/work/DEV-37-02-public-dark/test_results.json"
+  ],
+  "verified": "test",
+  "stopped": false,
+  "stop_reason": null,
+  "notes": "The two existing sun tests encoded the opposite hypothesis (stroke must be brighter/near-white than the disc fill). The human overrode that by eye, so both tests were rewritten to assert the corrected intent: the dark-mode sun stroke stays readable on the #201b12 card (brightness > 80) but is darker than the disc fill (defined rim) rather than near-white. Confirmed red against #fff0c0, then fixed. New dark sun/partly line = #a86e18 (rgb 168,110,24). This WeatherIcon palette lives outside plan tasks PD-1..PD-4 (theme.js/index.css/ThemeToggle/App.jsx); change is localized to the glyph palette. Fix is visual-aesthetic; the brightness-delta test approximates it but final look should still be eyeballed on the rendered dark card. Full suite 54/54 green, eslint clean on changed files."
+}

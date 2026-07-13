@@ -1,0 +1,28 @@
+{
+  "feature": "DEV-37-05-login-dark",
+  "linear_issue": "DEV-37",
+  "spec": "specs/DEV-37-05-login-dark.md",
+  "created": "2026-07-12",
+  "status": "reviewing",
+  "tasks": [
+    {
+      "id": "LD-1",
+      "title": "Place ThemeToggle on the login page and confirm dark rendering",
+      "scope": ["src/admin/LoginPage.jsx", "src/admin/LoginPage.css"],
+      "depends_on": [],
+      "acceptance_criteria": [
+        "ThemeToggle is rendered on the login page, pinned top-right via .adm-login-toggle (absolute), without disturbing the centered card.",
+        "The page reads all colors from themeStyle / var(--adm-*) so it renders dark under data-theme=\"dark\" with no hard-coded theme colors introduced (card shadow rgba is theme-agnostic and acceptable).",
+        "Light mode rendering is unchanged."
+      ],
+      "tests": [
+        "LoginPage renders a theme toggle button",
+        "LoginPage still renders the login form (identifiant/mot de passe, Se connecter) and disables submit when empty"
+      ]
+    }
+  ],
+  "out_of_scope": [
+    "Admin editor / public / 404 (delivered in 02-04)."
+  ],
+  "open_questions": []
+}

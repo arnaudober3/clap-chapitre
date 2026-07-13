@@ -1,0 +1,6 @@
+{
+  "command": "npm test",
+  "passed": 19,
+  "failed": [],
+  "all_green": true
+}

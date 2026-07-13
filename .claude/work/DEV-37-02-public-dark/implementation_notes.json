@@ -1,0 +1,27 @@
+{
+  "files_changed": [
+    "src/theme.js",
+    "src/theme.test.js",
+    "src/index.css",
+    "src/index.css.test.js",
+    "src/theme/ThemeToggle.jsx",
+    "src/theme/ThemeToggle.test.jsx",
+    "src/App.jsx",
+    "src/App.test.jsx"
+  ],
+  "tests_added": [
+    "src/theme.test.js",
+    "src/index.css.test.js",
+    "src/theme/ThemeToggle.test.jsx",
+    "src/App.test.jsx"
+  ],
+  "deviations": [
+    "PD-2: added an extra token --c-paper-deep-soft (light rgba(235,229,214,.5) / dark rgba(28,24,16,.5)) so the body's second radial gradient (was #ebe5d680 = paper-deep at ~50% alpha) reads from a CSS variable. This is a new --c-* token used only inside index.css; it does not change theme.js's exported shape.",
+    "PD-2: added color:#1f1a13 to the @media print html,body rule (alongside the existing background:#f4efe4) so a dark-mode page still prints as dark ink on light paper. Light on-screen rendering is unaffected.",
+    "PD-2: dark WEATHER_TINT values were chosen by the implementer (spec left them to be proposed): sun #2e2713, partly #231f16, cloud #22201a, rain #17202e, downpour #141d2c, storm #1a1f28, drizzle #16212c, snow #182430, sleet #151f2c, fog #211e18, hail #16202c. Each keeps its type's hue, is desaturated/darkened, and reads behind the light ink. To be eyeballed at Verify.",
+    "PD-4: grouped the existing .smn-header-meta block and <ThemeToggle/> inside a single right-aligned flex wrapper so the header keeps its two-child space-between layout (title left, meta+toggle right) on desktop and stacks correctly under the <=720px column breakpoint.",
+    "Review fix (major): the @media print block previously reset only html/body to light, but component surfaces read var(--c-card)/var(--c-tint-*) inline and :root[data-theme=\"dark\"] still applied under print, so dark-mode pages printed dark card/tint boxes on light paper (regression). Fixed by redeclaring ALL --c-* tokens (paper, paper-deep, paper-deep-soft, card, ink, ink-soft, ink-faint, hairline, warm, cool, and all 11 --c-tint-*) back to their light :root values under `:root, :root[data-theme=\"dark\"]` inside @media print; kept the existing html/body light overrides. Extended src/index.css.test.js with an assertion that the print block redeclares --c-card/--c-paper/--c-tint-sun to light values and targets the dark selector. Scoped to src/index.css + its test."
+  ],
+  "stopped": false,
+  "stop_reason": null
+}

@@ -1,0 +1,22 @@
+{
+  "ticket": "DEV-14",
+  "tracker": "linear",
+  "title": "Corriger l'alignement de la lettre \"N\" sur l'avatar du footer",
+  "recipe": "trivial-bug",
+  "created": "2026-07-11",
+  "needs_human_review": false,
+  "subtasks": [
+    {
+      "id": "01",
+      "slug": "DEV-14-01-recenter-footer-avatar-n",
+      "title": "Recentrer la lettre \"N\" dans l'avatar du footer",
+      "goal": "Réaligner optiquement la lettre \"N\" au centre du cercle de l'avatar après le passage à la police Newsreader.",
+      "seam": "none — reproduce → fix → eyeball-check collapsed. Single element: src/components/Advice.jsx lines 17-23, the 36x36 circular avatar (display:grid; placeItems:center; fontFamily:'Newsreader', Georgia, serif; fontStyle:italic; fontSize:20). The grid centering is correct at the box level; Newsreader's italic 'N' sits with a different optical offset than the old Instrument Serif. Fix = optical nudge (e.g. small transform/translate or line-height/padding adjustment) without changing the avatar size, colors (HF.ink bg / HF.paper text), or font.",
+      "scope_hint": ["src/components/Advice.jsx"],
+      "depends_on": [],
+      "parallel_safe": false,
+      "migration": null
+    }
+  ],
+  "open_questions": []
+}

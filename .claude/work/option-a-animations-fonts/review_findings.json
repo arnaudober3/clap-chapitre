@@ -1,0 +1,18 @@
+[
+  {
+    "severity": "major",
+    "status": "resolved",
+    "file": "src/components/CountUp.jsx",
+    "line": 39,
+    "description": "Print regression: reveal-gated CountUp printed 0° for below-the-fold rows because the print CSS forced them visible without firing their IntersectionObserver.",
+    "resolution": "Added usePrinting() (beforeprint/afterprint + initial matchMedia('print'), flushSync on beforeprint to commit synchronously before the print snapshot). CountUp renders `printing ? final : value`, so print always captures final values. On-screen scroll count-up, reduced-motion, and doneRef re-render guard untouched. Build+lint green."
+  },
+  {
+    "severity": "minor",
+    "status": "resolved",
+    "file": "src/components/Hero.jsx",
+    "line": 42,
+    "description": "The .sky ambient drift was imperceptible: it moved the existing near-transparent overlay, so the approved ambient motion effectively did nothing.",
+    "resolution": "Per user decision, made the sky match Option A: soft cool/warm/paper radial tints at inset:-30% (so the 30s drift is visible and never exposes an edge). To keep the added color from tinting the hero content, the sky is z-index:0 and the flow content is wrapped in a z-index:1 layer; the absolute left accent bar stays a direct child so it remains flush-left. No layout/spacing/copy change. Drift still disabled under reduced-motion and print. Build+lint green."
+  }
+]

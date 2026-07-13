@@ -1,0 +1,8 @@
+[
+  { "severity": "minor", "file": "src/theme/ThemeProvider.jsx", "line": 113,
+    "description": "eslint react-refresh/only-export-components warning: file exports both ThemeProvider component and useTheme hook. Idiomatic provider+hook pattern; cosmetic HMR-only warning.",
+    "suggested_fix": "None required. Optionally split useTheme into a separate module if fast-refresh warnings are undesirable." },
+  { "severity": "minor", "file": "src/main.jsx", "line": 16,
+    "description": "eslint react-refresh/only-export-components warning on main.jsx (pre-existing pattern: RequireAuth defined alongside createRoot). Not introduced by this change.",
+    "suggested_fix": "None required; pre-existing." }
+]

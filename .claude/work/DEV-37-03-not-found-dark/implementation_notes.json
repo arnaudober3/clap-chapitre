@@ -1,0 +1,15 @@
+{
+  "files_changed": [
+    "src/NotFoundPage.jsx",
+    "src/NotFoundPage.test.jsx"
+  ],
+  "tests_added": [
+    "NotFoundPage renders a theme toggle button in its header",
+    "NotFoundPage still renders the 404 heading and the back button"
+  ],
+  "deviations": [
+    "Wrapped <ThemeToggle /> in a <div style={{ alignSelf: 'center' }}> because the header uses alignItems: 'baseline', which would otherwise push the 34px pill toggle to the text baseline. This keeps it visually aligned with the title without altering the left title block. Minimal and within scope."
+  ],
+  "stopped": false,
+  "stop_reason": null
+}

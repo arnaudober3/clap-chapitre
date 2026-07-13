@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "major",
+    "file": "src/admin/components/DayPicker.jsx",
+    "line": 20,
+    "description": "The 9 sidebar buttons (7 day rows + Vigilance + Note) carry an inline `transition: 'background .12s'` from BUTTON_BASE. When routed through Reveal (`as=\"button\"`), Reveal merges that inline style, so the element's inline `transition` shorthand overrides the `.reveal` class's `transition: opacity .8s, transform .8s`. Inline styles win over the stylesheet, so transition-property becomes `background` only — opacity and transform are NOT animated. The buttons therefore SNAP from the hidden `.reveal` state (opacity:0, translateY 16px) to visible with no fade, no rise, and no stagger. Only the two labels (plain divs, no inline transition), the header, and the editor section actually animate. This defeats MS-2's core acceptance criterion — 'a downward cascade' / 'fade/rise in' for the day/other rows — for the bulk of the sidebar. Not caught by tests (jsdom does not compute transitions); would surface at the Verify step.",
+    "suggested_fix": "Make the reveal transition survive the inline override. Simplest: extend BUTTON_BASE's `transition` to also list the reveal properties, e.g. `transition: 'background .12s, opacity .8s cubic-bezier(0.2,0.75,0.25,1), transform .8s cubic-bezier(0.2,0.75,0.25,1)'` (matching index.css's .reveal easing). Then the button fades/rises AND keeps its hover background transition. Alternatively wrap each row's contents in a Reveal div (with the button given width:100% to preserve the grid), but extending the inline transition is the minimal, layout-safe fix."
+  }
+]

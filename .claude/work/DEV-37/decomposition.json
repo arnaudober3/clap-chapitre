@@ -1,0 +1,83 @@
+{
+  "ticket": "DEV-37",
+  "tracker": "linear",
+  "title": "Ajouter la gestion d'un dark thème",
+  "recipe": "module",
+  "created": "2026-07-12",
+  "needs_human_review": false,
+  "subtasks": [
+    {
+      "id": "01",
+      "slug": "DEV-37-01-theme-engine",
+      "title": "Moteur de thème (contexte + no-flash)",
+      "goal": "Introduire le mécanisme de thème light/dark/auto qui pilote un attribut data-theme sur <html>, sans changement visuel encore.",
+      "seam": "MÉCANISME = CSS custom properties basculées par un attribut data-theme sur <html> (aucun composant consommateur ne change de forme). ThemeProvider React dans src/theme/ThemeProvider.jsx expose { mode, resolved, setMode, cycle } où mode ∈ 'light'|'dark'|'auto' (off/on/auto), persisté dans localStorage['theme'], défaut 'auto'. 'auto' se résout via matchMedia('(prefers-color-scheme: dark)') avec un listener live. Un effet écrit resolved ('light'|'dark') dans document.documentElement.dataset.theme. No-flash: un <script> inline dans le <head> de index.html lit localStorage['theme'] (ou matchMedia si auto) et pose data-theme avant le premier paint. main.jsx enveloppe toutes les routes dans <ThemeProvider>.",
+      "scope_hint": ["src/theme/ThemeProvider.jsx", "src/main.jsx", "index.html"],
+      "depends_on": [],
+      "parallel_safe": false,
+      "migration": null
+    },
+    {
+      "id": "02",
+      "slug": "DEV-37-02-public-dark",
+      "title": "Thème sombre du site public + toggle",
+      "goal": "Rendre la partie publique themable et livrer le composant ThemeToggle, placé dans l'en-tête public.",
+      "seam": "Les valeurs de HF et WEATHER_TINT dans src/theme.js deviennent des références var(--c-*) ; les tokens light+dark sont définis dans src/index.css sous :root (light, défaut) et :root[data-theme=\"dark\"] (dark), y compris le background du body. tempColor() reste inchangé (couleur data-driven). ThemeToggle dans src/theme/ThemeToggle.jsx = un bouton icône cyclant light→dark→auto (soleil / lune / auto), lit/écrit le contexte. Placé dans l'en-tête public (App.jsx).",
+      "scope_hint": ["src/theme.js", "src/index.css", "src/theme/ThemeToggle.jsx", "src/App.jsx", "src/components/*"],
+      "depends_on": ["01"],
+      "parallel_safe": false,
+      "migration": null
+    },
+    {
+      "id": "03",
+      "slug": "DEV-37-03-not-found-dark",
+      "title": "Thème sombre de la page 404",
+      "goal": "Appliquer le thème sombre à la page 404 et y placer le ThemeToggle.",
+      "seam": "NotFoundPage.jsx consomme les tokens publics var(--c-*) livrés en 02 (aucun nouveau token). Réutilise <ThemeToggle/> de 02. Vérifier lisibilité et contraste en dark.",
+      "scope_hint": ["src/NotFoundPage.jsx"],
+      "depends_on": ["02"],
+      "parallel_safe": true,
+      "migration": null
+    },
+    {
+      "id": "04",
+      "slug": "DEV-37-04-admin-dark",
+      "title": "Thème sombre de l'administration",
+      "goal": "Rendre l'admin themable en dark et y placer le ThemeToggle dans l'en-tête admin.",
+      "seam": "Ajouter un bloc :root[data-theme=\"dark\"] surchargeant les variables --adm-* (déjà définies par themeStyle dans src/admin/theme.js et consommées dans admin/styles.css). Les lectures inline restantes de T.* qui doivent basculer (AdminHeader, DayPicker, AdviceEditor, etc.) passent à var(--adm-*). themeStyle ne code plus les couleurs en dur. <ThemeToggle/> (de 02) placé dans AdminHeader. Vérifier AdminPage + tous les composants admin en dark.",
+      "scope_hint": ["src/admin/theme.js", "src/admin/styles.css", "src/admin/AdminPage.jsx", "src/admin/components/*"],
+      "depends_on": ["02"],
+      "parallel_safe": true,
+      "migration": null
+    },
+    {
+      "id": "05",
+      "slug": "DEV-37-05-login-dark",
+      "title": "Thème sombre de la page de login",
+      "goal": "Appliquer le thème sombre à la page de connexion et y placer le ThemeToggle.",
+      "seam": "LoginPage.jsx + LoginPage.css consomment les tokens admin var(--adm-*) et leur surcharge dark livrés en 04 (LoginPage.css utilise déjà var(--adm-*)). Réutilise <ThemeToggle/>. Vérifier le formulaire de login en dark.",
+      "scope_hint": ["src/admin/LoginPage.jsx", "src/admin/LoginPage.css"],
+      "depends_on": ["04"],
+      "parallel_safe": false,
+      "migration": null
+    }
+  ],
+  "open_questions": [
+    {
+      "q": "ARCHITECTURE — Mécanisme retenu : bascule par CSS custom properties via data-theme (le moins invasif : les ~15 fichiers en styles inline lisant HF.*/T.* restent inchangés, seules les définitions de tokens changent). Alternative : palette résolue via contexte React (refactor lourd de tous les composants). Recommandation : CSS variables. À valider.",
+      "owner": "Arnaud"
+    },
+    {
+      "q": "Défaut du toggle = 'auto' (suit l'OS via prefers-color-scheme) ? Ordre du cycle light→dark→auto ?",
+      "owner": "Arnaud"
+    },
+    {
+      "q": "Valeurs exactes de la palette dark (inversion ink↔paper, accents warm/cool, teintes WEATHER_TINT sombres) : je proposerai un jeu de valeurs, à valider à l'œil à chaque gate Verify.",
+      "owner": "Arnaud"
+    },
+    {
+      "q": "Emplacement/icône du toggle sur le site public : l'en-tête est-il le bon foyer ?",
+      "owner": "Arnaud"
+    }
+  ]
+}

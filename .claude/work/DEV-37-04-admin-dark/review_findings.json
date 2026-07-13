@@ -1,0 +1,8 @@
+[
+  { "severity": "major", "file": "src/admin/styles.test.js", "line": 8,
+    "description": "New test fails to LOAD (0 tests run): fileURLToPath(new URL('./styles.css', import.meta.url)) throws 'The URL must be of scheme file' because under jsdom import.meta.url is an http:// URL. Same bug already fixed in src/index.css.test.js. Not pre-existing — this file is introduced by this subtask.",
+    "suggested_fix": "Read via filesystem path from repo root like index.css.test.js: readFileSync(join(process.cwd(), 'src/admin/styles.css'), 'utf8')." },
+  { "severity": "minor", "file": "src/admin/WeatherIcon.jsx", "line": 26,
+    "description": "DARK palette diverges from the approved public values it was meant to reuse (e.g. sun/partly line #a86e18 vs public #f5ce74). Admin card is the same #201b12, so the sun glyph will look dimmer in admin than on the public site — an inconsistency. Verify visually / align to the public values.",
+    "suggested_fix": "Align the admin DARK line/fill values to src/components/WeatherIcon.jsx (sun/partly line #f5ce74), or confirm the darker choice at the Verify gate." }
+]

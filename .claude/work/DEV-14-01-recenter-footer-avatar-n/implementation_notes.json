@@ -1,0 +1,14 @@
+{
+  "files_changed": [
+    "src/components/Advice.jsx",
+    "src/components/Advice.test.jsx"
+  ],
+  "tests_added": [
+    "src/components/Advice.test.jsx"
+  ],
+  "deviations": [
+    "Optical compensation chosen: lineHeight:1 plus transform translate(-0.5px, -0.5px) to nudge the italic « N » slightly left and up. Values are modest starting points intended for human visual verification in the Verify step."
+  ],
+  "stopped": false,
+  "stop_reason": null
+}

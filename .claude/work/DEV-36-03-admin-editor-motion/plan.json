@@ -1,0 +1,66 @@
+{
+  "feature": "DEV-36-03-admin-editor-motion",
+  "linear_issue": "DEV-36",
+  "spec": "specs/DEV-36-03-admin-editor-motion.md",
+  "created": "2026-07-11",
+  "status": "reviewing",
+  "tasks": [
+    {
+      "id": "MS-1",
+      "title": "Reveal the AdminHeader bar as one unit on mount",
+      "scope": ["src/admin/components/AdminHeader.jsx"],
+      "depends_on": [],
+      "acceptance_criteria": [
+        "The header root renders through Reveal (as=\"header\") so it fades/rises in on mount, keeping its existing inline styles, border, flex layout, and children (SaveBar, logout, mobile back).",
+        "The back-link, title, subtitle, and save/logout controls are unchanged in copy, order, and behavior.",
+        "No new CSS; index.css is untouched."
+      ],
+      "tests": [
+        "AdminHeader renders its title and subtitle inside an element carrying the reveal class (entrance preserved, copy intact).",
+        "The header's children (passed via children prop) still render alongside the title."
+      ]
+    },
+    {
+      "id": "MS-2",
+      "title": "Stagger the DayPicker sidebar rows with a per-index delay",
+      "scope": ["src/admin/components/DayPicker.jsx"],
+      "depends_on": [],
+      "acceptance_criteria": [
+        "Each sidebar row — the '7 prochains jours' label, the 7 day buttons, the 'Autres' label, and the Vigilance and 'Note de Nicolas' buttons — renders through Reveal with delaySeconds = index * 0.05, producing a downward cascade.",
+        "Rows are revealed at the row-element level (day/other buttons become Reveal as=\"button\", labels become Reveal divs); the aside container and the adm-layout-grid tracks are NOT wrapped.",
+        "onSelect fires on click for every row, hover background still toggles, and SelectedBar still renders on the selected row.",
+        "The aside's overflow:auto, gap, and column layout are unchanged; no new CSS."
+      ],
+      "tests": [
+        "DayPicker renders all 7 day rows plus the Vigilance and 'Note de Nicolas' buttons.",
+        "Clicking a day row calls onSelect with that day's id (interactivity preserved through the Reveal wrapper).",
+        "Clicking the Vigilance row calls onSelect with '__vigilance' and the Note row with '__advice'.",
+        "The selected row still renders the SelectedBar accent."
+      ]
+    },
+    {
+      "id": "MS-3",
+      "title": "Reveal the editor section once on mount without replay on day/tab switch",
+      "scope": ["src/admin/AdminPage.jsx"],
+      "depends_on": [],
+      "acceptance_criteria": [
+        "The editor <section class=\"adm-editor-section\"> renders through Reveal (as=\"section\") so it fades/rises in on mount, settling after the header and sidebar.",
+        "The section keeps its overflow:auto and background, and stays mounted across selection changes so switching day/Vigilance/Note swaps contents in place without replaying the entrance.",
+        "The adm-layout-grid grid, its two tracks (DayPicker aside + editor section), and mobile view classes are unchanged; no new CSS."
+      ],
+      "tests": [
+        "AdminLayout renders the editor section with the reveal class and the active editor inside it.",
+        "Changing the selected id swaps the editor content while the same section element stays mounted (no re-mount, no re-reveal)."
+      ]
+    }
+  ],
+  "out_of_scope": [
+    "404 page (subtask 01) and admin login (subtask 02).",
+    "Any change to src/index.css or the shared .reveal primitives.",
+    "New keyframes/CSS unless a motion beyond .reveal proves necessary.",
+    "Editor logic, forecast data, save/publish, auth, routing, layout, or color changes.",
+    "Re-revealing the editor panel on day/tab switch (reveals once on mount only).",
+    "Re-testing Reveal's reduced-motion / no-observer guarantees (src/components/Reveal.test.jsx)."
+  ],
+  "open_questions": []
+}

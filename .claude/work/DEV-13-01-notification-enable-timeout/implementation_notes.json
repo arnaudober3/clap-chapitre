@@ -1,0 +1,18 @@
+{
+  "files_changed": [
+    "src/services/notifications.ts",
+    "src/services/notifications.spec.ts"
+  ],
+  "tests_added": [
+    "enableDailyReminder resolves within the timeout when serviceWorker.ready never resolves",
+    "enableDailyReminder posts CHECK_REMINDERS to the active worker when ready resolves before the timeout",
+    "enableDailyReminder returns early and does not touch serviceWorker when permission is not granted",
+    "enableDailyReminder resolves when serviceWorker.ready rejects",
+    "bootstrap resolves within the timeout when serviceWorker.ready never resolves for a granted permission"
+  ],
+  "deviations": [
+    "Extracted the bounded wait into a private helper readyRegistrationOrNull() used by both enableDailyReminder() and bootstrap() to avoid duplicating the Promise.race/try-catch logic. Both public signatures remain Promise<void>."
+  ],
+  "stopped": false,
+  "stop_reason": null
+}

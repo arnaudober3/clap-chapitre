@@ -1,0 +1,21 @@
+{
+  "files_changed": [
+    "package.json",
+    "package-lock.json",
+    "vitest.config.js",
+    "src/test/setup.js",
+    "src/NotFoundPage.jsx",
+    "src/NotFoundPage.test.jsx"
+  ],
+  "tests_added": [
+    "src/NotFoundPage.test.jsx :: NotFoundPage > renders the key copy",
+    "src/NotFoundPage.test.jsx :: NotFoundPage > reveals every region under reduced motion (content visible)"
+  ],
+  "deviations": [
+    "NF-2 test file imports test primitives (describe/it/expect/beforeEach/vi) directly from 'vitest' instead of relying on global injection. vitest.config.js still sets globals:true, but explicit imports keep the file lint-clean under the existing eslint.config.js (which only exposes browser globals) without editing eslint.config.js — a file outside both tasks' scope.",
+    "'npm run test' exits non-zero only when zero test files exist (default vitest behavior). After NF-2 the suite has passing tests and exits 0, satisfying the NF-1 acceptance criterion in the full-feature state.",
+    "The button in NotFoundPage.jsx is wrapped in a plain <Reveal delay={4}> div rather than converting the button element itself to a Reveal, so its existing marginTop, hover handlers and navigate('/') onClick are untouched; the wrapper adds no margin so the parent flex gap layout is preserved."
+  ],
+  "stopped": false,
+  "stop_reason": null
+}

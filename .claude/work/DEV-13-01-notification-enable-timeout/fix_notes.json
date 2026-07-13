@@ -1,0 +1,15 @@
+{
+  "defect": "After denying the notification permission and returning to the level-up hub, re-tapping the notifications CTA goes straight back to the hub instead of showing anything — no permission popup, no explanation.",
+  "hypothesis": "Once permission is 'denied', the browser will not re-show the native prompt: Notification.requestPermission() resolves immediately with 'denied'. NotificationScreen unconditionally called enableDailyReminder() then onDone(), so it silently no-op'd and bounced back to the hub. The browser cannot re-prompt a denied permission, so the correct fix is to detect the denied state and surface the existing (previously unused) 'blocked' guidance telling the user to re-enable in browser settings instead of navigating away.",
+  "testable": true,
+  "test_added": "src/models/notification-onboarding.spec.ts",
+  "files_changed": [
+    "src/models/notification-onboarding.ts",
+    "src/models/notification-onboarding.spec.ts",
+    "src/pages/onboarding.tsx"
+  ],
+  "verified": "test",
+  "stopped": false,
+  "stop_reason": null,
+  "note": "Fix lands in NotificationScreen UI, which plan.json marks out-of-scope for MS-1 (the serviceWorker.ready timeout). Change is localized: a pure decision helper (notificationCtaAction) in the existing notification-onboarding model plus a small branch in NotificationScreen.handleRequest. The 'denied' i18n string already existed in en/fr but was never wired up. No DOM/testing-library harness exists, so the decision logic was extracted to a pure, unit-tested function rather than fabricating a component test."
+}

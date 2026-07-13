@@ -1,0 +1,19 @@
+{
+  "files_changed": [
+    "src/admin/components/AdminHeader.jsx",
+    "src/admin/components/DayPicker.jsx",
+    "src/admin/AdminPage.jsx"
+  ],
+  "tests_added": [
+    "src/admin/components/AdminHeader.test.jsx",
+    "src/admin/components/DayPicker.test.jsx",
+    "src/admin/AdminPage.test.jsx"
+  ],
+  "deviations": [
+    "MS-3 test renders the full AdminPage (not the un-exported AdminLayout) with fetch stubbed to a 404 so AdminProvider falls back to emptyForecast and mounts AdminLayout with a valid state and no network. This keeps the test inside the MS-3 scope file while still asserting the section carries `reveal`, holds the active editor, and stays mounted across selection changes.",
+    "AdminHeader's inline `style` prop is passed straight through Reveal (which merges style) rather than being kept on a raw <header>; the rendered element is still <header> with identical styles, so this is behavior-preserving.",
+    "REVISE (review finding, major): BUTTON_BASE in DayPicker.jsx carried an inline `transition: 'background .12s'` shorthand that, when routed through `Reveal as=\"button\"`, overrode the .reveal stylesheet transition (inline wins), so the 9 sidebar buttons snapped in without fade/rise/stagger. Extended BUTTON_BASE.transition to also list the reveal properties matching index.css's .reveal easing: `background .12s, opacity .8s cubic-bezier(0.2, 0.75, 0.25, 1), transform .8s cubic-bezier(0.2, 0.75, 0.25, 1)`. Buttons now fade/rise on reveal AND keep their hover-background transition. Verified the .reveal rule in src/index.css (0.8s, cubic-bezier(0.2, 0.75, 0.25, 1)); the label divs use SECTION_LABEL_STYLE with no inline transition, so they were unaffected. No other files touched; no test change needed (jsdom does not compute transitions)."
+  ],
+  "stopped": false,
+  "stop_reason": null
+}

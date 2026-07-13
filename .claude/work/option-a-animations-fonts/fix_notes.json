@@ -1,0 +1,36 @@
+[
+  {
+    "defect": "Three minor review findings on the animations/fonts feature: (1) CountUp self-triggers its RAF on mount, so below-the-fold almanac numbers finish counting before the user scrolls to them; (2) the ambient .sky drift sits on an inset:0 hero overlay and could in theory expose a sliver at the corner; (3) Reveal.jsx / CountUp.jsx had no trailing newline.",
+    "hypothesis": "CountUp started its animation on mount instead of on reveal because it owned its RAF state with no gate; the re-render-safety constraint did not actually require mount-triggering. Passing the parent Reveal's `shown` flag as an `active` prop, while keeping RAF/value internal, gates the start on reveal without risking a re-render reset.",
+    "testable": false,
+    "test_added": null,
+    "test_reason": "No test runner exists in the repo (package.json has no `test` script; no vitest/jest/playwright/cypress installed) — open_question #3 in plan.json. Finding 1 is a motion-fidelity/timing gap that only manifests via IntersectionObserver + RAF over real scroll, and finding 2 is purely pixel-level; neither can be honestly asserted without a DOM/visual-regression harness. Acceptance bar per plan = build + lint + manual visual verify.",
+    "files_changed": [
+      "src/components/Reveal.jsx",
+      "src/components/CountUp.jsx",
+      "src/components/Hero.jsx",
+      "src/components/RangeList.jsx"
+    ],
+    "fixes": {
+      "finding_1_countup_reveal_gating": "Reveal now accepts a render-function child and passes its `shown` state to it. CountUp gained an `active` prop (default true = unchanged mount behavior); it holds at 0 until active flips true, then runs its RAF. A `doneRef` guard makes the effect a no-op once finished, so a parent re-render can never restart or reset the value. Under prefers-reduced-motion CountUp still returns `final` before the active check, so reduced-motion behavior is unchanged. Hero and RangeList rows now render children as `(shown) => (...)` and pass `active={shown}` to every CountUp, so numbers count up when their block scrolls into view.",
+      "finding_2_sky_inset": "Left as-is per the reviewer's guidance ('leave as-is if nothing shows'). Needs the visual Verify pass; if any edge shimmer appears, give .sky a slight negative inset (e.g. inset:-8%).",
+      "finding_3_trailing_newline": "Added trailing newline to Reveal.jsx and CountUp.jsx."
+    },
+    "verified": "test",
+    "verification_detail": "npm run lint: pass (0 errors, 1 pre-existing warning in src/main.jsx, outside scope, untouched). npm run build: pass (vite build, 71 modules). No unit/visual test runner exists to add a red-then-green test to; findings 1 and 2 still need a manual visual verify pass (scroll to confirm below-fold rows count up on reveal; confirm no hero-corner shimmer).",
+    "stopped": false,
+    "stop_reason": null
+  },
+  {
+    "defect": "CountUp prints as 0°/0% (or a mid-count value) for below-the-fold forecast rows. The @media print block in src/index.css forces .reveal{opacity:1} so unrevealed rows become visible when printing, but printing never fires the IntersectionObserver that flips the Reveal shown flag / CountUp active prop, so those CountUps are still held at 0 (or a partial value) in the print snapshot.",
+    "root_cause": "CountUp holds its animated value at 0 until active (Reveal.shown) flips true on scroll-in. A browser print (Cmd+P of the live SPA) does not scroll, so the observer never fires; combined with the print CSS revealing the rows, the real values are missing from the printout. In-flight count-ups (e.g. print ~200ms after load) would likewise print a partial value.",
+    "what_changed": "Added src/components/usePrinting.js — a shared hook that tracks print state via beforeprint/afterprint window events plus an initial window.matchMedia(\"print\").matches check (guarded for no-window). The beforeprint handler uses flushSync from react-dom to set printing=true synchronously, so the render is committed before the browser paints the print snapshot; afterprint restores state with a normal async setState. CountUp.jsx consumes usePrinting() and renders `final` (Math.round(to)+suffix, identical to the reduced-motion path) whenever printing is true, otherwise renders the animated `value` exactly as before. On-screen scroll-triggered animation, the reduced-motion path, and the doneRef re-render-safety guard are all unchanged; only the JSX output branches on `printing`.",
+    "reveal_touched": false,
+    "reveal_note": "Reveal.jsx was NOT changed. The fix lives entirely in CountUp so the final value is guaranteed regardless of Reveal.shown, without altering scroll-reveal semantics or animation for any other wrapped content.",
+    "testable": false,
+    "test_reason": "No test runner exists in the repo (no test script in package.json; no vitest/jest/playwright/cypress). The defect only manifests through the real browser print pipeline (beforeprint/afterprint events + flushSync timing before the print snapshot paints), which cannot be honestly asserted without a browser/print harness. Acceptance bar = build + lint + manual print verify.",
+    "build_result": "npm run build: pass (vite v6.4.2, 72 modules transformed, built in ~0.6s).",
+    "lint_result": "npm run lint: pass (0 errors, 1 pre-existing warning in src/main.jsx — react-refresh/only-export-components — outside scope, untouched).",
+    "manual_verify": "Print the page (Cmd+P) WITHOUT scrolling and confirm all forecast temps show real values, not 0°. Also: trigger print ~200ms after load and confirm hero temps print final (not mid-count); after cancelling print, confirm on-screen numbers still count up normally on scroll."
+  }
+]

@@ -1,0 +1,108 @@
+{
+  "feature": "option-a-animations-fonts",
+  "linear_issue": "n/a",
+  "spec": "specs/option-a-animations-fonts.md",
+  "created": "2026-07-10",
+  "status": "reviewing",
+  "tasks": [
+    {
+      "id": "MS-1",
+      "title": "Swap type to Newsreader + IBM Plex Mono",
+      "scope": [
+        "index.html",
+        "src/index.css",
+        "src/App.jsx",
+        "src/NotFoundPage.jsx",
+        "src/components/Hero.jsx",
+        "src/components/RangeList.jsx",
+        "src/components/Advice.jsx",
+        "src/admin/theme.js",
+        "src/admin/AdminPage.jsx",
+        "src/admin/LoginPage.css"
+      ],
+      "acceptance_criteria": [
+        "index.html <link> loads Newsreader (ital,opsz,wght axes) and IBM Plex Mono (400;500;600) with display=swap; the old Instrument Serif / JetBrains Mono link is gone",
+        "Every occurrence of 'Instrument Serif' is replaced by 'Newsreader' with a Georgia, serif fallback",
+        "Every occurrence of 'JetBrains Mono' is replaced by 'IBM Plex Mono' with a ui-monospace, monospace fallback",
+        "body font-family in index.css uses Newsreader; no layout/color/spacing values change"
+      ],
+      "tests": [
+        "grep proves zero remaining 'Instrument Serif' / 'JetBrains Mono' references in src and index.html",
+        "index.html requests exactly Newsreader + IBM Plex Mono from Google Fonts",
+        "build succeeds and the page renders text in the new families (manual/visual)"
+      ]
+    },
+    {
+      "id": "MS-2",
+      "title": "Add motion CSS primitives + reduced-motion/print guards",
+      "scope": ["src/index.css"],
+      "depends_on": [],
+      "acceptance_criteria": [
+        "index.css defines .reveal / .reveal.in (opacity+translateY, cubic-bezier ~0.8s) and stagger delays d1..d4",
+        "index.css defines .bar-fill (scaleX 0, transform-origin left) with .reveal.in .bar-fill -> scaleX(1), and .dot pop-in",
+        "@keyframes drift + .sky ambient class defined (behind the include-sky decision)",
+        "@media (prefers-reduced-motion: reduce) forces .reveal/.bar-fill/.dot to final visible state and disables drift",
+        "@media print forces .reveal opacity:1/transform:none and gauge/dot final state so printed output is never blank"
+      ],
+      "tests": [
+        "reduced-motion query renders all reveal elements at opacity 1 with no transition (manual/DOM)",
+        "print media forces reveal/gauge/dot visible (manual/DOM)",
+        "build succeeds with the new CSS"
+      ]
+    },
+    {
+      "id": "MS-3",
+      "title": "Reveal + CountUp motion components",
+      "scope": ["src/components/Reveal.jsx", "src/components/CountUp.jsx"],
+      "depends_on": ["MS-2"],
+      "acceptance_criteria": [
+        "Reveal renders a chosen element with class 'reveal' and toggles 'in' via IntersectionObserver when it enters the viewport; supports an optional stagger/delay and inline-delay style; unobserves after firing; idempotent under StrictMode",
+        "CountUp owns its own RAF animation from 0 to `to` with ease-out, appends `suffix`, and its final text equals Math.round(to)+suffix",
+        "Both honor prefers-reduced-motion: Reveal starts 'in', CountUp shows final value immediately, no RAF loop",
+        "CountUp survives a parent re-render without resetting or blanking its value"
+      ],
+      "tests": [
+        "CountUp final rendered text equals the previous static value for representative temps/percentages",
+        "under reduced motion Reveal has class in on mount and CountUp shows final value with no animation",
+        "observer is cleaned up on unmount (no leak / no double-fire)"
+      ]
+    },
+    {
+      "id": "MS-4",
+      "title": "Wire motion into the bulletin page",
+      "scope": [
+        "src/App.jsx",
+        "src/components/Hero.jsx",
+        "src/components/RangeList.jsx",
+        "src/components/Advice.jsx"
+      ],
+      "depends_on": ["MS-3"],
+      "acceptance_criteria": [
+        "Masthead, hero, list header, each almanac row, the note, and footer are wrapped in Reveal with a staggered delay matching Option A",
+        "Hero min/max and stat values, and each almanac row min/max, render via CountUp (values unchanged from today)",
+        "Each almanac row temperature bar uses .bar-fill so it draws from the left as the row reveals",
+        "The two hero thermometer endpoint dots use .dot so they pop in after the hero reveals",
+        "Hero ambient background uses the drifting .sky (behind the include-sky decision); no other hero visuals change",
+        "No layout, color, spacing, or copy change; empty/loading/error states and admin are untouched"
+      ],
+      "tests": [
+        "rendered temperatures/stats match the pre-change values (count-up endpoints correct)",
+        "with reduced motion the page is fully visible and static and identical in content",
+        "scrolling reveals rows and draws gauges (manual/visual)",
+        "build + lint green"
+      ]
+    }
+  ],
+  "out_of_scope": [
+    "Any layout, spacing, radius, color, or copy change",
+    "Reveal/count-up motion on admin surfaces",
+    "Design directions B and C",
+    "Print-pipeline changes beyond keeping print static and visible",
+    "New iconography or the prototype's mark/disc hero treatment"
+  ],
+  "open_questions": [
+    { "q": "Include the font swap on admin surfaces (theme.js/AdminPage/LoginPage.css) for whole-app consistency, or leave admin on old fonts?", "owner": "arnaudober" },
+    { "q": "Include the additive ambient 'sky' drift on the hero, or keep the hero background static?", "owner": "arnaudober" },
+    { "q": "No test runner exists; accept build+lint+manual Verify as the acceptance bar, or stand up a test harness first?", "owner": "arnaudober" }
+  ]
+}

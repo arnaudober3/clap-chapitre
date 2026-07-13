@@ -1,0 +1,5 @@
+[
+  { "severity": "minor", "file": "src/admin/LoginPage.css", "line": 23,
+    "description": "Card box-shadow uses hard-coded dark ink rgba(31,26,19,...). In dark mode it blends into the dark background (no visible shadow). Acceptable for a dark card; not theme-broken.",
+    "suggested_fix": "Optional: use a theme-aware shadow token if a visible dark-mode elevation is desired." }
+]

@@ -1,0 +1,6 @@
+{
+  "command": "npx vitest run",
+  "passed": 55,
+  "failed": [],
+  "all_green": true
+}

@@ -1,0 +1,75 @@
+{
+  "feature": "DEV-37-04-admin-dark",
+  "linear_issue": "DEV-37",
+  "spec": "specs/DEV-37-04-admin-dark.md",
+  "created": "2026-07-12",
+  "status": "reviewing",
+  "tasks": [
+    {
+      "id": "AD-1",
+      "title": "Define --adm-* tokens (light + dark) in admin/styles.css",
+      "scope": ["src/admin/styles.css"],
+      "depends_on": [],
+      "acceptance_criteria": [
+        ":root defines every --adm-* token with the current light values (bg, bg-deep, card, card-alt, ink, ink-soft, ink-faint, line, line-strong, accent, input-bg) plus a new --adm-cool (#4b6d9c).",
+        ":root[data-theme=\"dark\"] overrides all of them with the dark palette from the spec table.",
+        "No existing rule in styles.css is broken; the file still only uses var(--adm-*).",
+        "Light values are identical to today so light mode is unchanged."
+      ],
+      "tests": [
+        "admin/styles.css defines a :root[data-theme=\"dark\"] block overriding --adm-bg and --adm-ink (asserted by reading the stylesheet)"
+      ]
+    },
+    {
+      "id": "AD-2",
+      "title": "Convert T to var(--adm-*) references and slim themeStyle",
+      "scope": ["src/admin/theme.js"],
+      "depends_on": ["AD-1"],
+      "acceptance_criteria": [
+        "Every color key of T (bg, bgDeep, card, cardAlt, ink, inkSoft, inkFaint, line, lineStrong, accent, cool, inputBg) is a var(--adm-*) reference per the spec mapping.",
+        "Font keys (serif, mono, sans) remain literal font-family strings.",
+        "themeStyle no longer sets any --adm-* variable inline; it keeps background: var(--adm-bg), color: var(--adm-ink), fontFamily only.",
+        "The exported shape (T keys, themeStyle, TYPES, TYPE_LABEL) is unchanged so no consumer breaks."
+      ],
+      "tests": [
+        "T.card resolves to a var(--adm-card) reference and T retains all original keys",
+        "themeStyle does not contain any --adm-* property (moved to CSS) and still sets background/color"
+      ]
+    },
+    {
+      "id": "AD-3",
+      "title": "Theme-aware admin weather icons (LIGHT/DARK palettes)",
+      "scope": ["src/admin/WeatherIcon.jsx"],
+      "depends_on": [],
+      "acceptance_criteria": [
+        "WeatherIcon selects a LIGHT or DARK palette via useResolvedTheme() from ../theme/ThemeProvider (same pattern as src/components/WeatherIcon.jsx).",
+        "LIGHT palette fill/line values are byte-identical to the current hard-coded ones (light mode pixel-identical).",
+        "DARK palette reuses the already-approved values from src/components/WeatherIcon.jsx (lifted outlines/fills so glyphs read on the dark card).",
+        "The SVG geometry and all render branches are unchanged."
+      ],
+      "tests": [
+        "admin WeatherIcon selects a brighter DARK stroke under a dark ThemeProvider vs light",
+        "an unknown weather type renders nothing"
+      ]
+    },
+    {
+      "id": "AD-4",
+      "title": "Place ThemeToggle in the admin header",
+      "scope": ["src/admin/AdminPage.jsx", "src/admin/components/AdminHeader.jsx"],
+      "depends_on": [],
+      "acceptance_criteria": [
+        "ThemeToggle is rendered in the admin header actions cluster (alongside SaveBar / logout).",
+        "The header layout (mobile back button, marginLeft:auto actions group, save + logout) stays intact on desktop and the <=720px breakpoint.",
+        "No other admin behavior changes."
+      ],
+      "tests": [
+        "AdminPage renders a theme toggle button in the admin header"
+      ]
+    }
+  ],
+  "out_of_scope": [
+    "Login page (subtask 05).",
+    "Public / 404 surfaces (delivered in 02 / 03)."
+  ],
+  "open_questions": []
+}
