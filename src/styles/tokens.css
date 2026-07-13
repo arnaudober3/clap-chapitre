@@ -1,0 +1,62 @@
+/*
+ * Salon design tokens — the ONE place Salon palette hexes live.
+ * Every component references these via var(--…); no raw palette hexes elsewhere.
+ * Values are the authoritative Salon set from
+ * .claude/work/DEV-19/design-reference.md.
+ */
+:root {
+  /* Surfaces & text */
+  --bg: #fdf8f0;            /* page background (cream) */
+  --surface: #f6efe3;       /* rail, cards, panels, inputs */
+  --surface-alt: #f0e6d4;   /* hero-band gradient end */
+  --ink: #3f2e20;           /* primary text / active nav bg (dark brown) */
+  --body: #5c4a38;          /* body copy */
+  --muted: #8a6a4c;         /* italic subheads */
+  --muted-2: #8a7460;       /* secondary meta */
+  --faint: #a08a72;         /* metadata, input placeholder */
+
+  /* Accents */
+  --accent: #b0502f;        /* eyebrows, the italic "et", links, active accent */
+  --gold: #d8a24a;          /* CTA buttons, underline mark, active dot */
+  --gold-hover: #e6b45f;    /* CTA hover */
+
+  /* Borders */
+  --border: #e9dfce;        /* hairline borders/dividers */
+  --border-2: #ece1cf;      /* card borders */
+  --border-pill: #e0d4c0;   /* pill/chip borders */
+
+  /* Medium (category) accents */
+  --medium-livre: #6a7a45;
+  --medium-serie: #4f6f7c;
+  --medium-docs: #8a5a7a;
+  --medium-film: #b0502f;
+
+  /* Interactive helpers */
+  --nav-hover: #efe6d6;     /* nav item hover surface */
+  --nav-idle: #6c5a46;      /* idle nav link text */
+
+  /* Gradients */
+  --dark-grad: linear-gradient(120deg, #3f2e20, #5a4130); /* newsletter blocks */
+
+  /* Fonts */
+  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+
+  /* Shell / layout sizes */
+  --shell-max: 1200px;      /* desktop content shell */
+  --rail-width: 224px;      /* desktop left rail */
+  --main-pad: 40px;         /* main content padding (desktop) */
+  --drawer-width: 75%;      /* mobile drawer overlay width */
+  --scrim: rgba(36, 26, 18, 0.5); /* mobile drawer scrim */
+
+  /* Radii */
+  --radius-card: 12px;
+  --radius-nav: 9px;
+  --radius-pill: 999px;
+
+  /* Breakpoints (mobile-first). Exposed as tokens for reference; media
+     queries below/in components use the matching literal px values. */
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+}

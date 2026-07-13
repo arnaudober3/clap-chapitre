@@ -1,0 +1,23 @@
+[
+  {
+    "severity": "critical",
+    "file": "tsconfig.json",
+    "line": 21,
+    "description": "Typecheck gate fails: `npx tsc --noEmit` reports 6 errors in src/test/sc1-project-setup.test.ts and src/test/sc2-tokens.test.ts — cannot find module 'node:fs' / 'node:path' and cannot find name '__dirname'. @types/node is not a devDependency and the tsconfig `types` array (['vitest/globals','@testing-library/jest-dom']) excludes node types. Because the build script is `tsc && vite build`, this breaks `npm run build`.",
+    "suggested_fix": "Add `@types/node` to devDependencies and add \"node\" to compilerOptions.types in tsconfig.json (or rewrite the two tests to derive the root via `fileURLToPath(new URL('../..', import.meta.url))` instead of __dirname). Re-run `npx tsc --noEmit` until clean."
+  },
+  {
+    "severity": "minor",
+    "file": "src/components/layout/nav.ts",
+    "line": 9,
+    "description": "The `/` home route exists but nothing in the nav (nor the brand wordmark) links to it — only the four medium filters and the three pages are reachable. A visitor on an inner page has no way back to the main feed via the chrome.",
+    "suggested_fix": "Link the Brand wordmark (Header.tsx) to `/` via a NavLink/Link, or add an explicit home entry. Keep it within the layout scope."
+  },
+  {
+    "severity": "minor",
+    "file": "package.json",
+    "line": 18,
+    "description": "No ESLint config exists in the project, so the review's lint gate cannot run. Acceptable to defer for a static prototype, but noted so it's a conscious choice, not an oversight.",
+    "suggested_fix": "Optionally add a flat eslint.config.js (typescript-eslint + react-hooks) in a later chore; not required for this subtask."
+  }
+]

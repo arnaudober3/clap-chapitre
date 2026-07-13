@@ -1,0 +1,63 @@
+/* Base reset + Salon global typography. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans, 'IBM Plex Sans', system-ui, -apple-system, sans-serif);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-serif, 'Newsreader', Georgia, 'Times New Roman', serif);
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.1;
+  margin: 0 0 0.4em;
+}
+
+h1 {
+  font-size: 40px;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 26px;
+}
+
+p {
+  margin: 0 0 1em;
+  color: var(--body);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
