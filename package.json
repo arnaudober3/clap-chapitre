@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "trap 'kill 0' INT; vite --host 127.0.0.1 & wrangler pages dev --proxy 5173 --port 8788",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
