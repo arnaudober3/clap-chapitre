@@ -13,7 +13,6 @@ function renderAt(path: string) {
 
 describe('SC-5 routing', () => {
   const cases: Array<[string, RegExp]> = [
-    ['/', /Avis récents/],
     ['/films', /Avis récents/],
     ['/series', /Avis récents/],
     ['/livres', /Avis récents/],
@@ -30,6 +29,12 @@ describe('SC-5 routing', () => {
     // Layout chrome present (brand "et"), plus the page heading.
     expect(screen.getAllByText('et').length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+  });
+
+  it('redirects / to /films with the Films nav item active', () => {
+    renderAt('/');
+    const filmsLink = screen.getByRole('link', { name: 'Films' });
+    expect(filmsLink).toHaveAttribute('aria-current', 'page');
   });
 
   it('renders NotFound for an unknown route', () => {
