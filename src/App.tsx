@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/Home';
 import ArticlePage from './pages/Article';
@@ -12,8 +12,8 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        {/* Home feed + medium-filter routes all reuse HomePage for now. */}
-        <Route path="/" element={<HomePage />} />
+        {/* Root redirects to /films so the Films nav item is the default highlighted view. */}
+        <Route path="/" element={<Navigate to="/films" replace />} />
         <Route path="/films" element={<HomePage />} />
         <Route path="/series" element={<HomePage />} />
         <Route path="/livres" element={<HomePage />} />
