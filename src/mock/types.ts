@@ -29,6 +29,8 @@ export interface Article {
   forThoseWho?: string;
   /** Full body copy — only present on the article view. */
   body?: string;
+  /** "À rapprocher de" callout — a related work (Bilan uses it). */
+  relatedTo?: { title: string; note: string };
 }
 
 /** A comment on an article / bilan thread. */

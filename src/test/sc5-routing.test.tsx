@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 
@@ -18,7 +18,6 @@ describe('SC-5 routing', () => {
     ['/livres', /Avis récents/],
     ['/docs', /Avis récents/],
     ['/article/42', /Avis/],
-    ['/bilan-culturel', /Bilan culturel/],
     ['/archives', /Archives/],
     ['/a-propos', /À propos/],
     ['/me-suivre', /Me suivre/],
@@ -29,6 +28,16 @@ describe('SC-5 routing', () => {
     // Layout chrome present (brand "et"), plus the page heading.
     expect(screen.getAllByText('et').length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+  });
+
+  it('renders the Bilan culturel page inside the Layout for /bilan-culturel', () => {
+    renderAt('/bilan-culturel');
+    // Layout chrome present (brand "et"), plus the real design-2a page. Per the
+    // design, "Bilan culturel" is an eyebrow (not a heading) — the H1 is the month.
+    expect(screen.getAllByText('et').length).toBeGreaterThan(0);
+    const page = screen.getByTestId('bilan-culturel-page');
+    // "Bilan culturel" also appears as a nav link in the Layout — scope to the page eyebrow.
+    expect(within(page).getByText('Bilan culturel')).toBeInTheDocument();
   });
 
   it('redirects / to /films with the Films nav item active', () => {
