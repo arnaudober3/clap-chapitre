@@ -33,8 +33,10 @@ describe('SC-5 routing', () => {
 
   it('redirects / to /films with the Films nav item active', () => {
     renderAt('/');
-    const filmsLink = screen.getByRole('link', { name: 'Films' });
-    expect(filmsLink).toHaveAttribute('aria-current', 'page');
+    // The rail and the mobile medium tab strip both render a "Films" link, so
+    // assert that at least one of them carries the active state.
+    const filmsLinks = screen.getAllByRole('link', { name: 'Films' });
+    expect(filmsLinks.some((link) => link.getAttribute('aria-current') === 'page')).toBe(true);
   });
 
   it('renders NotFound for an unknown route', () => {

@@ -1,5 +1,10 @@
 import { useLocation } from 'react-router-dom';
 import type { Medium } from '../../mock/types';
+import { latestFor, recentFor } from '../../mock/home';
+import Hero from './Hero';
+import RecentGrid from './RecentGrid';
+import Newsletter from './Newsletter';
+import styles from './Home.module.css';
 
 /** Maps a medium-filter route path to its Medium value. */
 const PATH_TO_MEDIUM: Record<string, Medium> = {
@@ -9,29 +14,31 @@ const PATH_TO_MEDIUM: Record<string, Medium> = {
   '/docs': 'doc',
 };
 
-const MEDIUM_LABEL: Record<Medium, string> = {
-  film: 'Films',
-  serie: 'Séries',
-  livre: 'Livres',
-  doc: 'Docs',
-};
-
 /**
- * Home feed placeholder. Reads the active medium from the route so subtask 02
- * can wire real filtering; no real feed content yet.
+ * Salon home feed. Resolves the active medium from the route (undefined = the
+ * full mixed feed), then composes the hero (newest review), the "Avis récents"
+ * grid (the rest) and the newsletter band inside the shared Layout's <main>.
+ * Medium navigation lives in the shared Header, not here.
  */
 export default function HomePage() {
   const { pathname } = useLocation();
   const medium = PATH_TO_MEDIUM[pathname];
+  const hero = latestFor(medium);
+  const recent = recentFor(medium);
 
   return (
-    <section data-testid="home-page" data-medium={medium ?? 'all'}>
-      <h1>Avis récents</h1>
-      <p>
-        {medium
-          ? `Filtre actif : ${MEDIUM_LABEL[medium]}`
-          : 'Tous les avis, tous médias confondus.'}
-      </p>
+    <section
+      className={styles.page}
+      data-testid="home-page"
+      data-medium={medium ?? 'all'}
+    >
+      {hero ? (
+        <Hero item={hero} />
+      ) : (
+        <p className={styles.empty}>Aucun avis pour ce médium pour l’instant.</p>
+      )}
+      <RecentGrid items={recent} />
+      <Newsletter />
     </section>
   );
 }

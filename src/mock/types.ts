@@ -19,6 +19,14 @@ export interface Article {
   /** Display date, e.g. "12 juin 2026". */
   date: string;
   author: string;
+  /** ♡ like count — shown on every card and the hero. */
+  likes: number;
+  /** Comment count — shown on every card and the hero. */
+  comments: number;
+  /** Italic question line under the title (hero uses it). */
+  hook?: string;
+  /** The "Pour ceux qui…" one-liner (hero uses it). */
+  forThoseWho?: string;
   /** Full body copy — only present on the article view. */
   body?: string;
 }
