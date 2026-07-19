@@ -1,0 +1,79 @@
+/* Shared Salon UI primitives — page-agnostic, medium-agnostic. Tokens only;
+   no raw Salon hex values. Mobile-first: 2-col grid, widening to 3-col at the
+   lg breakpoint (--bp-lg = 1024px). */
+
+/* ---- CardGrid ---- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Hover-lift on interactive children (links/buttons). */
+.grid > a,
+.grid > button {
+  transition: transform 0.15s ease;
+}
+
+.grid > a:hover,
+.grid > button:hover {
+  transform: translateY(-3px);
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+/* ---- PosterThumb ---- */
+.poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-card);
+  background: var(--surface-alt);
+}
+
+/* ---- SectionHeader ---- */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.trailing {
+  flex: none;
+  font-size: 13px;
+  color: var(--muted-2);
+  white-space: nowrap;
+}

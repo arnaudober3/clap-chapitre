@@ -2,7 +2,11 @@
 
 **Linear:** DEV-19 · **Subtask:** 05 · **Recipe:** module · **Direction:** Salon (design `2b`)
 **Depends on:** DEV-19-01 (scaffold, tokens, `<Layout>`, `Article`/`Medium` types, `/archives` route)
-**Coordinates with:** DEV-19-04 (Bilan culturel) — shares the bilan mock model.
+· DEV-19-04 (Bilan culturel) — **already landed** `src/mock/bilans.ts` and fixed the bilan deep-link.
+**Status note (2026-07-19):** 04 shipped first, so this subtask **reuses the existing
+`src/mock/bilans.ts` unchanged** (it no longer introduces it) and links month cards to the
+resolved route `/bilan-culturel?mois=<id>`. The `/archives` route is already wired in `App.tsx`;
+this subtask replaces the placeholder `src/pages/Archives/index.tsx`. No route-table change.
 
 Build the responsive Salon **Archives** page at `/archives` — the index of every
 monthly *Bilan culturel*, grouped by year: the current year expanded as a grid of
@@ -18,12 +22,15 @@ Archives is its **own page** (`src/pages/Archives/**`). It does **not** reuse
 Home's review card: an archive card represents an aggregate *month of bilans*
 (collage of covers + count), not a single `Article`, and links into a bilan, not
 an article. What it **does** share:
-- **Data** with Bilan (04): a single mock model `src/mock/bilans.ts`
-  (`year → months → avis`) feeds both pages.
-- **Primitives**: a small shared UI layer (`src/components/ui/**`) — a responsive
-  `CardGrid` (3-col, hover-lift), a gradient `PosterThumb`, and the
-  section/hairline header — usable by Home, Bilan and Archives. Retrofitting Home
-  onto these primitives is an optional follow-up, **out of scope here**.
+- **Data** with Bilan (04): the single mock model `src/mock/bilans.ts`
+  (`year → months → avis`), **already built by subtask 04**. This subtask
+  **imports it read-only and does not modify it** — the `bilans` / `bilansByYear` /
+  `latestBilan` selectors it needs already exist.
+- **Primitives**: a small shared UI layer (`src/components/ui/**`, currently empty)
+  that **this subtask creates** — a responsive `CardGrid` (3-col, hover-lift), a
+  gradient `PosterThumb`, and the section/hairline header — usable by Home, Bilan and
+  Archives. Retrofitting Home onto these primitives is an optional follow-up,
+  **out of scope here**.
 
 ## Layout of the page (top → bottom, matches design `#2b`)
 1. **Back link** `‹ Revenir au dernier bilan` → the latest bilan.
@@ -40,7 +47,11 @@ an article. What it **does** share:
    `--muted-2` + `N bilans` + `▸`, hairline top border). Clicking a collapsed year
    expands it into its own month-card grid; clicking an expanded year collapses it.
 
-## Data contract — `src/mock/bilans.ts` (shared with subtask 04)
+## Data contract — `src/mock/bilans.ts` (already built by subtask 04 — consumed read-only)
+
+This subtask does **not** author this module; 04 already shipped it against the frozen shape
+below (plus an additive `bilanById` that Archives ignores). Archives imports `bilans`,
+`bilansByYear` and `latestBilan` and treats the file as read-only.
 
 ```ts
 import type { Article } from './types';
@@ -64,9 +75,10 @@ export function bilansByYear(): Array<{ year: number; months: MonthlyBilan[] }>;
 export function latestBilan(): MonthlyBilan;
 ```
 
-- `bilans` MUST cover **at least two years** so one year renders expanded and ≥ 1
-  renders collapsed; the current year has ≥ 3 months so the grid is meaningful.
-  Reuse the design's sample avis/titles and author **Marie-Zoé**.
+- The shipped `bilans` already covers **two years** (2026 expanded with 3 months:
+  Juin/Mai/Avril; 2025 collapsed with Décembre/Novembre) so one year renders expanded
+  and one renders collapsed, with the author **Marie-Zoé** throughout. Archives relies on
+  these guarantees but does not enforce them (04's tests do).
 - An archive card derives from a `MonthlyBilan`: `monthLabel`, `avis.length` for
   the count, and the first up-to-3 `avis[].cover` gradients for the collage.
 - Covers are CSS gradient strings; no network image requests.
@@ -78,9 +90,10 @@ export function latestBilan(): MonthlyBilan;
 - **Expand/collapse** of a year is local React state; the current (newest) year
   starts expanded, older years start collapsed. Toggling is keyboard-accessible
   (the year row is a real `button`, `aria-expanded` reflects state).
-- Each **month card** links to that month's bilan. Until subtask 04 defines the
-  per-month deep-link, cards link to `/bilan-culturel` (existing route; no dead
-  links); the exact month param is a coordination item with 04 (see open questions).
+- Each **month card** links to that month's bilan via the deep-link 04 fixed:
+  `/bilan-culturel?mois=<id>` (e.g. `/bilan-culturel?mois=2026-05`). The back link
+  targets the latest bilan (`/bilan-culturel?mois=<latestBilan().id>`; bare
+  `/bilan-culturel` also resolves to the latest and is an acceptable fallback).
 - Fully responsive (design `#3a`): month grid is **3 columns on desktop, 2 on
   mobile**; year rows stay full-width. Uses token breakpoints.
 - All colors, fonts, radii, spacing come from tokens — no raw Salon hex in components.
@@ -104,14 +117,16 @@ export function latestBilan(): MonthlyBilan;
 - The real `/article/:id` view; Gazette (1b) styling.
 
 ## Touches / introduces shared files
-- **New** `src/mock/bilans.ts` and `src/components/ui/**` — shared with/available to
-  subtask 04. Keep them medium-agnostic and page-agnostic.
-- Does **not** modify `Article`/`Medium` or `<Layout>`/`<Header>`.
+- **New** `src/components/ui/**` (the shared UI primitives) and the real
+  `src/pages/Archives/**`. Keep the primitives medium-agnostic and page-agnostic.
+- **Reads** `src/mock/bilans.ts` (built by 04) read-only; does **not** modify it,
+  `Article`/`Medium`, `<Layout>`/`<Header>`, or the `App.tsx` route table.
 
 ## Open questions
-1. **Per-month deep-link.** Subtask 04 owns the Bilan route/month-selection shape
-   (`/bilan-culturel/:id`? `?mois=YYYY-MM`?). Archives links to `/bilan-culturel`
-   until that's fixed. *Owner: arnaud.ober3@gmail.com — decide with subtask 04.*
-2. **Shared model ownership.** `src/mock/bilans.ts` is introduced here but consumed
-   by 04; confirm 04 builds against this shape rather than a separate `bilan.ts`.
-   *Owner: arnaud.ober3@gmail.com.*
+_None — both resolved (2026-07-19)._
+1. **Per-month deep-link — RESOLVED.** Subtask 04 fixed month selection as a query param
+   on the single route: `/bilan-culturel?mois=YYYY-MM`. Archives month cards deep-link to
+   `/bilan-culturel?mois=<id>`.
+2. **Shared model ownership — RESOLVED.** Subtask 04 landed first and authored
+   `src/mock/bilans.ts` against this frozen shape (`bilans`/`bilansByYear`/`latestBilan`,
+   plus an additive `bilanById`). Archives reuses it unchanged.

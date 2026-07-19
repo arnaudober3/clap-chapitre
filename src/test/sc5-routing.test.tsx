@@ -18,7 +18,6 @@ describe('SC-5 routing', () => {
     ['/livres', /Avis récents/],
     ['/docs', /Avis récents/],
     ['/article/42', /Avis/],
-    ['/archives', /Archives/],
     ['/a-propos', /À propos/],
     ['/me-suivre', /Me suivre/],
   ];
@@ -38,6 +37,17 @@ describe('SC-5 routing', () => {
     const page = screen.getByTestId('bilan-culturel-page');
     // "Bilan culturel" also appears as a nav link in the Layout — scope to the page eyebrow.
     expect(within(page).getByText('Bilan culturel')).toBeInTheDocument();
+  });
+
+  it('renders the Archives page inside the Layout for /archives', () => {
+    renderAt('/archives');
+    // Layout chrome present (brand "et"), plus the real design-2b page. Per the
+    // design, "Bilan culturel" is an eyebrow — the H1 is "Tous les bilans".
+    expect(screen.getAllByText('et').length).toBeGreaterThan(0);
+    const page = screen.getByTestId('archives-page');
+    expect(
+      within(page).getByRole('heading', { level: 1, name: 'Tous les bilans' }),
+    ).toBeInTheDocument();
   });
 
   it('redirects / to /films with the Films nav item active', () => {
