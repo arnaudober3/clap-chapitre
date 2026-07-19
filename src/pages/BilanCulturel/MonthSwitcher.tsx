@@ -117,7 +117,7 @@ export default function MonthSwitcher({
               {bilan.monthLabel} {bilan.year}
             </Link>
           ))}
-          <Link to="/archives" className={styles.allBilans}>
+          <Link to="/bilan-culturel/archives" className={styles.allBilans}>
             <span className={styles.allBilansFull}>Tous les bilans</span>
             <span className={styles.allBilansShort}>Tous</span> →
           </Link>

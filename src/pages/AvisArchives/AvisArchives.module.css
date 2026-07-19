@@ -1,0 +1,64 @@
+/* "Tous les avis" archive. Tokens only — no raw Salon hex values. Mobile-first:
+   stacked full-width cards, widening to a 3-col grid at the lg breakpoint
+   (--bp-lg = 1024px). Cards are the shared ui/ReviewCard. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ---- Medium filter row ---- */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter {
+  padding: 7px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-pill);
+  background: transparent;
+  color: var(--nav-idle);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.filter:hover {
+  background: var(--nav-hover);
+}
+
+.filterActive {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.filterActive:hover {
+  background: var(--ink);
+}
+
+/* ---- Grid ---- */
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.empty {
+  padding: 40px 4px;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 18px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}

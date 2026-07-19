@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import ArchivesPage from '../pages/Archives';
+import BilanCulturelArchivesPage from '../pages/BilanCulturelArchives';
 import { bilansByYear, latestBilan } from '../mock/bilans';
 
 function wrap(ui: React.ReactElement) {
@@ -23,7 +23,7 @@ function sectionForYear(year: number): HTMLElement {
 
 describe('AR-4 ArchivesPage', () => {
   it('shows the H1, the back link, and the newest year expanded / older collapsed', () => {
-    wrap(<ArchivesPage />);
+    wrap(<BilanCulturelArchivesPage />);
     expect(
       screen.getByRole('heading', { level: 1, name: 'Tous les bilans' }),
     ).toBeInTheDocument();
@@ -50,7 +50,7 @@ describe('AR-4 ArchivesPage', () => {
 
   it('expanding an older year does not collapse the already-open newest year', async () => {
     const user = userEvent.setup();
-    wrap(<ArchivesPage />);
+    wrap(<BilanCulturelArchivesPage />);
 
     const olderHeader = within(sectionForYear(older.year)).getByTestId(
       'year-header',
@@ -77,7 +77,7 @@ describe('AR-4 ArchivesPage', () => {
   });
 
   it('every rendered month card links to /bilan-culturel?mois=<id> and the newest shows "dernier"', () => {
-    wrap(<ArchivesPage />);
+    wrap(<BilanCulturelArchivesPage />);
     const cards = screen.getAllByTestId('month-card');
     for (const card of cards) {
       expect(card.getAttribute('href')).toMatch(
@@ -112,7 +112,7 @@ describe('AR-4 ArchivesPage empty state', () => {
       },
       bilanById: () => undefined,
     }));
-    const { default: EmptyPage } = await import('../pages/Archives');
+    const { default: EmptyPage } = await import('../pages/BilanCulturelArchives');
     render(
       <MemoryRouter>
         <EmptyPage />

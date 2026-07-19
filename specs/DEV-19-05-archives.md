@@ -6,7 +6,7 @@
 **Status note (2026-07-19):** 04 shipped first, so this subtask **reuses the existing
 `src/mock/bilans.ts` unchanged** (it no longer introduces it) and links month cards to the
 resolved route `/bilan-culturel?mois=<id>`. The `/archives` route is already wired in `App.tsx`;
-this subtask replaces the placeholder `src/pages/Archives/index.tsx`. No route-table change.
+this subtask replaces the placeholder `../src/pages/BilanCulturelArchives/index.tsx`. No route-table change.
 
 Build the responsive Salon **Archives** page at `/archives` — the index of every
 monthly *Bilan culturel*, grouped by year: the current year expanded as a grid of
@@ -18,7 +18,7 @@ archive (`#3a`, "PHONE: ARCHIVE") in
 plus `.claude/work/DEV-19/design-reference.md`. Read them before implementing.
 
 ## Decision: new page, reuse primitives + data — not Home's card
-Archives is its **own page** (`src/pages/Archives/**`). It does **not** reuse
+Archives is its **own page** (`../src/pages/BilanCulturelArchives/**`). It does **not** reuse
 Home's review card: an archive card represents an aggregate *month of bilans*
 (collage of covers + count), not a single `Article`, and links into a bilan, not
 an article. What it **does** share:
@@ -118,7 +118,7 @@ export function latestBilan(): MonthlyBilan;
 
 ## Touches / introduces shared files
 - **New** `src/components/ui/**` (the shared UI primitives) and the real
-  `src/pages/Archives/**`. Keep the primitives medium-agnostic and page-agnostic.
+  `../src/pages/BilanCulturelArchives/**`. Keep the primitives medium-agnostic and page-agnostic.
 - **Reads** `src/mock/bilans.ts` (built by 04) read-only; does **not** modify it,
   `Article`/`Medium`, `<Layout>`/`<Header>`, or the `App.tsx` route table.
 

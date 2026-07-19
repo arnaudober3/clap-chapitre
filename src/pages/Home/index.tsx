@@ -2,7 +2,7 @@ import { useLocation } from 'react-router-dom';
 import type { Medium } from '../../mock/types';
 import { latestFor, recentFor } from '../../mock/home';
 import Hero from './Hero';
-import RecentGrid from './RecentGrid';
+import RecentAvisGrid from './RecentAvisGrid.tsx';
 import Newsletter from './Newsletter';
 import styles from './Home.module.css';
 
@@ -16,7 +16,7 @@ const PATH_TO_MEDIUM: Record<string, Medium> = {
 
 /**
  * Salon home feed. Resolves the active medium from the route (undefined = the
- * full mixed feed), then composes the hero (newest review), the "Avis récents"
+ * full mixed feed), then composes the hero (newest review), the "AvisArchives récents"
  * grid (the rest) and the newsletter band inside the shared Layout's <main>.
  * Medium navigation lives in the shared Header, not here.
  */
@@ -37,7 +37,7 @@ export default function HomePage() {
       ) : (
         <p className={styles.empty}>Aucun avis pour ce médium pour l’instant.</p>
       )}
-      <RecentGrid items={recent} />
+      <RecentAvisGrid items={recent} />
       <Newsletter />
     </section>
   );

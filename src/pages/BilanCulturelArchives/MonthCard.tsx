@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import type { MonthlyBilan } from '../../mock/bilans';
 import { PosterThumb } from '../../components/ui';
-import styles from './Archives.module.css';
+import styles from './BilanCulturelArchives.module.css';
 
 /**
- * An Archives month card: a bordered --surface card whose top is a collage of
+ * An BilanCulturelArchives month card: a bordered --surface card whose top is a collage of
  * up to 3 gradient PosterThumb tiles (the month's first up-to-3 avis[].cover),
  * and whose body is the serif monthLabel, a `N avis` count from avis.length,
  * and — only when isLatest — a "dernier" pill. The whole card deep-links to the

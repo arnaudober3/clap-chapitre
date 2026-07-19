@@ -1,6 +1,6 @@
 /**
  * Monthly "bilan culturel" mock content — the model shared with subtask 05
- * (Archives). The shape is frozen by the DEV-19-05 contract: `bilans`,
+ * (BilanCulturelArchives). The shape is frozen by the DEV-19-05 contract: `bilans`,
  * `bilansByYear`, `latestBilan`. `bilanById` is an additive selector for the
  * Bilan culturel page. Covers are CSS gradient strings (no network requests);
  * author is Marie-Zoé. Selectors are pure — no React, no module-level mutable
@@ -20,7 +20,7 @@ export interface MonthlyBilan {
 
 /**
  * All monthly bilans, newest-first. Covers ≥ 2 years; the current year (2026)
- * holds ≥ 3 months so DEV-19-05's Archives renders one expanded year + a
+ * holds ≥ 3 months so DEV-19-05's BilanCulturelArchives renders one expanded year + a
  * collapsed year. The newest month is Juin 2026 and carries full detail.
  */
 export const bilans: MonthlyBilan[] = [
@@ -222,7 +222,7 @@ export const bilans: MonthlyBilan[] = [
 
 /**
  * All bilans grouped by year, years descending, months within a year
- * descending (consumed by DEV-19-05's Archives).
+ * descending (consumed by DEV-19-05's BilanCulturelArchives).
  */
 export function bilansByYear(): Array<{ year: number; months: MonthlyBilan[] }> {
   const byYear = new Map<number, MonthlyBilan[]>();

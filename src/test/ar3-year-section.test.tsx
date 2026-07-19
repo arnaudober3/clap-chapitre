@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import YearSection from '../pages/Archives/YearSection';
+import YearSection from '../pages/BilanCulturelArchives/YearSection';
 import { bilansByYear, latestBilan } from '../mock/bilans';
 
 function wrap(ui: React.ReactElement) {

@@ -39,12 +39,21 @@ describe('SC-5 routing', () => {
     expect(within(page).getByText('Bilan culturel')).toBeInTheDocument();
   });
 
-  it('renders the Archives page inside the Layout for /archives', () => {
+  it('renders the AvisArchives archive inside the Layout for /archives', () => {
     renderAt('/archives');
+    expect(screen.getAllByText('et').length).toBeGreaterThan(0);
+    const page = screen.getByTestId('avis-archives-page');
+    expect(
+      within(page).getByRole('heading', { level: 1, name: 'Tous les avis' }),
+    ).toBeInTheDocument();
+  });
+
+  it('renders the BilanCulturelArchives page inside the Layout for /bilan-culturel/archives', () => {
+    renderAt('/bilan-culturel/archives');
     // Layout chrome present (brand "et"), plus the real design-2b page. Per the
     // design, "Bilan culturel" is an eyebrow — the H1 is "Tous les bilans".
     expect(screen.getAllByText('et').length).toBeGreaterThan(0);
-    const page = screen.getByTestId('archives-page');
+    const page = screen.getByTestId('bilan-culturel-archives-page');
     expect(
       within(page).getByRole('heading', { level: 1, name: 'Tous les bilans' }),
     ).toBeInTheDocument();

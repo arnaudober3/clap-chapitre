@@ -103,7 +103,7 @@ export const feed: Article[] = [
   },
   {
     id: 'archives-du-silence',
-    title: 'Archives du silence',
+    title: 'BilanCulturelArchives du silence',
     medium: 'doc',
     excerpt:
       'Un travail d’enquête patient sur les voix que l’Histoire a préféré taire.',

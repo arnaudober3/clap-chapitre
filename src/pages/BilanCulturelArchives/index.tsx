@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { bilans, bilansByYear, latestBilan } from '../../mock/bilans';
 import { SectionHeader } from '../../components/ui';
 import YearSection from './YearSection';
-import styles from './Archives.module.css';
+import styles from './BilanCulturelArchives.module.css';
 
 /**
- * Salon Archives page — the index of every monthly Bilan culturel, grouped by
+ * Bilan culturel BilanCulturelArchives page — the index of every monthly Bilan culturel, grouped by
  * year: the current (newest, first) year expanded as a grid of month cards,
  * older years collapsed. Inside the shared Layout's <main> it renders, top to
  * bottom: a "‹ Revenir au dernier bilan" back link, an eyebrow + H1 header, then
@@ -14,7 +14,7 @@ import styles from './Archives.module.css';
  * owned here (multiple years may be open at once). Empty `bilans` renders a Salon
  * empty state and omits the back link rather than dereferencing latestBilan().
  */
-export default function ArchivesPage() {
+export default function BilanCulturelArchivesPage() {
   const years = bilansByYear();
   // The current (newest, first) year starts expanded; older years collapsed.
   const [openYears, setOpenYears] = useState<Set<number>>(
@@ -32,7 +32,7 @@ export default function ArchivesPage() {
 
   if (bilans.length === 0) {
     return (
-      <section className={styles.page} data-testid="archives-page">
+      <section className={styles.page} data-testid="bilan-culturel-archives-page">
         <SectionHeader
           eyebrow="Bilan culturel"
           heading="Tous les bilans"
@@ -44,7 +44,7 @@ export default function ArchivesPage() {
   }
 
   return (
-    <section className={styles.page} data-testid="archives-page">
+    <section className={styles.page} data-testid="bilan-culturel-archives-page">
       <Link
         to={`/bilan-culturel?mois=${latestBilan().id}`}
         className={styles.backLink}

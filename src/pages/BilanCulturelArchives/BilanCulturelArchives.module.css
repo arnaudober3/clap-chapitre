@@ -1,4 +1,4 @@
-/* Salon Archives page. Tokens only — no raw Salon hex values. Mobile-first:
+/* Salon BilanCulturelArchives page. Tokens only — no raw Salon hex values. Mobile-first:
    2-col month grid (via the shared CardGrid primitive), full-width year rows;
    the grid widens to 3-col at the lg breakpoint (--bp-lg = 1024px). */
 
@@ -68,6 +68,7 @@
   font-size: 28px;
   line-height: 1;
   color: var(--ink);
+  text-box: trim-both cap alphabetic;
 }
 
 .yearLabelCollapsed {
@@ -82,7 +83,8 @@
 
 .yearCaret {
   flex: none;
-  font-size: 14px;
+  font-size: 22px;
+  line-height: 1;
   color: var(--muted-2);
 }
 

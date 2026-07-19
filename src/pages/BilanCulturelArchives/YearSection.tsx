@@ -2,10 +2,10 @@ import type { MonthlyBilan } from '../../mock/bilans';
 import { latestBilan } from '../../mock/bilans';
 import { CardGrid } from '../../components/ui';
 import MonthCard from './MonthCard';
-import styles from './Archives.module.css';
+import styles from './BilanCulturelArchives.module.css';
 
 /**
- * One year in the Archives index. The year header is a real <button> with
+ * One year in the BilanCulturelArchives index. The year header is a real <button> with
  * aria-expanded reflecting `expanded`: the year (serif when expanded, --muted-2
  * when collapsed), a `N bilans` count and a caret (▾ expanded / ▸ collapsed).
  * When expanded it renders one MonthCard per month inside the shared CardGrid,

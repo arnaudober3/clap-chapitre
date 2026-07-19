@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import type { Article } from '../mock/types';
 import Hero from '../pages/Home/Hero';
-import RecentGrid from '../pages/Home/RecentGrid';
+import RecentAvisGrid from '../pages/Home/RecentAvisGrid.tsx';
 import Newsletter from '../pages/Home/Newsletter';
 
 function wrap(ui: React.ReactElement) {
@@ -62,7 +62,7 @@ describe('HM-3 RecentGrid', () => {
   ];
 
   it('renders one card per item, each linking to /article/<id>', () => {
-    wrap(<RecentGrid items={three} />);
+    wrap(<RecentAvisGrid items={three} />);
     for (const item of three) {
       const link = screen.getByRole('link', { name: new RegExp(item.title) });
       expect(link).toHaveAttribute('href', `/article/${item.id}`);
@@ -75,7 +75,7 @@ describe('HM-3 RecentGrid', () => {
   });
 
   it('shows the Salon empty state and no cards for an empty list', () => {
-    wrap(<RecentGrid items={[]} />);
+    wrap(<RecentAvisGrid items={[]} />);
     expect(
       screen.getByText('Aucun avis pour ce médium pour l’instant.'),
     ).toBeInTheDocument();
