@@ -21,7 +21,10 @@ export default function App() {
         <Route path="/docs" element={<HomePage />} />
 
         <Route path="/article/:id" element={<ArticlePage />} />
-        <Route path="/archives" element={<AvisArchivesPage />} />
+        {/* The avis archive is always medium-filtered via the URL; bare /archives
+            defaults to the first medium. */}
+        <Route path="/archives" element={<Navigate to="/archives/films" replace />} />
+        <Route path="/archives/:medium" element={<AvisArchivesPage />} />
         <Route path="/bilan-culturel" element={<BilanCulturelPage />} />
         <Route path="/bilan-culturel/archives" element={<BilanCulturelArchivesPage />} />
         <Route path="/a-propos" element={<AProposPage />} />

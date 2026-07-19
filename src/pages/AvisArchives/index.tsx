@@ -1,53 +1,52 @@
-import { useState } from 'react';
-import type { Medium } from '../../mock/types';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { feed } from '../../mock/home';
+import { MEDIA, SEGMENT_TO_MEDIUM, DEFAULT_SEGMENT } from '../../media';
 import { SectionHeader, ReviewCard } from '../../components/ui';
 import styles from './AvisArchives.module.css';
 
-/** The filter row: "Tous" plus one pill per medium (plural labels). */
-const FILTERS: Array<{ key: Medium | 'all'; label: string }> = [
-  { key: 'all', label: 'Tous' },
-  { key: 'film', label: 'Films' },
-  { key: 'serie', label: 'Séries' },
-  { key: 'livre', label: 'Livres' },
-  { key: 'doc', label: 'Docs' },
-];
-
 /**
  * The "Tous les avis" archive — the full index of individual reviews (Home's
- * "Tout voir" target), distinct from the bilan-culturel archive at /archives.
- * Renders every avis (newest first) as the shared ReviewCard, with a medium
- * filter row that narrows the list. Filtering is local React state; "Tous"
- * shows the whole feed. A filter with no matches shows a Salon empty state.
+ * "Tout voir" target), always filtered to a single medium taken from the route
+ * (`/archives/<segment>`, e.g. /archives/films), like the home medium feeds.
+ * The tab row links to the sibling media; there is no "all" view. An unknown
+ * segment redirects to the default medium; a medium with no avis shows a Salon
+ * empty state.
  */
 export default function AvisArchivesPage() {
-  const [active, setActive] = useState<Medium | 'all'>('all');
-  const items =
-    active === 'all' ? feed : feed.filter((item) => item.medium === active);
+  const { medium: segment } = useParams();
+  const medium = segment ? SEGMENT_TO_MEDIUM[segment] : undefined;
+
+  // Unknown/missing segment → canonical default medium, never a blank page.
+  if (!medium) return <Navigate to={`/archives/${DEFAULT_SEGMENT}`} replace />;
+
+  const items = feed.filter((item) => item.medium === medium);
 
   return (
-    <section className={styles.page} data-testid="avis-archives-page" data-medium={active}>
+    <section
+      className={styles.page}
+      data-testid="avis-archives-page"
+      data-medium={medium}
+    >
       <SectionHeader
         eyebrow="Avis récents"
         heading="Tous les avis"
         headingLevel={1}
       />
 
-      <div className={styles.filters} role="group" aria-label="Filtrer par média">
-        {FILTERS.map(({ key, label }) => (
-          <button
-            key={key}
-            type="button"
+      <nav className={styles.filters} aria-label="Filtrer par média">
+        {MEDIA.map(({ medium: m, segment: seg, label }) => (
+          <Link
+            key={m}
+            to={`/archives/${seg}`}
             className={`${styles.filter} ${
-              active === key ? styles.filterActive : ''
+              m === medium ? styles.filterActive : ''
             }`}
-            aria-pressed={active === key}
-            onClick={() => setActive(key)}
+            aria-current={m === medium ? 'page' : undefined}
           >
             {label}
-          </button>
+          </Link>
         ))}
-      </div>
+      </nav>
 
       {items.length === 0 ? (
         <p className={styles.empty}>Aucun avis pour ce média pour l’instant.</p>

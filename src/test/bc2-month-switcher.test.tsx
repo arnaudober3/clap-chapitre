@@ -15,13 +15,13 @@ function renderSwitcher() {
 }
 
 describe('BC-2 MonthSwitcher', () => {
-  it('renders the "<monthLabel> <year>" H1 and a "Tous les bilans" link to /archives', () => {
+  it('renders the "<monthLabel> <year>" H1 and a "Tous les bilans" link to /bilan-culturel/archives', () => {
     const active = renderSwitcher();
     expect(bilans.length).toBeGreaterThanOrEqual(3);
     const h1 = screen.getByRole('heading', { level: 1 });
     expect(h1).toHaveTextContent(`${active.monthLabel} ${active.year}`);
     const all = screen.getByRole('link', { name: /Tous les bilans/ });
-    expect(all).toHaveAttribute('href', '/archives');
+    expect(all).toHaveAttribute('href', '/bilan-culturel/archives');
   });
 
   it('renders one pill per OTHER month (linking to ?mois=<id>) and never the active month', () => {

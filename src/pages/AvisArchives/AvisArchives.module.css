@@ -16,14 +16,21 @@
 }
 
 .filter {
+  display: inline-flex;
+  align-items: center;
   padding: 7px 16px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-pill);
   background: transparent;
   color: var(--nav-idle);
   font-size: 13px;
+  text-decoration: none;
   cursor: pointer;
   transition: background 0.15s ease;
+}
+
+.filter:hover {
+  text-decoration: none;
 }
 
 .filter:hover {
