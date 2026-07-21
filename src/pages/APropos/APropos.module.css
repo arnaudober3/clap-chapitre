@@ -1,0 +1,331 @@
+/* Salon À propos page (design 3b). Tokens only — no raw Salon hex values.
+   Mobile-first: the hero band stacks and centers and the body is a single
+   column; at the md breakpoint (--bp-md = 768px) the hero goes side-by-side and
+   the body splits into prose + 250px aside. The hero band bleeds to the edges
+   of the shared <main>, whose padding differs at lg (--bp-lg = 1024px). */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  /* The page's content track. Design 3b's 1200px frame includes the 224px rail,
+     leaving 880px of content inside <main>'s padding; our --shell-max caps
+     <main> alone (~1112px of content), so the track is set explicitly and
+     shared by the hero and the body to keep one measure and one pair of edges. */
+  --track: 880px;
+}
+
+/* ---- Hero band (AP-2) ---- */
+.hero {
+  /* Break the band out of <main>'s padding AND its --shell-max cap so the
+     gradient reaches both edges of the content area on wide screens. 100% is
+     <main>'s content box; 100cqi is the full .content width, so the negative
+     margin is exactly half the difference. Where container queries are
+     unsupported the declaration is dropped and the band stays inside <main>. */
+  margin-top: -28px;
+  margin-inline: calc((100% - 100cqi) / 2);
+  padding-block: 28px;
+  background: linear-gradient(120deg, var(--surface), var(--surface-alt));
+  border-bottom: 1px solid var(--border);
+}
+
+/* Inner track: --track plus the side padding, so the hero's *content box* is
+   exactly --track wide and centred — the same edges as .body below. */
+.heroInner {
+  max-width: calc(var(--track) + 40px);
+  margin-inline: auto;
+  padding-inline: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.portrait {
+  flex: none;
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  background: var(--portrait-grad);
+  box-shadow: 0 12px 26px -12px rgba(143, 63, 36, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.portraitLabel {
+  font-family: var(--font-serif), sans-serif;
+  font-style: italic;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  padding-bottom: 12px;
+}
+
+.heroBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.heroTitle {
+  margin: 0 0 8px;
+  font-family: var(--font-serif), sans-serif;
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.heroName {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.heroIntro {
+  margin: 0;
+  max-width: 54ch;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* ---- Two-column body (AP-4) ---- */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 22px 0 4px;
+  /* Same track as the hero, centred in <main>. */
+  max-width: var(--track);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.mainColumn {
+  flex: 1;
+  min-width: 0;
+  /* Design 3b's measure — keeps the bio around 70-75 characters per line. */
+  max-width: 560px;
+}
+
+.bioParagraph {
+  margin: 0 0 13px;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--body);
+}
+
+.bioStrong {
+  font-weight: 600;
+}
+
+.quote {
+  margin: 22px 0 0;
+  border-left: 3px solid var(--gold);
+  padding-left: 15px;
+}
+
+.quoteText {
+  margin: 0;
+  font-family: var(--font-serif), sans-serif;
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+/* ---- Aside (AP-3) ---- */
+.aside {
+  flex: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.statsCard {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-card);
+  padding: 18px;
+}
+
+.statsTitle {
+  margin: 0 0 14px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--faint);
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.statRowDivided {
+  padding-bottom: 11px;
+  margin-bottom: 11px;
+  border-bottom: 1px solid var(--border);
+}
+
+.statLabel {
+  font-size: 12.5px;
+  color: var(--nav-idle);
+}
+
+.statValue {
+  font-family: var(--font-serif), sans-serif;
+  font-size: 23px;
+  color: var(--accent);
+}
+
+.followCard {
+  background: var(--dark-grad);
+  border-radius: var(--radius-card);
+  padding: 20px;
+}
+
+.followTitle {
+  margin: 0 0 6px;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 18px;
+  color: var(--bg);
+}
+
+.followCopy {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--surface-alt);
+}
+
+.followCta {
+  display: block;
+  background: var(--gold);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 11px;
+  border-radius: var(--radius-pill);
+  text-align: center;
+  text-decoration: none;
+}
+
+.followCta:hover {
+  background: var(--gold-hover);
+  text-decoration: none;
+}
+
+/* ---- Tablet / desktop (md): side-by-side hero + two-column body ---- */
+@media (min-width: 768px) {
+  .hero {
+    padding-block: 46px;
+  }
+
+  .heroInner {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 34px;
+  }
+
+  .portrait {
+    width: 170px;
+    height: 170px;
+    box-shadow: 0 14px 30px -14px rgba(143, 63, 36, 0.55);
+  }
+
+  .portraitLabel {
+    font-size: 15px;
+    padding-bottom: 16px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  .heroTitle {
+    font-size: 38px;
+    line-height: 1.08;
+    margin-bottom: 10px;
+  }
+
+  .heroIntro {
+    font-size: 18px;
+  }
+
+  .body {
+    flex-direction: row;
+    gap: 44px;
+    padding: 38px 0 4px;
+    /* Within the 880px track the columns (560 + 250) leave 70px, which lands
+       between them — so both outer edges stay flush with the hero's content. */
+    justify-content: space-between;
+  }
+
+  .bioParagraph {
+    margin-bottom: 15px;
+    font-size: 14.5px;
+  }
+
+  .quote {
+    margin-top: 26px;
+    padding-left: 18px;
+  }
+
+  .quoteText {
+    font-size: 20px;
+  }
+
+  .aside {
+    width: 250px;
+  }
+
+  .statsCard {
+    padding: 20px;
+  }
+
+  .statsTitle {
+    margin-bottom: 16px;
+  }
+
+  .statRowDivided {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+  .statLabel {
+    font-size: 13px;
+  }
+
+  .statValue {
+    font-size: 26px;
+  }
+}
+
+/* ---- Desktop (lg): <main> padding grows to 40px 44px 42px ---- */
+@media (min-width: 1024px) {
+  .hero {
+    margin-top: -40px;
+  }
+
+  .heroInner {
+    max-width: calc(var(--track) + 88px);
+    padding-inline: 44px;
+  }
+}

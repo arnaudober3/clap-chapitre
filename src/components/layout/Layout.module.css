@@ -12,6 +12,11 @@
   flex-direction: column;
   flex: 1;
   min-width: 0;
+  /* Query container so a page can full-bleed a band past <main>'s --shell-max
+     cap (see the À propos hero). Safe: nothing inside .content is absolutely
+     positioned — the drawer lives in <Header>, a sibling. */
+  container-type: inline-size;
+  container-name: content;
 }
 
 .main {

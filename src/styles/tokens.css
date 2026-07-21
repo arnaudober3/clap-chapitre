@@ -37,6 +37,7 @@
 
   /* Gradients */
   --dark-grad: linear-gradient(120deg, #3f2e20, #5a4130); /* newsletter blocks */
+  --portrait-grad: linear-gradient(150deg, #c9895a, #8f5230); /* À propos portrait placeholder */
 
   /* Fonts */
   --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;

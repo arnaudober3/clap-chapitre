@@ -18,7 +18,6 @@ describe('SC-5 routing', () => {
     ['/livres', /Avis récents/],
     ['/docs', /Avis récents/],
     ['/article/42', /Avis/],
-    ['/a-propos', /À propos/],
     ['/me-suivre', /Me suivre/],
   ];
 
@@ -56,6 +55,18 @@ describe('SC-5 routing', () => {
     const page = screen.getByTestId('bilan-culturel-archives-page');
     expect(
       within(page).getByRole('heading', { level: 1, name: 'Tous les bilans' }),
+    ).toBeInTheDocument();
+  });
+
+  it('renders the À propos page inside the Layout for /a-propos', () => {
+    renderAt('/a-propos');
+    // Layout chrome present (brand "et"), plus the real design-3b page. Per the
+    // design, "À propos" is an eyebrow (and a nav link) — the H1 is the greeting.
+    expect(screen.getAllByText('et').length).toBeGreaterThan(0);
+    const page = screen.getByTestId('a-propos-page');
+    expect(within(page).getByText('À propos')).toBeInTheDocument();
+    expect(
+      within(page).getByRole('heading', { level: 1, name: /Marie-Zoé/ }),
     ).toBeInTheDocument();
   });
 
