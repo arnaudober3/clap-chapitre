@@ -77,3 +77,204 @@
   color: var(--muted-2);
   white-space: nowrap;
 }
+
+/* ---- NewsletterBlock ----
+   The shared Salon --dark-grad card, in three layouts:
+   'band' (Home 1a), 'feature' (Me suivre 3c) and 'compact' (À propos 3b).
+   Mobile-first: every variant is a single stacked column with a full-width
+   action; at the md breakpoint (--bp-md = 768px) 'feature' becomes two
+   columns, and at lg (--bp-lg = 1024px) the 'band' padding grows. */
+.nbCard {
+  background: var(--dark-grad);
+}
+
+.nbCopyBlock {
+  flex: 1;
+  min-width: 0;
+}
+
+.nbEyebrow {
+  margin: 0 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.nbTitle {
+  margin: 0 0 6px;
+  font-family: var(--font-serif), sans-serif;
+  /* The design renders all three card titles as plain Newsreader with no
+     weight override (400). Set it explicitly: these are <h2> elements, whose
+     browser default would otherwise be bold. */
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--bg);
+}
+
+.nbCopy {
+  margin: 0;
+  color: var(--surface-alt);
+}
+
+.nbForm {
+  display: flex;
+  width: 100%;
+}
+
+.nbInput {
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-pill);
+  color: var(--ink);
+  font-family: inherit;
+}
+
+.nbInput::placeholder {
+  color: var(--faint);
+}
+
+.nbAction {
+  display: block;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nbAction:hover {
+  background: var(--gold-hover);
+  text-decoration: none;
+}
+
+/* -- 'band': Home's centred newsletter band -- */
+.nbBand {
+  border-radius: var(--radius-card);
+  padding: 34px 24px;
+}
+
+.nbBand .nbCopyBlock {
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.nbBand .nbTitle {
+  margin-bottom: 10px;
+  font-size: 26px;
+}
+
+.nbBand .nbCopy {
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.nbBand .nbForm {
+  max-width: 520px;
+  margin: 0 auto;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nbBand .nbInput {
+  flex: 1;
+  min-width: 200px;
+  padding: 11px 16px;
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.nbBand .nbAction {
+  padding: 11px 24px;
+  font-size: 14px;
+}
+
+/* -- 'feature': Me suivre's two-column card -- */
+.nbFeature {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.nbFeature .nbTitle {
+  font-size: 22px;
+}
+
+.nbFeature .nbCopy {
+  max-width: 44ch;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.nbFeature .nbForm {
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nbFeature .nbInput {
+  width: 100%;
+  padding: 13px 18px;
+  background: var(--bg);
+  font-size: 13px;
+}
+
+.nbFeature .nbAction {
+  width: 100%;
+  padding: 13px;
+  font-size: 13px;
+}
+
+/* -- 'compact': the À propos aside card (no form) -- */
+.nbCompact {
+  border-radius: var(--radius-card);
+  padding: 20px;
+}
+
+.nbCompact .nbTitle {
+  font-size: 18px;
+}
+
+.nbCompact .nbCopy {
+  margin-bottom: 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.nbCompact .nbAction {
+  padding: 11px;
+  font-size: 12.5px;
+}
+
+@media (min-width: 768px) {
+  .nbFeature {
+    flex-direction: row;
+    align-items: center;
+    gap: 26px;
+    padding: 30px 32px;
+  }
+
+  .nbFeature .nbTitle {
+    font-size: 26px;
+  }
+
+  .nbFeature .nbForm {
+    flex: none;
+    width: 280px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nbBand {
+    padding: 44px 24px;
+  }
+}

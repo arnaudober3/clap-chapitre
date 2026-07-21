@@ -18,7 +18,6 @@ describe('SC-5 routing', () => {
     ['/livres', /Avis récents/],
     ['/docs', /Avis récents/],
     ['/article/42', /Avis/],
-    ['/me-suivre', /Me suivre/],
   ];
 
   it.each(cases)('renders the placeholder heading for %s inside the Layout', (path, heading) => {
@@ -67,6 +66,18 @@ describe('SC-5 routing', () => {
     expect(within(page).getByText('À propos')).toBeInTheDocument();
     expect(
       within(page).getByRole('heading', { level: 1, name: /Marie-Zoé/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('renders the Me suivre page inside the Layout for /me-suivre', () => {
+    renderAt('/me-suivre');
+    // Layout chrome present (brand "et"), plus the real design-3c page. Per the
+    // design, "Me suivre" is an eyebrow (and a nav link) — the H1 is the title.
+    expect(screen.getAllByText('et').length).toBeGreaterThan(0);
+    const page = screen.getByTestId('me-suivre-page');
+    expect(within(page).getByText('Me suivre')).toBeInTheDocument();
+    expect(
+      within(page).getByRole('heading', { level: 1, name: 'On garde le contact' }),
     ).toBeInTheDocument();
   });
 

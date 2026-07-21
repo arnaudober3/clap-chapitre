@@ -3,3 +3,8 @@ export { default as CardGrid } from './CardGrid';
 export { default as PosterThumb } from './PosterThumb';
 export { default as SectionHeader } from './SectionHeader';
 export { default as ReviewCard } from './ReviewCard';
+export { default as NewsletterBlock } from './NewsletterBlock';
+export type {
+  NewsletterBlockProps,
+  NewsletterBlockVariant,
+} from './NewsletterBlock';

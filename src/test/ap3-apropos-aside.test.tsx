@@ -10,6 +10,12 @@ import { apropos } from '../mock/apropos';
 const root = resolve(__dirname, '../..');
 const statsSource = readFileSync(resolve(root, 'src/pages/APropos/YearStats.tsx'), 'utf8');
 const followSource = readFileSync(resolve(root, 'src/pages/APropos/FollowCard.tsx'), 'utf8');
+// FollowCard is a thin wrapper over the shared dark card (MS-5); the Link it
+// renders lives in NewsletterBlock, so the source scan follows it there.
+const blockSource = readFileSync(
+  resolve(root, 'src/components/ui/NewsletterBlock.tsx'),
+  'utf8',
+);
 
 describe('AP-3 "Cette année" stats panel', () => {
   it('renders the title and one row per stat with label and value', () => {
@@ -59,8 +65,8 @@ describe('AP-3 follow CTA card', () => {
       render(<FollowCard title={title} copy={copy} cta={cta} to={to} />),
     ).toThrow();
     spy.mockRestore();
-    expect(followSource).toContain("from 'react-router-dom'");
-    expect(followSource).toContain('<Link');
+    expect(blockSource).toContain("from 'react-router-dom'");
+    expect(blockSource).toContain('<Link');
   });
 
   it('uses tokens only — no raw hex color literal in either component', () => {

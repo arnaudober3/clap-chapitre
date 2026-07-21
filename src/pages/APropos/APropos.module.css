@@ -193,43 +193,6 @@
   color: var(--accent);
 }
 
-.followCard {
-  background: var(--dark-grad);
-  border-radius: var(--radius-card);
-  padding: 20px;
-}
-
-.followTitle {
-  margin: 0 0 6px;
-  font-family: var(--font-serif), sans-serif;
-  font-size: 18px;
-  color: var(--bg);
-}
-
-.followCopy {
-  margin: 0 0 14px;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--surface-alt);
-}
-
-.followCta {
-  display: block;
-  background: var(--gold);
-  color: var(--ink);
-  font-weight: 600;
-  font-size: 12.5px;
-  padding: 11px;
-  border-radius: var(--radius-pill);
-  text-align: center;
-  text-decoration: none;
-}
-
-.followCta:hover {
-  background: var(--gold-hover);
-  text-decoration: none;
-}
-
 /* ---- Tablet / desktop (md): side-by-side hero + two-column body ---- */
 @media (min-width: 768px) {
   .hero {

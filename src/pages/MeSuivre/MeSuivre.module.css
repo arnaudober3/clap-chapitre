@@ -1,0 +1,168 @@
+/* Salon Me suivre page (design 3c). Tokens only — no raw Salon hex values.
+   Mobile-first: the newsletter feature stacks and the socials grid is a single
+   column; at the md breakpoint (--bp-md = 768px) the feature goes two columns
+   (copy left, form right at 280px) and the grid becomes 2×2. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Page head (MS-4) ---- */
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.title {
+  margin: 0 0 8px;
+  font-family: var(--font-serif), sans-serif;
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.intro {
+  margin: 0 0 26px;
+  max-width: 56ch;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* ---- Newsletter feature (MS-2) ----
+   The card itself is the shared <NewsletterBlock variant="feature">; the page
+   only owns the gap below it. */
+.newsletterSlot {
+  margin-bottom: 34px;
+}
+
+/* ---- Socials grid (MS-3) ---- */
+.socialGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.socialCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 15px 16px;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.socialCard:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  text-decoration: none;
+}
+
+.socialSwatch {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 19px;
+  color: var(--bg);
+}
+
+/* Multi-character glyphs ('in') sit one step smaller than the single ones. */
+.socialSwatchWide {
+  font-size: 17px;
+}
+
+.socialBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.socialName {
+  display: block;
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.socialHandle {
+  display: block;
+  margin: 0;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.socialCta {
+  flex: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ---- Tablet / desktop (md) ---- */
+@media (min-width: 768px) {
+  .eyebrow {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  .title {
+    font-size: 40px;
+  }
+
+  .intro {
+    font-size: 18px;
+    margin-bottom: 34px;
+  }
+
+  .socialGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .socialCard {
+    gap: 16px;
+    border-radius: 14px;
+    padding: 20px 22px;
+  }
+
+  .socialSwatch {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    font-size: 22px;
+  }
+
+  .socialSwatchWide {
+    font-size: 20px;
+  }
+
+  .socialName {
+    font-size: 16px;
+  }
+
+  .socialHandle {
+    font-size: 12.5px;
+  }
+
+  .socialCta {
+    font-size: 12.5px;
+  }
+}

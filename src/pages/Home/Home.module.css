@@ -149,70 +149,6 @@
   gap: 16px;
 }
 
-/* ---- Newsletter band ---- */
-.newsletter {
-  border-radius: var(--radius-card);
-  background: var(--dark-grad);
-  padding: 34px 24px;
-}
-
-.newsletterInner {
-  max-width: 520px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.newsletterTitle {
-  margin: 0 0 10px;
-  font-family: var(--font-serif), sans-serif;
-  font-size: 26px;
-  color: var(--bg);
-}
-
-.newsletterCopy {
-  margin: 0 0 20px;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--surface-alt);
-}
-
-.newsletterForm {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.newsletterInput {
-  flex: 1;
-  min-width: 200px;
-  padding: 11px 16px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--border-pill);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 14px;
-}
-
-.newsletterInput::placeholder {
-  color: var(--faint);
-}
-
-.newsletterButton {
-  padding: 11px 24px;
-  border-radius: var(--radius-pill);
-  border: none;
-  background: var(--gold);
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.newsletterButton:hover {
-  background: var(--gold-hover);
-}
-
 /* ---- Desktop (lg): side-by-side hero + 3-col grid ---- */
 @media (min-width: 1024px) {
   .hero {
@@ -235,9 +171,5 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
-  }
-
-  .newsletter {
-    padding: 44px 24px;
   }
 }
