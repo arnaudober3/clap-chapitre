@@ -1,0 +1,83 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, it, expect } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
+import Hero from '../pages/APropos/Hero';
+import { apropos } from '../mock/apropos';
+
+const root = resolve(__dirname, '../..');
+
+/**
+ * Source scans below look for real code, so comments are stripped first —
+ * otherwise a doc comment that *describes* the rule ("no <img>") trips the
+ * assertion that enforces it.
+ */
+function stripComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '');
+}
+
+const heroSource = stripComments(
+  readFileSync(resolve(root, 'src/pages/APropos/Hero.tsx'), 'utf8'),
+);
+const css = stripComments(
+  readFileSync(resolve(root, 'src/pages/APropos/APropos.module.css'), 'utf8'),
+);
+
+function renderHero(overrides: Partial<Parameters<typeof Hero>[0]> = {}) {
+  return render(
+    <Hero
+      eyebrow={apropos.eyebrow}
+      greeting={apropos.greeting}
+      name={apropos.name}
+      intro={apropos.intro}
+      portraitLabel={apropos.portraitLabel}
+      {...overrides}
+    />,
+  );
+}
+
+describe('AP-2 À propos hero band', () => {
+  it('renders the H1 with the greeting and the name in its own element', () => {
+    renderHero();
+    const heading = screen.getByRole('heading', { level: 1 });
+    expect(heading.textContent).toContain('Bonjour, moi c’est');
+    expect(heading.textContent).toContain('Marie-Zoé');
+    // The name sits in a dedicated (italic --accent) element, not bare text.
+    const name = within(heading).getByText('Marie-Zoé');
+    expect(name.tagName).toBe('SPAN');
+  });
+
+  it('renders the eyebrow, the intro and the portrait caption', () => {
+    renderHero();
+    expect(screen.getByText(apropos.eyebrow)).toBeInTheDocument();
+    expect(screen.getByText(apropos.intro)).toBeInTheDocument();
+    expect(screen.getByText(apropos.portraitLabel)).toBeInTheDocument();
+  });
+
+  it('emits no network request: no <img> and no url() anywhere', () => {
+    const { container } = renderHero();
+    expect(container.querySelector('img')).toBeNull();
+    for (const el of Array.from(container.querySelectorAll('[style]'))) {
+      expect(el.getAttribute('style')).not.toContain('url(');
+    }
+    expect(heroSource).not.toContain('<img');
+    expect(heroSource).not.toMatch(/\burl\(/);
+    expect(css).not.toMatch(/\burl\(/);
+    // The portrait is the gradient token.
+    expect(css).toContain('var(--portrait-grad)');
+  });
+
+  it('uses tokens only — no raw hex color literal in Hero.tsx or the CSS module', () => {
+    expect(heroSource).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  });
+
+  it('renders without throwing and omits the intro paragraph when intro is empty', () => {
+    const { container } = renderHero({ intro: '' });
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    const paragraphs = Array.from(container.querySelectorAll('p'));
+    // Only the eyebrow paragraph remains; no empty <p> for the intro.
+    expect(paragraphs).toHaveLength(1);
+    expect(paragraphs[0].textContent).toBe(apropos.eyebrow);
+  });
+});

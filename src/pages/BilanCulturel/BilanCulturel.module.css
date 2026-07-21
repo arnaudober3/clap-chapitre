@@ -1,0 +1,525 @@
+/* Salon Bilan culturel page. Tokens only — no raw Salon hex values.
+   Mobile-first: stacked full-width covers, wrapping switcher pills; at the lg
+   breakpoint (--bp-lg = 1024px) the review cover sits beside the text (2/3). */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+}
+
+.empty {
+  padding: 40px 4px;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 18px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ---- Month header + switcher (BC-2) ---- */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.headerTitle {
+  margin: 0;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.caret {
+  color: var(--muted-2);
+  font-size: 0.7em;
+}
+
+.switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.switcherLabel {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.pill {
+  flex: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-pill);
+  background: transparent;
+  color: var(--body);
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.allBilans {
+  flex: none;
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.allBilans:hover {
+  text-decoration: underline;
+}
+
+/* Mobile shows the short "Tous" label; the full label appears at lg. */
+.allBilansFull {
+  display: none;
+}
+
+.allBilansShort {
+  display: inline;
+}
+
+/* ---- Humeur + sections (BC-3) ---- */
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.mood {
+  border-top: 2px solid var(--ink);
+  padding-top: 20px;
+}
+
+.moodEyebrow {
+  margin: 0 0 12px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.moodBody {
+  margin: 0;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--body);
+}
+
+.mediumSection {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.mediumHead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mediumLabel {
+  margin: 0;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.mediumRule {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+/* ---- BilanReview block (BC-3) ---- */
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reviewCover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: var(--radius-card);
+  box-shadow: 0 14px 30px -12px rgba(63, 46, 32, 0.45);
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+}
+
+.reviewCoverTitle {
+  font-family: var(--font-serif), sans-serif;
+  font-size: 18px;
+  line-height: 1.15;
+  color: var(--bg);
+}
+
+.reviewBody {
+  min-width: 0;
+}
+
+.reviewMedium {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.reviewTitle {
+  margin: 0 0 12px;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 26px;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.reviewHook {
+  margin: 0 0 14px;
+  font-family: var(--font-serif), sans-serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--muted);
+}
+
+.reviewParagraph {
+  margin: 0 0 14px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--body);
+}
+
+.relatedTo {
+  margin: 0 0 18px;
+  padding-left: 14px;
+  border-left: 2px solid var(--gold);
+}
+
+.relatedToLabel {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.relatedToText {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--body);
+}
+
+.relatedToTitle {
+  font-weight: 600;
+}
+
+.relatedToNote {
+  color: var(--body);
+}
+
+.forThoseWho {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--radius-nav);
+  background: var(--surface);
+  font-family: var(--font-serif), sans-serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* ---- Social bar + comment thread (BC-4) ---- */
+.social {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.socialBar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.likeButton {
+  padding: 9px 18px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.likeButton:hover {
+  background: var(--gold-hover);
+}
+
+.socialButton {
+  padding: 9px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-pill);
+  background: transparent;
+  color: var(--body);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.socialButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.socialCount {
+  font-size: 13px;
+  color: var(--muted-2);
+}
+
+.commentsHeading {
+  margin: 0;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 24px;
+  color: var(--ink);
+}
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.composerField {
+  width: 100%;
+  min-height: 84px;
+  padding: 12px 14px;
+  border-radius: var(--radius-nav);
+  border: 1px solid var(--border-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.composerField::placeholder {
+  color: var(--faint);
+}
+
+.composerRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.composerName {
+  flex: 1;
+  min-width: 180px;
+  padding: 11px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.composerName::placeholder {
+  color: var(--faint);
+}
+
+.composerButton {
+  padding: 11px 24px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.composerButton:hover {
+  background: var(--gold-hover);
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.comment {
+  display: flex;
+  gap: 14px;
+}
+
+.commentReply {
+  display: flex;
+  gap: 14px;
+  margin-top: 18px;
+  padding-left: 16px;
+  border-left: 2px solid var(--border);
+}
+
+.commentAvatar {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-alt);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.commentBody {
+  min-width: 0;
+}
+
+.commentHead {
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.commentName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.authorBadge {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.commentDate {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.commentText {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--body);
+}
+
+.commentActions {
+  margin: 0;
+  display: flex;
+  gap: 16px;
+}
+
+.commentAction {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted-2);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.commentAction:hover {
+  color: var(--accent);
+}
+
+/* ---- Desktop (lg): cover beside review text ---- */
+@media (min-width: 1024px) {
+  .headerTitle {
+    font-size: 44px;
+  }
+
+  .switcher {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .pills {
+    flex: 1;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .allBilansFull {
+    display: inline;
+  }
+
+  .allBilansShort {
+    display: none;
+  }
+
+  .review {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .reviewCover {
+    flex: none;
+    width: 220px;
+    aspect-ratio: 2 / 3;
+  }
+
+  .reviewTitle {
+    font-size: 30px;
+  }
+}

@@ -19,8 +19,26 @@ export interface Article {
   /** Display date, e.g. "12 juin 2026". */
   date: string;
   author: string;
+  /** ♡ like count — shown on every card and the hero. */
+  likes: number;
+  /** Comment count — shown on every card and the hero. */
+  comments: number;
+  /** Italic question line under the title (hero uses it). */
+  hook?: string;
+  /** The "Pour ceux qui…" one-liner (hero uses it). */
+  forThoseWho?: string;
   /** Full body copy — only present on the article view. */
   body?: string;
+  /** "À rapprocher de" callout — a related work (Bilan uses it). */
+  relatedTo?: { title: string; note: string };
+  /** Meta line under the medium label, e.g. "Comédie dramatique · 2 h 04 · 2026". */
+  genreMeta?: string;
+  /** Reading time, e.g. "4 min de lecture". */
+  readingTime?: string;
+  /** The mid-body pull quote (rendered with the gold rule). */
+  pullQuote?: string;
+  /** "À rapprocher de" — ids of up to 2 other avis + why they're close. */
+  related?: Array<{ id: string; note: string }>;
 }
 
 /** A comment on an article / bilan thread. */
