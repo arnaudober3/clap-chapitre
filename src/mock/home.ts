@@ -22,6 +22,26 @@ export const feed: Article[] = [
     hook: 'Et si le dernier été n’était jamais vraiment le dernier ?',
     forThoseWho:
       'Pour ceux qui aiment les fins qui laissent la fenêtre entrouverte.',
+    genreMeta: 'Comédie dramatique · 2 h 04 · 2026',
+    readingTime: '4 min de lecture',
+    body:
+      'Il y a des films qui ressemblent à une maison de vacances qu’on referme pour la dernière fois. Un dernier été est de ceux-là : la lumière y est trop belle pour être honnête, et chaque plan semble savoir qu’il ne reviendra pas.\n\n' +
+      'Le récit tient en trois jours et quatre personnages. On les regarde tourner autour de la table, du ponton, de la même question jamais posée. Rien n’explose ; tout se déplace d’un millimètre, ce qui est bien plus difficile à filmer.\n\n' +
+      'La mise en scène refuse le crescendo. Elle installe des silences, les laisse durer une seconde de trop, et c’est dans cette seconde-là que le film se joue. On en sort avec l’impression d’avoir surpris une conversation qui ne nous était pas destinée.\n\n' +
+      'Le dernier tiers rattrape ce qu’on croyait perdu. Une scène de dîner, filmée en un seul plan, dit tout ce que les personnages se sont tus pendant vingt ans — sans qu’aucun d’eux ne prononce le mot juste.\n\n' +
+      'On referme la porte, on rend les clés, et on garde le sable dans les poches. C’est exactement ce qu’on demande à un film d’été.',
+    pullQuote:
+      'Rien n’explose : tout se déplace d’un millimètre, et c’est là que le film devient bouleversant.',
+    related: [
+      {
+        id: 'l-annee-de-la-pluie',
+        note: 'Même façon de fouiller l’amitié qui vieillit.',
+      },
+      {
+        id: 'les-nuits-blanches',
+        note: 'Pour prolonger le grain doux-amer.',
+      },
+    ],
   },
   {
     id: 'l-annee-de-la-pluie',
@@ -36,6 +56,20 @@ export const feed: Article[] = [
     comments: 17,
     hook: 'Peut-on aimer une saison qui ne s’arrête jamais ?',
     forThoseWho: 'Pour ceux qui lisent au son des averses.',
+    genreMeta: 'Roman · 312 pages · 2026',
+    readingTime: '3 min de lecture',
+    body:
+      'On entre dans L’année de la pluie comme on pousse une porte trempée : à contrecœur, puis sans plus vouloir ressortir. La narratrice raconte douze mois d’averses et une amitié qui prend l’eau en même temps que la ville.\n\n' +
+      'L’écriture est sèche là où l’on attendait du lyrisme. C’est ce décalage qui fait tenir le livre debout : la pluie n’y est jamais une métaphore, seulement un fait, obstiné, quotidien.\n\n' +
+      'Le dernier tiers accélère et pardonne. On referme le roman avec le sentiment d’avoir été essoré, puis séché au soleil.',
+    pullQuote:
+      'La pluie n’y est jamais une métaphore : seulement un fait, obstiné, quotidien.',
+    related: [
+      {
+        id: 'un-dernier-ete',
+        note: 'La même chaleur qui s’effrite entre quatre personnes.',
+      },
+    ],
   },
   {
     id: 'les-nuits-blanches',
@@ -50,6 +84,20 @@ export const feed: Article[] = [
     comments: 31,
     hook: 'Que reste-t-il de nous quand la ville dort ?',
     forThoseWho: 'Pour ceux qui préfèrent les récits qui prennent leur temps.',
+    genreMeta: 'Série · 6 × 48 min · 2026',
+    readingTime: '5 min de lecture',
+    body:
+      'Six épisodes, six insomnies, une ville filmée à l’heure où elle ne se surveille plus. Les nuits blanches avance au rythme d’une confidence qu’on n’ose faire qu’à trois heures du matin.\n\n' +
+      'La série assume sa lenteur et en fait sa méthode : on apprend à connaître ses personnages par leurs trajets, leurs cafés froids, leurs messages non envoyés.\n\n' +
+      'L’épisode 4, tourné presque entièrement dans un taxi, est le sommet de la saison. Rien d’autre à signaler que deux visages et une conversation — et c’est amplement suffisant.',
+    pullQuote:
+      'Une ville filmée à l’heure où elle ne se surveille plus.',
+    related: [
+      {
+        id: 'un-dernier-ete',
+        note: 'Deux récits qui préfèrent le hors-champ à l’aveu.',
+      },
+    ],
   },
   {
     id: 'fragments',
@@ -64,6 +112,12 @@ export const feed: Article[] = [
     comments: 12,
     hook: 'Et si nos oublis en disaient plus que nos souvenirs ?',
     forThoseWho: 'Pour ceux qui aiment les puzzles émotionnels.',
+    genreMeta: 'Documentaire · 1 h 38 · 2026',
+    readingTime: '3 min de lecture',
+    body:
+      'Fragments part d’un carton de bobines abandonnées et en tire une mémoire collective. Le montage, patient, refuse la voix off explicative : ce sont les images elles-mêmes qui finissent par parler.\n\n' +
+      'On y croise des visages sans nom, des fêtes sans date, des gestes qu’aucune archive n’avait jugés dignes d’être conservés. C’est bouleversant précisément parce que c’est anodin.\n\n' +
+      'Un documentaire qui répare, à sa mesure, un peu de ce que le temps efface.',
   },
   {
     id: 'la-lumiere-du-nord',
@@ -76,6 +130,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 88,
     comments: 15,
+    body:
+      'Un drame filmé dans une lumière si froide qu’on en sort les mains gourdes. La lumière du Nord ne raconte pourtant rien de glacé : c’est une histoire de réchauffement lent, presque imperceptible.\n\n' +
+      'Son actrice principale tient tout le film dans un mutisme qui n’a jamais l’air d’une posture. On la regarde décider, hésiter, renoncer — sans une réplique de trop.',
   },
   {
     id: 'le-jardin-suspendu',
@@ -88,6 +145,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 64,
     comments: 9,
+    body:
+      'Le jardin suspendu se lit comme on jardine : lentement, en revenant sur ses pas. Chaque chapitre correspond à une saison, et la prose y pousse littéralement, phrase après phrase.\n\n' +
+      'C’est un livre qui demande de la patience et la rend au centuple. On le referme les mains pleines de terre.',
   },
   {
     id: 'ceux-qui-restent',
@@ -100,6 +160,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 103,
     comments: 22,
+    body:
+      'Ceux qui restent est une chronique du deuil qui n’élève jamais la voix. La série s’installe dans les gestes du quotidien et laisse le chagrin se déposer, épisode après épisode.\n\n' +
+      'On y rit, aussi, entre deux larmes — et c’est cette justesse de ton qui la rend inoubliable.',
   },
   {
     id: 'archives-du-silence',
@@ -112,6 +175,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 57,
     comments: 8,
+    body:
+      'Archives du silence est un travail d’enquête d’une patience rare. Trois ans de dépouillement pour rendre audible ce que les procès-verbaux avaient consigné puis rangé.\n\n' +
+      'Le film ne cherche jamais le sensationnel : il pose les documents, laisse les témoins parler, et fait confiance au spectateur pour tirer le fil.',
   },
 ];
 

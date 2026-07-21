@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
+import { feed } from '../mock/home';
 
 function renderAt(path: string) {
   return render(
@@ -17,7 +18,6 @@ describe('SC-5 routing', () => {
     ['/series', /Avis récents/],
     ['/livres', /Avis récents/],
     ['/docs', /Avis récents/],
-    ['/article/42', /Avis/],
   ];
 
   it.each(cases)('renders the placeholder heading for %s inside the Layout', (path, heading) => {
@@ -25,6 +25,24 @@ describe('SC-5 routing', () => {
     // Layout chrome present (brand "et"), plus the page heading.
     expect(screen.getAllByText('et').length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+  });
+
+  it('renders the article page inside the Layout for /article/:id', () => {
+    // DEV-19-03 replaced the placeholder: a known id renders the real avis,
+    // an unknown one the Salon not-found state (no article heading).
+    renderAt(`/article/${feed[0].id}`);
+    expect(screen.getAllByText('et').length).toBeGreaterThan(0);
+    const page = screen.getByTestId('article-page');
+    expect(
+      within(page).getByRole('heading', { level: 1, name: feed[0].title }),
+    ).toBeInTheDocument();
+  });
+
+  it('renders the not-found state for an unknown /article/:id', () => {
+    renderAt('/article/42');
+    const page = screen.getByTestId('article-page');
+    expect(within(page).getByText(/n’existe pas/)).toBeInTheDocument();
+    expect(within(page).queryByRole('heading', { level: 1 })).toBeNull();
   });
 
   it('renders the Bilan culturel page inside the Layout for /bilan-culturel', () => {

@@ -1,0 +1,887 @@
+/* Salon single-avis page (designs 4a desktop / 4b mobile). Tokens only — no
+   raw Salon hex values; the only literal colors are neutral rgba() overlays
+   used on top of an avis' own cover gradient.
+
+   Mobile-first (design 4b): the hero is a full-bleed cover band, the related
+   block stacks, the composer is a sticky bottom bar and prev/next is dropped.
+   At the lg breakpoint (--bp-lg = 1024px) design 4a takes over: cover beside
+   the headline, a two-column related grid, an inline composer card. Every swap
+   is CSS-only — no window-width JS, no duplicated headings. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The reading column: everything below the hero shares one 660px measure. */
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  max-width: 660px;
+  margin-top: 24px;
+}
+
+/* ---- Not-found state (AT-6) ---- */
+.notFound {
+  margin: 40px 0 12px;
+  font-family: var(--font-serif), sans-serif;
+  font-style: italic;
+  font-size: 20px;
+  color: var(--muted);
+}
+
+.notFoundLink {
+  font-size: 13.5px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.notFoundLink:hover {
+  text-decoration: underline;
+}
+
+/* ---- Breadcrumb (AT-2) ---- */
+/* Design 4b replaces the breadcrumb with the band's back link. */
+.breadcrumb {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.crumbLead {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.crumbLink {
+  color: var(--body);
+  text-decoration: none;
+}
+
+.crumbLead:hover,
+.crumbLink:hover {
+  text-decoration: underline;
+}
+
+.crumbCurrent {
+  color: var(--faint);
+}
+
+.crumbSep {
+  color: var(--faint);
+}
+
+/* ---- Hero / cover band (AT-2) ---- */
+.hero {
+  display: flex;
+  flex-direction: column;
+}
+
+.heroMain {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile: the painted, full-bleed cover band. It breaks out of <main>'s
+   padding and its --shell-max cap the same way the À propos hero does —
+   100cqi is the full .content width, so the negative inline margin is exactly
+   half the difference. */
+.band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  margin-top: -28px;
+  margin-inline: calc((100% - 100cqi) / 2);
+  padding: 24px 20px 22px;
+}
+
+.backLink {
+  flex-basis: 100%;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: rgba(255, 255, 255, 1);
+  text-decoration: none;
+}
+
+.cover {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 104px;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-card);
+  box-shadow: 0 14px 30px -12px rgba(36, 26, 18, 0.5);
+  padding: 10px;
+  overflow: hidden;
+}
+
+.coverEyebrow {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* The cover's own serif title is a 4a detail; 4b shows the title in the band. */
+.coverTitle {
+  display: none;
+}
+
+.headline {
+  flex: 1;
+  min-width: 0;
+}
+
+.metaRow {
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* The medium accent arrives as the --medium-accent custom property (set inline
+   by ArticleHero) rather than an inline `color`, so the painted band can win
+   on mobile without !important. */
+.mediumLabel {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* The genre meta line is a 4a detail — 4b's band carries the medium alone. */
+.metaDot,
+.genreMeta {
+  display: none;
+  font-size: 11.5px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-serif), sans-serif;
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--bg);
+}
+
+.heroFoot {
+  padding: 18px 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hook {
+  margin: 0 0 14px;
+  font-family: var(--font-serif), sans-serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.byline {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.avatar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--portrait-grad);
+  color: var(--bg);
+  font-family: var(--font-serif), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.bylineText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bylineAuthor {
+  font-size: 13px;
+  color: var(--body);
+}
+
+.bylineDate {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+/* ---- Reading column (AT-3) ---- */
+.body {
+  min-width: 0;
+}
+
+.lead {
+  margin: 0 0 16px;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.dropCap {
+  float: left;
+  margin: 6px 10px 0 0;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 48px;
+  line-height: 0.8;
+  color: var(--accent);
+}
+
+.paragraph {
+  margin: 0 0 15px;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--body);
+}
+
+.pullQuote {
+  margin: 22px 0;
+  padding-left: 16px;
+  border-left: 3px solid var(--gold);
+  font-family: var(--font-serif), sans-serif;
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+/* ---- À rapprocher de (AT-3) ---- */
+.related {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.relatedEyebrow {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.relatedCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 13px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.relatedCard:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.relatedThumb {
+  flex: none;
+  width: 42px;
+  aspect-ratio: 2 / 3;
+  border-radius: 6px;
+}
+
+.relatedBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.relatedMedium {
+  font-size: 9.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.relatedTitle {
+  font-family: var(--font-serif), sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.relatedNote {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted-2);
+}
+
+/* ---- Pour ceux qui… (AT-3) ---- */
+.verdict {
+  padding: 16px 18px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.verdictEyebrow {
+  margin: 0 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.verdictText {
+  margin: 0;
+  font-family: var(--font-serif), sans-serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+/* ---- Social bar (AT-4) ---- */
+.social {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.likePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--bg);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.likePill:hover {
+  background: var(--accent);
+}
+
+/* "J'aime ·" is a 4a detail — 4b's compact row shows "♡ n" alone. */
+.likeWord {
+  display: none;
+}
+
+.commentCount {
+  font-size: 13px;
+  color: var(--muted-2);
+}
+
+/* Available to assistive tech, out of the way visually. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* "Enregistrer" is a 4a detail — 4b's compact row drops it. */
+.saveLink {
+  display: none;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--body);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.saveLink:hover {
+  color: var(--accent);
+}
+
+.socialSpacer {
+  flex: 1;
+}
+
+.sharePill {
+  padding: 9px 16px;
+  border: 1px solid var(--border-pill);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--body);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sharePill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---- Prev / next (AT-4) — desktop only per design 4b ---- */
+.prevNext {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.prevCard,
+.nextCard {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 16px 18px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-card);
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+.prevCard {
+  grid-column: 1;
+}
+
+.nextCard {
+  grid-column: 2;
+  text-align: right;
+}
+
+.prevCard:hover,
+.nextCard:hover {
+  border-color: var(--accent);
+  text-decoration: none;
+}
+
+.prevNextLabel {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.prevNextTitle {
+  font-family: var(--font-serif), sans-serif;
+  font-size: 17px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+/* ---- Comments (AT-5) ---- */
+.comments {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.commentsHeading {
+  margin: 0;
+  font-family: var(--font-serif), sans-serif;
+  font-weight: 400;
+  font-size: 22px;
+  color: var(--ink);
+}
+
+/* Mobile (4b): the composer is the sticky bottom bar. */
+.composer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.composerField {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  min-height: 40px;
+  padding: 10px 16px;
+  border: 1px solid var(--border-pill);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13.5px;
+  resize: none;
+}
+
+.composerField::placeholder {
+  color: var(--faint);
+}
+
+.composerRow {
+  flex: none;
+  display: flex;
+  gap: 8px;
+}
+
+/* The name field belongs to the 4a composer card only. */
+.composerName {
+  display: none;
+  flex: 1;
+  min-width: 180px;
+  padding: 11px 16px;
+  border: 1px solid var(--border-pill);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13.5px;
+}
+
+.composerName::placeholder {
+  color: var(--faint);
+}
+
+.composerButton {
+  padding: 10px 18px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.composerButton:hover {
+  background: var(--gold-hover);
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  /* Room reserved so the sticky composer never covers the last entry. */
+  padding-bottom: 76px;
+}
+
+.comment {
+  display: flex;
+  gap: 12px;
+}
+
+.commentReply {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  margin-left: 36px;
+}
+
+.commentAvatar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-serif), sans-serif;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.commentAvatarAuthor {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.commentAvatarAnon {
+  background: var(--border);
+  color: var(--muted-2);
+}
+
+.commentBody {
+  min-width: 0;
+  flex: 1;
+}
+
+.commentHead {
+  margin: 0 0 5px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.commentName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.authorBadge {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.commentDate {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.commentText {
+  margin: 0 0 7px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--body);
+}
+
+.commentActions {
+  margin: 0;
+  display: flex;
+  gap: 16px;
+}
+
+.commentAction {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted-2);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.commentAction:hover {
+  color: var(--accent);
+}
+
+/* ---- Desktop (lg) — design 4a ---- */
+@media (min-width: 1024px) {
+  .column {
+    gap: 36px;
+    margin-top: 30px;
+  }
+
+  .breadcrumb {
+    display: flex;
+    margin-bottom: 22px;
+  }
+
+  /* The band stops being a band: its children become grid items of .heroMain,
+     so the cover sits beside the headline with the hook + byline underneath. */
+  .heroMain {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 660px);
+    grid-template-areas:
+      'cover headline'
+      'cover foot';
+    /* The cover spans both rows and is taller than the headline; without a
+       pinned first row the leftover height is split between the two auto rows
+       and the foot drifts down the cover instead of sitting under the H1. */
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    column-gap: 40px;
+  }
+
+  .band {
+    display: contents;
+  }
+
+  .backLink {
+    display: none;
+  }
+
+  .cover {
+    grid-area: cover;
+    width: 250px;
+    padding: 16px;
+    box-shadow: 0 22px 44px -16px rgba(36, 26, 18, 0.55);
+  }
+
+  .coverEyebrow {
+    font-size: 10px;
+  }
+
+  .coverTitle {
+    display: block;
+    font-family: var(--font-serif), sans-serif;
+    font-size: 27px;
+    line-height: 1.1;
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  .headline {
+    grid-area: headline;
+  }
+
+  .heroFoot {
+    grid-area: foot;
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .title {
+    font-size: 46px;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  /* Off the painted band, the eyebrow recovers its medium accent. */
+  .mediumLabel {
+    color: var(--medium-accent, var(--accent));
+  }
+
+  .metaDot,
+  .genreMeta {
+    display: inline;
+    color: var(--faint);
+  }
+
+  .hook {
+    margin: 16px 0 20px;
+    font-size: 20px;
+  }
+
+  .avatar {
+    width: 38px;
+    height: 38px;
+    font-size: 13px;
+  }
+
+  .lead {
+    font-size: 17px;
+  }
+
+  .dropCap {
+    margin: 8px 12px 0 0;
+    font-size: 62px;
+  }
+
+  .paragraph {
+    font-size: 14.5px;
+    line-height: 1.8;
+  }
+
+  .pullQuote {
+    margin: 26px 0;
+    padding-left: 22px;
+    font-size: 23px;
+  }
+
+  .relatedGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .relatedThumb {
+    width: 52px;
+  }
+
+  .likeWord {
+    display: inline;
+  }
+
+  .saveLink {
+    display: inline;
+  }
+
+  /* The comment-count glyph belongs to 4b's compact row. */
+  .commentCount {
+    display: none;
+  }
+
+  .prevNext {
+    display: grid;
+  }
+
+  /* The composer returns to an inline card. */
+  .composer {
+    position: static;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 18px;
+    border: 1px solid var(--border-2);
+    border-top: 1px solid var(--border-2);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+  }
+
+  .composerField {
+    height: auto;
+    min-height: 84px;
+    padding: 12px 14px;
+    border-radius: var(--radius-nav);
+    background: var(--bg);
+    resize: vertical;
+  }
+
+  .composerRow {
+    flex: none;
+    flex-wrap: wrap;
+  }
+
+  .composerName {
+    display: block;
+    background: var(--bg);
+  }
+
+  .thread {
+    gap: 26px;
+    padding-bottom: 0;
+  }
+
+  .commentAvatar {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
+  }
+}

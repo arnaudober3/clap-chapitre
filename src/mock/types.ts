@@ -31,6 +31,14 @@ export interface Article {
   body?: string;
   /** "À rapprocher de" callout — a related work (Bilan uses it). */
   relatedTo?: { title: string; note: string };
+  /** Meta line under the medium label, e.g. "Comédie dramatique · 2 h 04 · 2026". */
+  genreMeta?: string;
+  /** Reading time, e.g. "4 min de lecture". */
+  readingTime?: string;
+  /** The mid-body pull quote (rendered with the gold rule). */
+  pullQuote?: string;
+  /** "À rapprocher de" — ids of up to 2 other avis + why they're close. */
+  related?: Array<{ id: string; note: string }>;
 }
 
 /** A comment on an article / bilan thread. */
