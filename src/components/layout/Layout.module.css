@@ -12,6 +12,11 @@
   flex-direction: column;
   flex: 1;
   min-width: 0;
+  /* Query container so a page can full-bleed a band past <main>'s --shell-max
+     cap (see the À propos hero). Safe: nothing inside .content is absolutely
+     positioned — the drawer lives in <Header>, a sibling. */
+  container-type: inline-size;
+  container-name: content;
 }
 
 .main {
@@ -30,7 +35,7 @@
 
 .wordmark {
   display: inline-block;
-  font-family: var(--font-serif);
+  font-family: var(--font-serif), sans-serif;
   font-size: 29px;
   line-height: 0.98;
   letter-spacing: -0.01em;
@@ -152,7 +157,7 @@
 }
 
 .topbarWordmark {
-  font-family: var(--font-serif);
+  font-family: var(--font-serif), sans-serif;
   font-size: 20px;
   color: var(--ink);
   text-decoration: none;
@@ -160,6 +165,41 @@
 
 .topbarSpacer {
   width: 24px;
+}
+
+/* ---- Mobile medium tab strip (below top bar; hidden at desktop) ---- */
+.mediumTabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.mediumTab {
+  flex: none;
+  padding: 7px 15px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-pill);
+  font-size: 13px;
+  color: var(--nav-idle);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mediumTab:hover {
+  background: var(--nav-hover);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.mediumTabActive,
+.mediumTabActive:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
 }
 
 /* ---- Mobile drawer ---- */
@@ -240,7 +280,7 @@
 }
 
 .footerBrand {
-  font-family: var(--font-serif);
+  font-family: var(--font-serif), sans-serif;
   font-size: 16px;
   color: var(--ink);
 }
@@ -266,6 +306,10 @@
   }
 
   .topbar {
+    display: none;
+  }
+
+  .mediumTabs {
     display: none;
   }
 

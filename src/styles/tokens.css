@@ -31,12 +31,19 @@
   --medium-docs: #8a5a7a;
   --medium-film: #b0502f;
 
+  /* Social swatches (Me suivre, design 3c) */
+  --social-threads: #221a14;
+  --social-letterboxd: #2b6a4a;
+  --social-babelio: #9a3b2a;
+  --social-linkedin: #1f5079;
+
   /* Interactive helpers */
   --nav-hover: #efe6d6;     /* nav item hover surface */
   --nav-idle: #6c5a46;      /* idle nav link text */
 
   /* Gradients */
   --dark-grad: linear-gradient(120deg, #3f2e20, #5a4130); /* newsletter blocks */
+  --portrait-grad: linear-gradient(150deg, #c9895a, #8f5230); /* À propos portrait placeholder */
 
   /* Fonts */
   --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;

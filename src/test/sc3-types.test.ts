@@ -12,6 +12,8 @@ describe('SC-3 mock types', () => {
       cover: 'linear-gradient(150deg,#7a8c5a,#4f6138)',
       date: '12 juin 2026',
       author: 'Marie-Zoé',
+      likes: 28,
+      comments: 3,
     };
     expect(article.medium).toBe('livre');
     expectTypeOf<Medium>().toEqualTypeOf<'film' | 'serie' | 'livre' | 'doc'>();

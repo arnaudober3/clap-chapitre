@@ -27,7 +27,7 @@ Read both before implementing.
 | `/films` `/series` `/livres` `/docs` | `HomePage` | medium filter routes — reuse home feed for now |
 | `/article/:id` | `ArticlePage` | **placeholder only** — real article view designed before subtask 03 |
 | `/bilan-culturel` | `BilanCulturelPage` | |
-| `/archives` | `ArchivesPage` | |
+| `/archives` | `BilanCulturelArchivesPage` | |
 | `/a-propos` | `AProposPage` | |
 | `/me-suivre` | `MeSuivrePage` | |
 

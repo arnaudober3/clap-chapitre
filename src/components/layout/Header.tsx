@@ -22,6 +22,27 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
   return isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink;
 }
 
+function tabClass({ isActive }: { isActive: boolean }) {
+  return isActive ? `${styles.mediumTab} ${styles.mediumTabActive}` : styles.mediumTab;
+}
+
+/**
+ * Mobile-only medium tab strip below the top bar. Reuses primaryNav so the tab
+ * matching the current route gets the active treatment (via NavLink). Hidden at
+ * desktop widths where the left rail already carries the medium nav.
+ */
+function MediumTabs() {
+  return (
+    <nav className={styles.mediumTabs} aria-label="Médias">
+      {primaryNav.map((item) => (
+        <NavLink key={item.to} to={item.to} className={tabClass}>
+          {item.label}
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
+
 /** A NavLink that shows the active gold dot when current. */
 function NavItemLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
   return (
@@ -80,6 +101,9 @@ export default function Header() {
         </Link>
         <span className={styles.topbarSpacer} aria-hidden="true" />
       </div>
+
+      {/* Mobile medium tab strip (below the top bar; hidden on desktop) */}
+      <MediumTabs />
 
       {/* Mobile drawer overlay */}
       <div className={drawerOpen ? `${styles.drawerRoot} ${styles.drawerOpen}` : styles.drawerRoot}>
