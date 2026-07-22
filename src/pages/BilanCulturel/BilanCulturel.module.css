@@ -419,6 +419,13 @@
   font-family: var(--font-serif), sans-serif;
   font-size: 16px;
   line-height: 1;
+  /* Optically centre the capital glyph. The serif font's asymmetric leading
+     makes flex centre the line box, not the letter, so it rides high. Trimming
+     the line box to the cap-height/baseline edges lets flex centre the actual
+     letter block — metric-based, so it holds for any initial. The 2px top
+     padding is the residual optical bias (border-box keeps the circle 38px). */
+  text-box: trim-both cap alphabetic;
+  padding-top: 2px;
 }
 
 .commentBody {

@@ -19,7 +19,7 @@ function renderFeature() {
 }
 
 describe('MS-2 newsletter feature', () => {
-  it('renders the eyebrow, title, copy and the signup form', () => {
+  it('renders the eyebrow, title, copy and the signu˝p form', () => {
     renderFeature();
     expect(screen.getByText(content.eyebrow)).toBeInTheDocument();
     expect(screen.getByText(content.title)).toBeInTheDocument();
