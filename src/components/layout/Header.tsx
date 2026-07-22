@@ -1,7 +1,14 @@
 import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { primaryNav, secondaryNav, drawerNav, type NavItem } from './nav';
 import styles from './Layout.module.css';
+
+/**
+ * Feed routes = the home route plus each medium route (derived from primaryNav so
+ * the list never drifts from the nav model). The mobile medium tab strip is the
+ * feed's switcher, so it renders only on these paths.
+ */
+const feedRoutes = new Set<string>(['/', ...primaryNav.map((item) => item.to)]);
 
 /** Brand wordmark: "Clap et chapitre" with an italic terracotta "et". */
 function Brand({ stacked, onNavigate }: { stacked?: boolean; onNavigate?: () => void }) {
@@ -88,6 +95,8 @@ function DrawerNav({ onNavigate }: { onNavigate?: () => void }) {
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const closeDrawer = () => setDrawerOpen(false);
+  const { pathname } = useLocation();
+  const isFeedRoute = feedRoutes.has(pathname);
 
   return (
     <header className={styles.header}>
@@ -116,8 +125,8 @@ export default function Header() {
         <span className={styles.topbarSpacer} aria-hidden="true" />
       </div>
 
-      {/* Mobile medium tab strip (below the top bar; hidden on desktop) */}
-      <MediumTabs />
+      {/* Mobile medium tab strip (feed routes only; hidden on desktop) */}
+      {isFeedRoute && <MediumTabs />}
 
       {/* Mobile drawer overlay */}
       <div className={drawerOpen ? `${styles.drawerRoot} ${styles.drawerOpen}` : styles.drawerRoot}>

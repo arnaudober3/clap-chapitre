@@ -58,6 +58,23 @@ describe('HM-5 mobile medium tab strip', () => {
     expect(strip.getByRole('link', { name: 'Films' })).not.toHaveAttribute('aria-current', 'page');
   });
 
+  it('shows the medium tab strip on every feed route', () => {
+    for (const [, to] of routes) {
+      const { container } = renderAt(to);
+      const strip = within(tabStrip(container));
+      for (const [label, href] of routes) {
+        expect(strip.getByRole('link', { name: label })).toHaveAttribute('href', href);
+      }
+    }
+  });
+
+  it('hides the medium tab strip off the feed', () => {
+    for (const path of ['/bilan-culturel', '/a-propos', '/me-suivre']) {
+      const { container } = renderAt(path);
+      expect(container.querySelector('header > nav[aria-label="Médias"]')).toBeNull();
+    }
+  });
+
   it('styles the medium tabs as underline tabs, not filled pills', () => {
     // .mediumTab (idle): plain muted text, no pill radius or filled fill.
     const idle = ruleBlock(/\.mediumTab\s*\{([^}]*)\}/);
