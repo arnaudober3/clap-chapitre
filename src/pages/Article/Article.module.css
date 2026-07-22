@@ -212,6 +212,13 @@
   font-family: var(--font-serif), sans-serif;
   font-size: 12px;
   letter-spacing: 0.04em;
+  /* Optically centre the capital glyph. The serif font's asymmetric leading
+     makes flex centre the line box, not the letter, so it rides high. Trimming
+     the line box to the cap-height/baseline edges lets flex centre the actual
+     letter block — metric-based, so it holds for any initial. The 2px top
+     padding is the residual optical bias (border-box keeps the circle 38px). */
+  text-box: trim-both cap alphabetic;
+  padding-top: 2px;
 }
 
 .bylineText {
@@ -629,6 +636,13 @@
   font-family: var(--font-serif), sans-serif;
   font-size: 14px;
   line-height: 1;
+  /* Optically centre the capital glyph. The serif font's asymmetric leading
+     makes flex centre the line box, not the letter, so it rides high. Trimming
+     the line box to the cap-height/baseline edges lets flex centre the actual
+     letter block — metric-based, so it holds for any initial. The 2px top
+     padding is the residual optical bias (border-box keeps the circle 38px). */
+  text-box: trim-both cap alphabetic;
+  padding-top: 2px;
 }
 
 .commentAvatarAuthor {
@@ -720,8 +734,8 @@
     display: grid;
     grid-template-columns: 250px minmax(0, 660px);
     grid-template-areas:
-      'cover headline'
-      'cover foot';
+      "cover headline"
+      "cover foot";
     /* The cover spans both rows and is taller than the headline; without a
        pinned first row the leftover height is split between the two auto rows
        and the foot drifts down the cover instead of sitting under the H1. */
@@ -883,5 +897,12 @@
     width: 36px;
     height: 36px;
     font-size: 15px;
+    /* Optically centre the capital glyph. The serif font's asymmetric leading
+     makes flex centre the line box, not the letter, so it rides high. Trimming
+     the line box to the cap-height/baseline edges lets flex centre the actual
+     letter block — metric-based, so it holds for any initial. The 2px top
+     padding is the residual optical bias (border-box keeps the circle 38px). */
+  text-box: trim-both cap alphabetic;
+  padding-top: 2px;
   }
 }
