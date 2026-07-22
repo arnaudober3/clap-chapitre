@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { primaryNav, secondaryNav, type NavItem } from './nav';
+import { primaryNav, secondaryNav, drawerNav, type NavItem } from './nav';
 import styles from './Layout.module.css';
 
 /** Brand wordmark: "Clap et chapitre" with an italic terracotta "et". */
@@ -71,6 +71,20 @@ function NavGroups({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+/**
+ * Mobile drawer nav: a single flat list (Accueil + standalone pages, per design
+ * frame 3a). No media links and no divider — the mediums live in the tab strip.
+ */
+function DrawerNav({ onNavigate }: { onNavigate?: () => void }) {
+  return (
+    <nav className={styles.navGroup} aria-label="Menu">
+      {drawerNav.map((item) => (
+        <NavItemLink key={item.to} item={item} onNavigate={onNavigate} />
+      ))}
+    </nav>
+  );
+}
+
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const closeDrawer = () => setDrawerOpen(false);
@@ -126,7 +140,7 @@ export default function Header() {
               ✕
             </button>
           </div>
-          <NavGroups onNavigate={closeDrawer} />
+          <DrawerNav onNavigate={closeDrawer} />
         </div>
       </div>
     </header>
