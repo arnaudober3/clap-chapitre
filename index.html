@@ -3,7 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>Clap et chapitre</title>
+    <script>
+      // Anti-FOUC: apply the persisted theme on <html> before first paint.
+      (function () {
+        try {
+          var pref = localStorage.getItem('cc-theme');
+          var dark =
+            pref === 'dark' ||
+            ((pref === 'auto' || !pref) &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute(
+            'data-theme',
+            dark ? 'dark' : 'light',
+          );
+        } catch (e) {}
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

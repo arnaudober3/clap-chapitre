@@ -135,6 +135,12 @@
   padding: 0 28px 26px;
 }
 
+/* Theme toggle anchored to the bottom of the sticky rail. */
+.railFoot {
+  margin-top: auto;
+  padding: 24px 16px 0;
+}
+
 /* ---- Mobile top bar ---- */
 .topbar {
   display: flex;
@@ -252,6 +258,12 @@
   align-items: flex-start;
   justify-content: space-between;
   padding: 0 22px 22px;
+}
+
+/* Theme toggle anchored to the bottom of the mobile drawer. */
+.drawerFoot {
+  margin-top: auto;
+  padding: 24px 22px 0;
 }
 
 .close {
