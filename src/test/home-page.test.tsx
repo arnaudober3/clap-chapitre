@@ -70,9 +70,12 @@ describe('HM-6 HomePage', () => {
       </MemoryRouter>,
     );
     expect(screen.queryByTestId('home-hero')).not.toBeInTheDocument();
+    // The empty message appears exactly once: the recent grid is hidden when
+    // there are no items, so it no longer duplicates the hero's empty state.
     expect(
-      screen.getAllByText('Aucun avis pour ce médium pour l’instant.').length,
-    ).toBeGreaterThan(0);
+      screen.getAllByText('Aucun avis pour ce médium pour l’instant.'),
+    ).toHaveLength(1);
+    expect(screen.queryByText('Avis récents')).not.toBeInTheDocument();
     vi.doUnmock('../mock/home');
     vi.resetModules();
   });
