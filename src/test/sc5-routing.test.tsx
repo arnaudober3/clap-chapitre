@@ -109,7 +109,13 @@ describe('SC-5 routing', () => {
 
   it('renders NotFound for an unknown route', () => {
     renderAt('/n-existe-pas');
-    expect(screen.getByRole('heading', { name: /Page introuvable/ })).toBeInTheDocument();
+    const page = screen.getByTestId('not-found-page');
+    expect(
+      within(page).getByRole('heading', { name: /Ce chapitre reste à écrire/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(page).getByRole('link', { name: /Retour à l'accueil/ }),
+    ).toBeInTheDocument();
   });
 
   it('marks the Home page with the "livre" medium on /livres', () => {

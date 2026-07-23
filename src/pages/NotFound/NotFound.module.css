@@ -1,0 +1,189 @@
+/* 404 "affiche" — design Salon 5b (desktop) / 5c (mobile).
+   Tokens only — no raw Salon hex values. Mobile-first: 5c sizes are the base,
+   the lg breakpoint (1024px) upgrades to 5b. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 36px 6px 40px;
+}
+
+/* ---- Missing-cover poster ---- */
+.poster {
+  position: relative;
+  overflow: hidden;
+  width: 172px;
+  aspect-ratio: 2 / 3;
+  border-radius: 13px;
+  border: 2px dashed var(--border-pill);
+  background: var(--surface);
+  box-shadow: 0 16px 40px -20px rgba(60, 40, 20, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+}
+
+.code {
+  font-family: var(--font-serif), serif;
+  font-weight: 500;
+  font-size: 64px;
+  line-height: 1;
+  color: var(--gold);
+}
+
+.posterLabel {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* Film-strip perforations hugging each vertical edge. */
+.filmstrip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 13px;
+  background: repeating-linear-gradient(var(--ink) 0 8px, transparent 8px 18px);
+  opacity: 0.12;
+}
+
+.filmstripRight {
+  left: auto;
+  right: 0;
+}
+
+/* ---- Copy ---- */
+.title {
+  font-family: var(--font-serif), serif;
+  font-weight: 500;
+  font-size: 29px;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 34px 0 10px;
+}
+
+.lede {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0 0 26px;
+}
+
+/* ---- Actions ---- */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.primary,
+.secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px;
+  border-radius: var(--radius-card);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.primary {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.primary:hover {
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex: none;
+}
+
+.secondary {
+  border: 1px solid var(--border-pill);
+  color: var(--ink);
+}
+
+.secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* ---- Desktop (lg) — 5b sizes ---- */
+@media (min-width: 1024px) {
+  .page {
+    padding: 56px 20px 64px;
+  }
+
+  .poster {
+    width: 230px;
+    border-radius: 14px;
+    gap: 16px;
+    box-shadow: 0 20px 50px -22px rgba(60, 40, 20, 0.35);
+  }
+
+  .code {
+    font-size: 88px;
+  }
+
+  .posterLabel {
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+  }
+
+  .filmstrip {
+    width: 16px;
+    background: repeating-linear-gradient(var(--ink) 0 10px, transparent 10px 22px);
+  }
+
+  .title {
+    font-size: 44px;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 44px 0 12px;
+  }
+
+  .lede {
+    font-size: 18px;
+    max-width: 430px;
+    margin: 0 0 32px;
+  }
+
+  .actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: auto;
+    max-width: none;
+    gap: 12px;
+  }
+
+  .primary,
+  .secondary {
+    width: auto;
+    padding: 13px 24px;
+  }
+}
