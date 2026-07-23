@@ -20,6 +20,13 @@
   --gold: #d8a24a;          /* CTA buttons, underline mark, active dot */
   --gold-hover: #e6b45f;    /* CTA hover */
 
+  /* Fixed foregrounds — constant across themes (NOT overridden in dark) because
+     they sit on always-dark/always-gold surfaces (the --dark-grad newsletter
+     card, the gold CTA button) whose colors do not follow the page theme. */
+  --on-dark: #fdf8f0;       /* title/text on the always-dark card */
+  --on-dark-muted: #f0e6d4; /* muted copy on the always-dark card */
+  --on-gold: #3f2e20;       /* text on the gold CTA button */
+
   /* Borders */
   --border: #e9dfce;        /* hairline borders/dividers */
   --border-2: #ece1cf;      /* card borders */
@@ -51,7 +58,7 @@
 
   /* Shell / layout sizes */
   --shell-max: 1200px;      /* desktop content shell */
-  --rail-width: 224px;      /* desktop left rail */
+  --rail-width: 240px;      /* desktop left rail */
   --main-pad: 40px;         /* main content padding (desktop) */
   --drawer-width: 75%;      /* mobile drawer overlay width */
   --scrim: rgba(36, 26, 18, 0.5); /* mobile drawer scrim */
@@ -66,4 +73,49 @@
   --bp-sm: 480px;
   --bp-md: 768px;
   --bp-lg: 1024px;
+}
+
+/*
+ * Salon dark — warm brown night palette. Only color tokens are overridden;
+ * every component already reads them via var(--…), so this single block flips
+ * the whole app. `data-theme="dark"` is set on <html> by the ThemeProvider
+ * (and by the anti-FOUC script in index.html) — `auto` resolves to a concrete
+ * light/dark value in JS, so no prefers-color-scheme media query is needed here.
+ */
+:root[data-theme='dark'] {
+  /* Surfaces & text */
+  --bg: #1c1712;            /* page background (brun nuit, not pure black) */
+  --surface: #26201a;       /* rail, cards, panels, inputs */
+  --surface-alt: #2f2820;   /* hero-band gradient end */
+  --ink: #f2e8d8;           /* primary text / active nav bg (cream) */
+  --body: #d8c9b4;          /* body copy */
+  --muted: #c49a6f;         /* italic subheads */
+  --muted-2: #b39d84;       /* secondary meta */
+  --faint: #8f7f6c;         /* metadata, input placeholder */
+
+  /* Accents — accent brightened for contrast; gold kept deeper/richer so the
+     gold CTA doesn't read as washed-out/too-light on the dark card. */
+  --accent: #e0714a;        /* eyebrows, italic "et", links, active accent */
+  --gold: #cd9a45;          /* CTA buttons, underline mark, active dot */
+  --gold-hover: #dbaa55;    /* CTA hover */
+
+  /* Borders */
+  --border: #3a3128;        /* hairline borders/dividers */
+  --border-2: #423930;      /* card borders */
+  --border-pill: #4a4034;   /* pill/chip borders */
+
+  /* Medium (category) accents — brightened for dark */
+  --medium-livre: #92a86a;
+  --medium-serie: #6fa0b0;
+  --medium-docs: #b884a6;
+  --medium-film: #e0714a;
+
+  /* Interactive helpers */
+  --nav-hover: #2f2820;     /* nav item hover surface */
+  --nav-idle: #b3a288;      /* idle nav link text */
+
+  /* Gradients — the always-dark newsletter card is lifted just above --bg so
+     it stays distinct from the page on a dark background. */
+  --dark-grad: linear-gradient(120deg, #2c2318, #3a2c1e);
+  --scrim: rgba(0, 0, 0, 0.6); /* mobile drawer scrim */
 }

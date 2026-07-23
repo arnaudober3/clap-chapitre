@@ -1,7 +1,15 @@
 import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { primaryNav, secondaryNav, type NavItem } from './nav';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { primaryNav, secondaryNav, drawerNav, type NavItem } from './nav';
+import { ThemeToggle } from '../ui';
 import styles from './Layout.module.css';
+
+/**
+ * Feed routes = the home route plus each medium route (derived from primaryNav so
+ * the list never drifts from the nav model). The mobile medium tab strip is the
+ * feed's switcher, so it renders only on these paths.
+ */
+const feedRoutes = new Set<string>(['/', ...primaryNav.map((item) => item.to)]);
 
 /** Brand wordmark: "Clap et chapitre" with an italic terracotta "et". */
 function Brand({ stacked, onNavigate }: { stacked?: boolean; onNavigate?: () => void }) {
@@ -71,9 +79,25 @@ function NavGroups({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+/**
+ * Mobile drawer nav: a single flat list (Accueil + standalone pages, per design
+ * frame 3a). No media links and no divider — the mediums live in the tab strip.
+ */
+function DrawerNav({ onNavigate }: { onNavigate?: () => void }) {
+  return (
+    <nav className={styles.navGroup} aria-label="Menu">
+      {drawerNav.map((item) => (
+        <NavItemLink key={item.to} item={item} onNavigate={onNavigate} />
+      ))}
+    </nav>
+  );
+}
+
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const closeDrawer = () => setDrawerOpen(false);
+  const { pathname } = useLocation();
+  const isFeedRoute = feedRoutes.has(pathname);
 
   return (
     <header className={styles.header}>
@@ -83,6 +107,9 @@ export default function Header() {
           <Brand stacked />
         </div>
         <NavGroups />
+        <div className={styles.railFoot}>
+          <ThemeToggle />
+        </div>
       </aside>
 
       {/* Mobile top bar */}
@@ -102,8 +129,8 @@ export default function Header() {
         <span className={styles.topbarSpacer} aria-hidden="true" />
       </div>
 
-      {/* Mobile medium tab strip (below the top bar; hidden on desktop) */}
-      <MediumTabs />
+      {/* Mobile medium tab strip (feed routes only; hidden on desktop) */}
+      {isFeedRoute && <MediumTabs />}
 
       {/* Mobile drawer overlay */}
       <div className={drawerOpen ? `${styles.drawerRoot} ${styles.drawerOpen}` : styles.drawerRoot}>
@@ -126,7 +153,10 @@ export default function Header() {
               ✕
             </button>
           </div>
-          <NavGroups onNavigate={closeDrawer} />
+          <DrawerNav onNavigate={closeDrawer} />
+          <div className={styles.drawerFoot}>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </header>

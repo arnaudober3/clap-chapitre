@@ -1,0 +1,45 @@
+/* Salon segmented theme control. Echoes the nav's active language (filled --ink
+   segment) inside a --surface track. Colors via var(--…) only. */
+
+.toggle {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+}
+
+.option {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--nav-idle);
+  white-space: nowrap;
+}
+
+.option:hover {
+  color: var(--ink);
+  background: var(--nav-hover);
+}
+
+.optionActive,
+.optionActive:hover {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.glyph {
+  font-size: 12px;
+  line-height: 1;
+}

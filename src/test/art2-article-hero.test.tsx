@@ -153,7 +153,7 @@ describe('ART-2 responsive rules', () => {
     // leftover height and pushes the foot down its middle.
     const heroMain = ruleOf(desktopCss, '.heroMain');
     expect(heroMain).toMatch(/grid-template-rows:\s*auto 1fr/);
-    expect(heroMain).toMatch(/'cover foot'/);
+    expect(heroMain).toMatch(/["']cover foot["']/);
     expect(ruleOf(desktopCss, '.heroFoot')).toMatch(/grid-area:\s*foot/);
   });
 });

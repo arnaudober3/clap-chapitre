@@ -37,7 +37,7 @@ export default function HomePage() {
       ) : (
         <p className={styles.empty}>Aucun avis pour ce médium pour l’instant.</p>
       )}
-      <RecentAvisGrid items={recent} medium={medium} />
+      {recent.length > 0 && <RecentAvisGrid items={recent} medium={medium} />}
       <Newsletter />
     </section>
   );
