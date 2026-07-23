@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, matchPath, useLocation, useResolvedPath } from 'react-router-dom';
 import { primaryNav, secondaryNav, drawerNav, type NavItem } from './nav';
+import { articleById } from '../../mock/articles';
+import { MEDIUM_TO_SEGMENT } from '../../media';
 import { ThemeToggle } from '../ui';
 import styles from './Layout.module.css';
 
@@ -30,6 +32,19 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
   return isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink;
 }
 
+/**
+ * On the article view (`/article/:id`) no medium feed route matches the URL, so
+ * the rail would lose its selection. Resolve the article's medium to its feed
+ * route (e.g. a film → `/films`) so that nav item can be forced active instead.
+ */
+function activeFeedRoute(pathname: string): string | undefined {
+  const match = matchPath('/article/:id', pathname);
+  if (!match?.params.id) return undefined;
+  const article = articleById(match.params.id);
+  
+  return article ? `/${MEDIUM_TO_SEGMENT[article.medium]}` : undefined;
+}
+
 function tabClass({ isActive }: { isActive: boolean }) {
   return isActive ? `${styles.mediumTab} ${styles.mediumTabActive}` : styles.mediumTab;
 }
@@ -51,22 +66,55 @@ function MediumTabs() {
   );
 }
 
-/** A NavLink that shows the active gold dot when current. */
-function NavItemLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
+/**
+ * A NavLink that shows the active gold dot when current. `forceActive` applies
+ * the active treatment even when the URL doesn't match (e.g. the medium feed on
+ * an article view), so the rail keeps a selection off the feed routes.
+ */
+function NavItemLink({
+  item,
+  onNavigate,
+  forceActive,
+}: {
+  item: NavItem;
+  onNavigate?: () => void;
+  forceActive?: boolean;
+}) {
+  // Replicate NavLink's matching (exact for '/', prefix otherwise) so we can OR in
+  // `forceActive` — NavLink hardwires aria-current to its own URL match and would
+  // drop a forced selection.
+  const { pathname } = useLocation();
+  const { pathname: toPathname } = useResolvedPath(item.to);
+  const end = item.to === '/';
+  const here = pathname.toLowerCase();
+  const target = toPathname.toLowerCase();
+  const urlActive = here === target || (!end && here.startsWith(`${target}/`));
+  const isActive = urlActive || Boolean(forceActive);
+
   return (
-    <NavLink to={item.to} className={navLinkClass} onClick={onNavigate} end={item.to === '/'}>
+    <Link
+      to={item.to}
+      className={navLinkClass({ isActive })}
+      aria-current={isActive ? 'page' : undefined}
+      onClick={onNavigate}
+    >
       <span className={styles.navDot} aria-hidden="true" />
       {item.label}
-    </NavLink>
+    </Link>
   );
 }
 
-function NavGroups({ onNavigate }: { onNavigate?: () => void }) {
+function NavGroups({ onNavigate, activeFeed }: { onNavigate?: () => void; activeFeed?: string }) {
   return (
     <>
       <nav className={styles.navGroup} aria-label="Médias">
         {primaryNav.map((item) => (
-          <NavItemLink key={item.to} item={item} onNavigate={onNavigate} />
+          <NavItemLink
+            key={item.to}
+            item={item}
+            onNavigate={onNavigate}
+            forceActive={item.to === activeFeed}
+          />
         ))}
       </nav>
       <div className={styles.navDivider} />
@@ -98,6 +146,7 @@ export default function Header() {
   const closeDrawer = () => setDrawerOpen(false);
   const { pathname } = useLocation();
   const isFeedRoute = feedRoutes.has(pathname);
+  const activeFeed = activeFeedRoute(pathname);
 
   return (
     <header className={styles.header}>
@@ -106,7 +155,7 @@ export default function Header() {
         <div className={styles.railBrand}>
           <Brand stacked />
         </div>
-        <NavGroups />
+        <NavGroups activeFeed={activeFeed} />
         <div className={styles.railFoot}>
           <ThemeToggle />
         </div>
