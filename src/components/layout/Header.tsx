@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { primaryNav, secondaryNav, drawerNav, type NavItem } from './nav';
+import { ThemeToggle } from '../ui';
 import styles from './Layout.module.css';
 
 /**
@@ -106,6 +107,9 @@ export default function Header() {
           <Brand stacked />
         </div>
         <NavGroups />
+        <div className={styles.railFoot}>
+          <ThemeToggle />
+        </div>
       </aside>
 
       {/* Mobile top bar */}
@@ -150,6 +154,9 @@ export default function Header() {
             </button>
           </div>
           <DrawerNav onNavigate={closeDrawer} />
+          <div className={styles.drawerFoot}>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </header>

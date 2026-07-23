@@ -15,7 +15,7 @@ describe('SC-2 design tokens', () => {
   });
 
   it('tokens.css defines the shell/rail sizes and breakpoints', () => {
-    expect(tokens).toMatch(/--rail-width:\s*224px/);
+    expect(tokens).toMatch(/--rail-width:\s*240px/);
     expect(tokens).toMatch(/--shell-max/);
     expect(tokens).toMatch(/--bp-sm/);
     expect(tokens).toMatch(/--bp-md/);
