@@ -98,7 +98,6 @@ function NavItemLink({
       aria-current={isActive ? 'page' : undefined}
       onClick={onNavigate}
     >
-      <span className={styles.navDot} aria-hidden="true" />
       {item.label}
     </Link>
   );

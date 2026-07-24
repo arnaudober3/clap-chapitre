@@ -53,7 +53,6 @@ function AdminNavLink({
       aria-current={isActive ? "page" : undefined}
       onClick={onNavigate}
     >
-      <span className={styles.navDot} aria-hidden="true" />
       <span className={styles.navLabel}>{item.label}</span>
       {item.badge !== undefined && (
         <span
