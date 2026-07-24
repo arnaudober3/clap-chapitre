@@ -162,6 +162,10 @@ export default function Header() {
 
       {/* Mobile top bar */}
       <div className={styles.topbar}>
+        <Link to="/" className={styles.topbarWordmark}>
+          Clap <span className={styles.brandEt}>et</span> chapitre
+        </Link>
+        <span className={styles.topbarSpacer} aria-hidden="true" />
         <button
           type="button"
           className={styles.hamburger}
@@ -171,10 +175,6 @@ export default function Header() {
         >
           ☰
         </button>
-        <Link to="/" className={styles.topbarWordmark}>
-          Clap <span className={styles.brandEt}>et</span> chapitre
-        </Link>
-        <span className={styles.topbarSpacer} aria-hidden="true" />
       </div>
 
       {/* Mobile medium tab strip (feed routes only; hidden on desktop) */}

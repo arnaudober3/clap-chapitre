@@ -62,7 +62,6 @@
   line-height: 1;
   color: var(--ink);
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
   text-box: trim-both cap alphabetic;
 }
@@ -207,7 +206,7 @@
 }
 
 .hamburger {
-  font-size: 20px;
+  font-size: 21px;
   line-height: 1;
   color: var(--nav-idle);
   background: none;
@@ -304,5 +303,9 @@
 
   .main {
     padding: 22px 28px 26px;
+  }
+
+  .foot {
+    padding: 24px 16px 0;
   }
 }
