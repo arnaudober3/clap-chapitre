@@ -9,6 +9,7 @@
   --bg: #fdf8f0;            /* page background (cream) */
   --surface: #f6efe3;       /* rail, cards, panels, inputs */
   --surface-alt: #f0e6d4;   /* hero-band gradient end */
+  --surface-card: #fff;     /* white KPI/leaderboard cards (admin dashboard) */
   --ink: #3f2e20;           /* primary text / active nav bg (dark brown) */
   --body: #5c4a38;          /* body copy */
   --muted: #8a6a4c;         /* italic subheads */
@@ -19,6 +20,8 @@
   --accent: #b0502f;        /* eyebrows, the italic "et", links, active accent */
   --gold: #d8a24a;          /* CTA buttons, underline mark, active dot */
   --gold-hover: #e6b45f;    /* CTA hover */
+  --positive: #6a7a45;      /* positive KPI delta (↑ green, admin dashboard) */
+  --negative: #a8412b;      /* negative KPI delta (↓ terracotta, admin dashboard) */
 
   /* Fixed foregrounds — constant across themes (NOT overridden in dark) because
      they sit on always-dark/always-gold surfaces (the --dark-grad newsletter
@@ -87,6 +90,7 @@
   --bg: #1c1712;            /* page background (brun nuit, not pure black) */
   --surface: #26201a;       /* rail, cards, panels, inputs */
   --surface-alt: #2f2820;   /* hero-band gradient end */
+  --surface-card: #26201a;  /* admin dashboard cards (aligned with --surface in dark) */
   --ink: #f2e8d8;           /* primary text / active nav bg (cream) */
   --body: #d8c9b4;          /* body copy */
   --muted: #c49a6f;         /* italic subheads */
@@ -98,6 +102,8 @@
   --accent: #e0714a;        /* eyebrows, italic "et", links, active accent */
   --gold: #cd9a45;          /* CTA buttons, underline mark, active dot */
   --gold-hover: #dbaa55;    /* CTA hover */
+  --positive: #92a86a;      /* positive KPI delta (brightened for dark) */
+  --negative: #d0705a;      /* negative KPI delta (brightened for dark) */
 
   /* Borders */
   --border: #3a3128;        /* hairline borders/dividers */

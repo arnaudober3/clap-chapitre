@@ -1,0 +1,37 @@
+.page {
+  display: flex;
+  min-height: 60vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  text-align: center;
+  max-width: 420px;
+  padding: 32px 28px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-card);
+}
+
+.kicker {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+}
+
+.title {
+  font-family: var(--font-serif), serif;
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 10px 0 8px;
+}
+
+.note {
+  font-size: 13.5px;
+  color: var(--muted-2);
+  margin: 0;
+}
