@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { Article } from '../../mock/types';
+import type { PublishedArticle } from '../../mock/types';
 import { relatedArticles } from '../../mock/articles';
 import { MEDIUM_LABEL, MEDIUM_ACCENT } from './ArticleHero';
 import styles from './Article.module.css';
@@ -13,7 +13,7 @@ import styles from './Article.module.css';
  * Two columns on desktop, stacked full-width rows on mobile. When nothing
  * resolves, the whole block — eyebrow included — is omitted.
  */
-export default function RelatedGrid({ article }: { article: Article }) {
+export default function RelatedGrid({ article }: { article: PublishedArticle }) {
   const related = relatedArticles(article);
   if (related.length === 0) return null;
 

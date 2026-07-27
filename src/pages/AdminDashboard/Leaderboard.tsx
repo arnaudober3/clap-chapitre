@@ -1,5 +1,5 @@
 import { leaderboardRanked, type LeaderboardKind } from '../../mock/dashboard';
-import { frNumber } from './format';
+import { frNumber } from '../../format';
 import styles from './AdminDashboard.module.css';
 
 /** Kind → accent color token (mirrors MEDIUM_ACCENT in ReviewCard); bilan = gold. */

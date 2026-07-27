@@ -61,11 +61,11 @@ describe('TB-5 dashboard actions', () => {
     renderApp('/admin/articles/nouveau');
     const page = screen.getByTestId('admin-new-article-page');
     expect(page).toBeInTheDocument();
-    // Prefilled title + category chip pressed.
-    expect(within(page).getByLabelText('Titre')).toHaveValue('Un dernier été');
+    // A real creation form: empty title, no category picked yet.
+    expect(within(page).getByLabelText('Titre')).toHaveValue('');
     expect(within(page).getByRole('button', { name: 'Film' })).toHaveAttribute(
       'aria-pressed',
-      'true',
+      'false',
     );
     // The rail keeps "Articles" selected on the deeper route.
     const articlesLinks = screen.getAllByRole('link', { name: /^Articles/ });

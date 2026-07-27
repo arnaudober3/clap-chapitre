@@ -1,5 +1,5 @@
 import { kpis } from '../../mock/dashboard';
-import { frNumber } from './format';
+import { frNumber } from '../../format';
 import styles from './AdminDashboard.module.css';
 
 /**

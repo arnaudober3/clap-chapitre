@@ -37,69 +37,7 @@
   align-items: flex-start;
 }
 
-/* ---- Period dropdown ---- */
-.period {
-  position: relative;
-}
-
-.periodPill {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  background: var(--surface-card);
-  border: 1px solid var(--border-2);
-  border-radius: 8px;
-  padding: 8px 13px;
-  font-size: 12.5px;
-  color: var(--nav-idle);
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.periodPill:hover {
-  border-color: var(--border-pill);
-}
-
-.periodMenu {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  z-index: 30;
-  min-width: 180px;
-  margin: 0;
-  padding: 5px;
-  list-style: none;
-  background: var(--surface-card);
-  border: 1px solid var(--border-2);
-  border-radius: 10px;
-  box-shadow: 0 14px 34px -12px rgba(60, 40, 20, 0.3);
-}
-
-.periodOption {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  border-radius: 7px;
-  padding: 8px 11px;
-  font-size: 12.5px;
-  color: var(--nav-idle);
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.periodOption:hover {
-  background: var(--nav-hover);
-  color: var(--ink);
-}
-
-.periodOptionActive,
-.periodOptionActive:hover {
-  background: var(--ink);
-  color: var(--bg);
-  font-weight: 600;
-}
+/* The period dropdown now comes from the shared <AdminSelect> primitive. */
 
 .newButton {
   display: flex;
@@ -416,6 +354,8 @@
   cursor: pointer;
   z-index: 40;
   text-decoration: none;
+  text-box: trim-both cap alphabetic;
+  padding-bottom: 3px;
 }
 
 .fab:hover {

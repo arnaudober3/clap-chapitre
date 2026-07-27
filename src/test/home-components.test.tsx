@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import type { Article } from '../mock/types';
+import type { PublishedArticle } from '../mock/types';
 import Hero from '../pages/Home/Hero';
 import RecentAvisGrid from '../pages/Home/RecentAvisGrid.tsx';
 import Newsletter from '../pages/Home/Newsletter';
@@ -11,7 +11,7 @@ function wrap(ui: React.ReactElement) {
   return render(<MemoryRouter>{ui}</MemoryRouter>);
 }
 
-const base: Article = {
+const base: PublishedArticle = {
   id: 'un-dernier-ete',
   title: 'Un dernier été',
   medium: 'film',
@@ -21,11 +21,14 @@ const base: Article = {
   author: 'Marie-Zoé',
   likes: 128,
   comments: 24,
+  status: 'published',
+  publishedAt: '2026-06-12',
+  views: 420,
 };
 
 describe('HM-2 Hero', () => {
   it('renders title, hook, the callout and the Lire l’avis link when hook+forThoseWho are present', () => {
-    const item: Article = {
+    const item: PublishedArticle = {
       ...base,
       hook: 'Et si l’été n’était pas le dernier ?',
       forThoseWho: 'Pour ceux qui aiment les fins ouvertes.',
@@ -55,7 +58,7 @@ describe('HM-2 Hero', () => {
 });
 
 describe('HM-3 RecentGrid', () => {
-  const three: Article[] = [
+  const three: PublishedArticle[] = [
     { ...base, id: 'a', title: 'Titre A' },
     { ...base, id: 'b', title: 'Titre B', medium: 'livre' },
     { ...base, id: 'c', title: 'Titre C', medium: 'serie' },

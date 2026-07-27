@@ -5,7 +5,9 @@ export { default as SectionHeader } from './SectionHeader';
 export { default as ReviewCard } from './ReviewCard';
 export { default as NewsletterBlock } from './NewsletterBlock';
 export { default as ThemeToggle } from './ThemeToggle';
+export { default as AdminSelect } from './AdminSelect';
 export type {
   NewsletterBlockProps,
   NewsletterBlockVariant,
 } from './NewsletterBlock';
+export type { AdminSelectOption, AdminSelectProps } from './AdminSelect';

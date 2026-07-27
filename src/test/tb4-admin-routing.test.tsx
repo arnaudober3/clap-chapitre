@@ -20,11 +20,11 @@ describe('TB-4 admin routing', () => {
     expect(screen.queryByText('et')).toBeNull();
   });
 
-  it('lands non-dashboard admin sections on the shared placeholder', () => {
-    renderAt('/admin/articles');
+  it('lands still-unbuilt admin sections on the shared placeholder', () => {
+    renderAt('/admin/bilans');
     const page = screen.getByTestId('admin-placeholder-page');
     expect(page).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Articles');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Bilans culturels');
   });
 
   it('routes unknown /admin/** paths to the placeholder, not the public 404', () => {

@@ -6,7 +6,7 @@
  * author is Marie-Zoé. Selectors are pure — no React, no module-level mutable
  * state. Grouping-by-medium is a page concern, not a selector.
  */
-import type { Article } from './types';
+import type { PublishedArticle } from './types';
 
 /** A month's cultural review, grouped as an "article" on the Bilan page. */
 export interface MonthlyBilan {
@@ -15,7 +15,7 @@ export interface MonthlyBilan {
   month: number; // 1–12
   monthLabel: string; // 'Juin'
   mood?: string; // "l'humeur du mois" — rendered by the Bilan page
-  avis: Article[]; // the month's reviews (the page groups them by medium)
+  avis: PublishedArticle[]; // the month's reviews (the page groups them by medium)
 }
 
 /**
@@ -42,6 +42,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 88,
         comments: 15,
+        status: 'published',
+        views: 1180,
+        publishedAt: '2026-06-27',
         hook: 'Peut-on se réchauffer à une lumière qui vient du froid ?',
         forThoseWho:
           'Pour ceux qui aiment les drames où le décor parle autant que les acteurs.',
@@ -62,6 +65,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 103,
         comments: 22,
+        status: 'published',
+        views: 1040,
+        publishedAt: '2026-06-15',
         hook: 'Comment continue-t-on à vivre quand il manque quelqu’un ?',
         forThoseWho:
           'Pour ceux qui préfèrent les séries qui chuchotent plutôt qu’elles ne crient.',
@@ -82,6 +88,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 64,
         comments: 9,
+        status: 'published',
+        views: 720,
+        publishedAt: '2026-06-21',
         hook: 'Et si un livre pouvait pousser, page après page ?',
         forThoseWho: 'Pour ceux qui lisent lentement, comme on jardine.',
         body: 'Le jardin suspendu est un roman qui se cultive. La prose y est si dense qu’on a envie de la respirer plutôt que de la lire.\n\nChaque chapitre est une saison ; on referme le livre les mains pleines de terre et l’esprit apaisé.',
@@ -110,6 +119,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 71,
         comments: 11,
+        status: 'published',
+        views: 640,
+        publishedAt: '2026-05-24',
       },
       {
         id: 'bilan-2026-05-marges',
@@ -122,6 +134,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 49,
         comments: 6,
+        status: 'published',
+        views: 470,
+        publishedAt: '2026-05-17',
       },
     ],
   },
@@ -142,6 +157,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 84,
         comments: 14,
+        status: 'published',
+        views: 820,
+        publishedAt: '2026-04-19',
       },
       {
         id: 'bilan-2026-04-voix-off',
@@ -154,6 +172,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 38,
         comments: 4,
+        status: 'published',
+        views: 360,
+        publishedAt: '2026-04-05',
       },
     ],
   },
@@ -174,6 +195,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 92,
         comments: 18,
+        status: 'published',
+        views: 910,
+        publishedAt: '2025-12-20',
       },
       {
         id: 'bilan-2025-12-le-livre-des-nuits',
@@ -185,6 +209,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 55,
         comments: 7,
+        status: 'published',
+        views: 520,
+        publishedAt: '2025-12-11',
       },
     ],
   },
@@ -204,6 +231,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 67,
         comments: 10,
+        status: 'published',
+        views: 660,
+        publishedAt: '2025-11-22',
       },
       {
         id: 'bilan-2025-11-les-voix-basses',
@@ -215,6 +245,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 41,
         comments: 5,
+        status: 'published',
+        views: 390,
+        publishedAt: '2025-11-08',
       },
     ],
   },
