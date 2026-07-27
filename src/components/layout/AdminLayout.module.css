@@ -76,6 +76,12 @@
   text-box: trim-both cap alphabetic;
 }
 
+/* A page summary reads as a sentence, not as a label. */
+.brandKickerPlain {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 /* ---- Nav (shared by rail and drawer) ---- */
 .navSectionLabel {
   font-size: 9px;

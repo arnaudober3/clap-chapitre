@@ -4,10 +4,10 @@
  * image requests. Selectors are pure functions (no React, no module-level
  * mutable state) so pages can filter the feed by medium.
  */
-import type { Article, Medium } from './types';
+import type { PublishedArticle, Medium } from './types';
 
 /** All mock reviews, newest first, media mixed. Author: Marie-Zoé. */
-export const feed: Article[] = [
+export const feed: PublishedArticle[] = [
   {
     id: 'un-dernier-ete',
     title: 'Un dernier été',
@@ -19,6 +19,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 128,
     comments: 24,
+    status: 'published',
+    views: 2180,
+    publishedAt: '2026-07-18',
     hook: 'Et si le dernier été n’était jamais vraiment le dernier ?',
     forThoseWho:
       'Pour ceux qui aiment les fins qui laissent la fenêtre entrouverte.',
@@ -54,6 +57,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 96,
     comments: 17,
+    status: 'published',
+    views: 1210,
+    publishedAt: '2026-07-14',
     hook: 'Peut-on aimer une saison qui ne s’arrête jamais ?',
     forThoseWho: 'Pour ceux qui lisent au son des averses.',
     genreMeta: 'Roman · 312 pages · 2026',
@@ -82,6 +88,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 141,
     comments: 31,
+    status: 'published',
+    views: 1640,
+    publishedAt: '2026-07-09',
     hook: 'Que reste-t-il de nous quand la ville dort ?',
     forThoseWho: 'Pour ceux qui préfèrent les récits qui prennent leur temps.',
     genreMeta: 'Série · 6 × 48 min · 2026',
@@ -110,6 +119,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 72,
     comments: 12,
+    status: 'published',
+    views: 870,
+    publishedAt: '2026-07-03',
     hook: 'Et si nos oublis en disaient plus que nos souvenirs ?',
     forThoseWho: 'Pour ceux qui aiment les puzzles émotionnels.',
     genreMeta: 'Documentaire · 1 h 38 · 2026',
@@ -130,6 +142,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 88,
     comments: 15,
+    status: 'published',
+    views: 1420,
+    publishedAt: '2026-06-27',
     body:
       'Un drame filmé dans une lumière si froide qu’on en sort les mains gourdes. La lumière du Nord ne raconte pourtant rien de glacé : c’est une histoire de réchauffement lent, presque imperceptible.\n\n' +
       'Son actrice principale tient tout le film dans un mutisme qui n’a jamais l’air d’une posture. On la regarde décider, hésiter, renoncer — sans une réplique de trop.',
@@ -145,6 +160,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 64,
     comments: 9,
+    status: 'published',
+    views: 760,
+    publishedAt: '2026-06-21',
     body:
       'Le jardin suspendu se lit comme on jardine : lentement, en revenant sur ses pas. Chaque chapitre correspond à une saison, et la prose y pousse littéralement, phrase après phrase.\n\n' +
       'C’est un livre qui demande de la patience et la rend au centuple. On le referme les mains pleines de terre.',
@@ -160,6 +178,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 103,
     comments: 22,
+    status: 'published',
+    views: 1180,
+    publishedAt: '2026-06-15',
     body:
       'Ceux qui restent est une chronique du deuil qui n’élève jamais la voix. La série s’installe dans les gestes du quotidien et laisse le chagrin se déposer, épisode après épisode.\n\n' +
       'On y rit, aussi, entre deux larmes — et c’est cette justesse de ton qui la rend inoubliable.',
@@ -175,6 +196,9 @@ export const feed: Article[] = [
     author: 'Marie-Zoé',
     likes: 57,
     comments: 8,
+    status: 'published',
+    views: 540,
+    publishedAt: '2026-06-08',
     body:
       'Archives du silence est un travail d’enquête d’une patience rare. Trois ans de dépouillement pour rendre audible ce que les procès-verbaux avaient consigné puis rangé.\n\n' +
       'Le film ne cherche jamais le sensationnel : il pose les documents, laisse les témoins parler, et fait confiance au spectateur pour tirer le fil.',
@@ -185,7 +209,7 @@ export const feed: Article[] = [
  * The hero item for a page: newest overall (when `medium` is undefined), or the
  * newest review of `medium`. Returns undefined when no item matches.
  */
-export function latestFor(medium?: Medium): Article | undefined {
+export function latestFor(medium?: Medium): PublishedArticle | undefined {
   if (medium === undefined) return feed[0];
   return feed.find((item) => item.medium === medium);
 }
@@ -195,7 +219,7 @@ export function latestFor(medium?: Medium): Article | undefined {
  * this is the whole feed minus the overall hero. When set, it is that medium's
  * items minus that medium's hero.
  */
-export function recentFor(medium?: Medium): Article[] {
+export function recentFor(medium?: Medium): PublishedArticle[] {
   const hero = latestFor(medium);
   const pool =
     medium === undefined ? feed : feed.filter((item) => item.medium === medium);

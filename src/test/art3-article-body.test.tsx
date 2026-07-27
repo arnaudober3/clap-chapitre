@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router-dom';
 import ArticleBody, { ForThoseWho } from '../pages/Article/ArticleBody';
 import RelatedGrid from '../pages/Article/RelatedGrid';
 import { articleById } from '../mock/articles';
-import type { Article } from '../mock/types';
+import type { PublishedArticle } from '../mock/types';
 
 const root = resolve(__dirname, '../..');
 const bodySource = readFileSync(
@@ -44,7 +44,7 @@ describe('ART-3 ArticleBody', () => {
   });
 
   it('falls back to the excerpt when there is no body, and skips empty paragraphs', () => {
-    const noBody: Article = { ...avis, body: undefined, pullQuote: undefined };
+    const noBody: PublishedArticle = { ...avis, body: undefined, pullQuote: undefined };
     expect(() => render(<ArticleBody article={noBody} />)).not.toThrow();
 
     const rendered = screen.getAllByTestId('article-paragraph');

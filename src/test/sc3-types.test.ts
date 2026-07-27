@@ -1,10 +1,16 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import type { Medium, Article, Comment } from '../mock/types';
+import type {
+  Medium,
+  Article,
+  DraftArticle,
+  PublishedArticle,
+  Comment,
+} from '../mock/types';
 
 describe('SC-3 mock types', () => {
   it('Medium and Article are importable and well-shaped', () => {
     const medium: Medium = 'livre';
-    const article: Article = {
+    const article: PublishedArticle = {
       id: 'a1',
       title: "L'année de la pluie",
       medium,
@@ -14,10 +20,40 @@ describe('SC-3 mock types', () => {
       author: 'Marie-Zoé',
       likes: 28,
       comments: 3,
+      status: 'published',
+      views: 420,
+      publishedAt: '2026-06-12',
     };
     expect(article.medium).toBe('livre');
     expectTypeOf<Medium>().toEqualTypeOf<'film' | 'serie' | 'livre' | 'doc'>();
     expectTypeOf<Article['body']>().toEqualTypeOf<string | undefined>();
+  });
+
+  it('Article is a union discriminated on status', () => {
+    // views is required on both members — the public site simply never renders it.
+    expectTypeOf<Article>().toEqualTypeOf<DraftArticle | PublishedArticle>();
+    expectTypeOf<Article['status']>().toEqualTypeOf<'draft' | 'published'>();
+    expectTypeOf<Article['views']>().toEqualTypeOf<number>();
+    // Each state carries the field only it can have.
+    expectTypeOf<PublishedArticle['publishedAt']>().toEqualTypeOf<string>();
+    expectTypeOf<DraftArticle['updatedLabel']>().toEqualTypeOf<string>();
+
+    const draft: Article = {
+      id: 'a2',
+      title: 'Contre-champs',
+      medium: 'doc',
+      excerpt: 'Un documentaire en cours d’écriture.',
+      cover: 'linear-gradient(150deg,#9a6a8a,#5f3a55)',
+      date: '',
+      author: 'Marie-Zoé',
+      likes: 0,
+      comments: 0,
+      status: 'draft',
+      views: 0,
+      updatedLabel: 'Modifié il y a 2 jours',
+    };
+    // Narrowing on status is what unlocks the state-specific field.
+    expect(draft.status === 'draft' && draft.updatedLabel).toBe('Modifié il y a 2 jours');
   });
 
   it('Comment supports the isAuthor flag', () => {

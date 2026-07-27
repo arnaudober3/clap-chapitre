@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import type { Article } from '../mock/types';
+import type { PublishedArticle } from '../mock/types';
 import type { MonthlyBilan } from '../mock/bilans';
 import MonthCard from '../pages/BilanCulturelArchives/MonthCard';
 
-function avis(id: string, cover = 'linear-gradient(150deg,#111,#222)'): Article {
+function avis(id: string, cover = 'linear-gradient(150deg,#111,#222)'): PublishedArticle {
   return {
     id,
     title: `Titre ${id}`,
@@ -16,6 +16,9 @@ function avis(id: string, cover = 'linear-gradient(150deg,#111,#222)'): Article 
     author: 'Marie-Zoé',
     likes: 10,
     comments: 2,
+    status: 'published',
+    publishedAt: '2026-06-12',
+    views: 420,
   };
 }
 

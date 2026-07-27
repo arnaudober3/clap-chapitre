@@ -1,12 +1,12 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import type { Article, Medium } from '../mock/types';
+import type { PublishedArticle, Medium } from '../mock/types';
 import { feed, latestFor, recentFor } from '../mock/home';
 
 const MEDIA: Medium[] = ['film', 'serie', 'livre', 'doc'];
 
 describe('HM-1 Article type extension', () => {
   it('carries likes/comments (required) and hook/forThoseWho (optional)', () => {
-    const article: Article = {
+    const article: PublishedArticle = {
       id: 'a1',
       title: 'Un dernier été',
       medium: 'film',
@@ -16,15 +16,18 @@ describe('HM-1 Article type extension', () => {
       author: 'Marie-Zoé',
       likes: 10,
       comments: 2,
+      status: 'published',
+      publishedAt: '2026-06-12',
+      views: 420,
       hook: 'Et si ?',
       forThoseWho: 'Pour ceux qui aiment.',
     };
     expect(article.likes).toBe(10);
     expect(article.comments).toBe(2);
-    expectTypeOf<Article['likes']>().toEqualTypeOf<number>();
-    expectTypeOf<Article['comments']>().toEqualTypeOf<number>();
-    expectTypeOf<Article['hook']>().toEqualTypeOf<string | undefined>();
-    expectTypeOf<Article['forThoseWho']>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<PublishedArticle['likes']>().toEqualTypeOf<number>();
+    expectTypeOf<PublishedArticle['comments']>().toEqualTypeOf<number>();
+    expectTypeOf<PublishedArticle['hook']>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<PublishedArticle['forThoseWho']>().toEqualTypeOf<string | undefined>();
   });
 });
 

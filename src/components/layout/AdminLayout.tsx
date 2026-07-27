@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
+import { AdminPageMetaProvider } from './adminPageMeta';
 import styles from './AdminLayout.module.css';
 
 /**
@@ -10,13 +11,15 @@ import styles from './AdminLayout.module.css';
  */
 export default function AdminLayout() {
   return (
-    <div className={styles.shell}>
-      <AdminHeader />
-      <div className={styles.content}>
-        <main className={styles.main}>
-          <Outlet />
-        </main>
+    <AdminPageMetaProvider>
+      <div className={styles.shell}>
+        <AdminHeader />
+        <div className={styles.content}>
+          <main className={styles.main}>
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </AdminPageMetaProvider>
   );
 }

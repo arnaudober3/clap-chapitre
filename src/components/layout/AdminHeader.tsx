@@ -7,6 +7,7 @@ import {
   type AdminNavItem,
 } from "./adminNav";
 import { ThemeToggle } from "../ui";
+import { useAdminKicker } from "./adminPageMeta";
 import styles from "./AdminLayout.module.css";
 
 /** True when `pathname` is the item's route (exact for /admin, prefix otherwise). */
@@ -17,8 +18,13 @@ function isItemActive(pathname: string, to: string): boolean {
   return here === target || (!end && here.startsWith(`${target}/`));
 }
 
-/** Compact "C" brand mark + label — reused by rail head, top bar and drawer. */
-function BrandMark({ label }: { label: string }) {
+/**
+ * Compact "C" brand mark + label — reused by rail head, top bar and drawer.
+ * `kicker` overrides the default "Espace admin" line: on mobile the top bar
+ * doubles as the page header (design 8b), so it carries the page's own summary
+ * and drops the uppercase treatment.
+ */
+function BrandMark({ label, kicker }: { label: string; kicker?: string }) {
   return (
     <div className={styles.brand}>
       <span className={styles.brandMark} aria-hidden="true">
@@ -26,7 +32,9 @@ function BrandMark({ label }: { label: string }) {
       </span>
       <div className={styles.brandText}>
         <span className={styles.brandTitle}>{label}</span>
-        <span className={styles.brandKicker}>Espace admin</span>
+        <span className={kicker ? `${styles.brandKicker} ${styles.brandKickerPlain}` : styles.brandKicker}>
+          {kicker ?? 'Espace admin'}
+        </span>
       </div>
     </div>
   );
@@ -103,6 +111,7 @@ export default function AdminHeader() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const closeDrawer = () => setDrawerOpen(false);
   const { pathname } = useLocation();
+  const pageKicker = useAdminKicker();
 
   // Mobile top-bar title = the active section's label (defaults to dashboard).
   const activeItem =
@@ -120,9 +129,9 @@ export default function AdminHeader() {
         <RailFoot />
       </aside>
 
-      {/* Mobile top bar */}
+      {/* Mobile top bar — the active section over the page's own summary. */}
       <div className={styles.topbar}>
-        <BrandMark label={activeItem.label} />
+        <BrandMark label={activeItem.label} kicker={pageKicker} />
         <button
           type="button"
           className={styles.hamburger}

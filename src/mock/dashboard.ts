@@ -65,9 +65,9 @@ export interface NewsletterStatus {
 export const DEFAULT_PERIOD = '30j';
 
 const PERIODS: Period[] = [
-  { id: '7j', label: '7 jours' },
-  { id: '30j', label: '30 jours' },
-  { id: '12m', label: '12 mois' },
+  { id: '7j', label: '7 derniers jours' },
+  { id: '30j', label: '30 derniers jours' },
+  { id: '12m', label: '12 derniers mois' },
 ];
 
 /**
@@ -79,7 +79,7 @@ const PERIODS: Period[] = [
 const KPIS_BY_PERIOD: Record<string, KpiStat[]> = {
   '7j': [
     { key: 'views', label: 'Vues', value: 2180, deltaPct: 6 },
-    { key: 'likes', label: 'Likes', value: 78, deltaPct: -4 },
+    { key: 'likes', label: 'Likes', value: 74, deltaPct: -4 },
     { key: 'comments', label: 'Commentaires', value: 11, deltaPct: 3 },
     { key: 'shares', label: 'Partages', value: 24, deltaPct: 8 },
   ],

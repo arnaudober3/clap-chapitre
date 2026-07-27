@@ -9,6 +9,8 @@ import AvisArchivesPage from './pages/AvisArchives';
 import AProposPage from './pages/APropos';
 import MeSuivrePage from './pages/MeSuivre';
 import AdminDashboardPage from './pages/AdminDashboard';
+import AdminArticlesPage from './pages/AdminArticles';
+import AdminArticleFormPage from './pages/AdminArticleForm';
 import AdminPlaceholder from './pages/AdminPlaceholder';
 import NotFoundPage from './pages/NotFound';
 
@@ -37,12 +39,14 @@ export default function App() {
       </Route>
 
       {/* Espace admin — its own shell (rail/drawer), separate from the public
-          Layout. Only the Tableau de bord is wired; other sections land on a
-          shared "à venir" placeholder (incl. unknown /admin/** paths). */}
+          Layout. Tableau de bord and Articles are wired; the other sections land
+          on a shared "à venir" placeholder (incl. unknown /admin/** paths). */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboardPage />} />
-        <Route path="articles/nouveau" element={<AdminPlaceholder />} />
-        <Route path="articles" element={<AdminPlaceholder />} />
+        <Route path="articles" element={<AdminArticlesPage />} />
+        {/* The static "nouveau" segment wins over :id (react-router ranking). */}
+        <Route path="articles/nouveau" element={<AdminArticleFormPage />} />
+        <Route path="articles/:id" element={<AdminArticleFormPage />} />
         <Route path="bilans" element={<AdminPlaceholder />} />
         <Route path="newsletter" element={<AdminPlaceholder />} />
         <Route path="a-propos" element={<AdminPlaceholder />} />

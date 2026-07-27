@@ -1,0 +1,555 @@
+/* Admin Articles listing (design 8a desktop → 8b mobile). Mobile-first: each
+   entry is a card; at lg the same DOM becomes a dense table row. Colors via
+   var(--…) only. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---- Header ----
+   Mobile hands this block to the shell's top bar (design 8b): the section name
+   and the "32 avis · 2 brouillons" line live there, so repeating them here
+   would cost a screenful for nothing. */
+.header {
+  display: none;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--font-serif), serif;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ink);
+  margin: 0;
+  font-weight: 500;
+}
+
+.subtitle {
+  font-size: 12.5px;
+  color: var(--muted-2);
+  margin: 5px 0 0;
+}
+
+/* On mobile the FAB carries this action (design 8b), so the header button is
+   desktop-only. */
+.newButton {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 15px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.newButton:hover {
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+.newButtonPlus {
+  font-size: 15px;
+  line-height: 0;
+}
+
+/* ---- Toolbar ---- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-2);
+}
+
+/* Mobile stacks the filters over a full-width search (design 8b keeps them on
+   one scrolling row of pills); at lg they all share the toolbar line. */
+.segmented {
+  order: 1;
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border-radius: 9px;
+  padding: 3px;
+}
+
+.toolbarSelect {
+  order: 2;
+}
+
+.segment {
+  border: none;
+  background: none;
+  border-radius: 7px;
+  padding: 6px 13px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--muted-2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.segment:hover {
+  color: var(--ink);
+}
+
+.segmentActive,
+.segmentActive:hover {
+  background: var(--surface-card);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(60, 40, 20, 0.1);
+}
+
+.segmentCount {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* The spacer only earns its keep on the wide toolbar. */
+.toolbarSpacer {
+  display: none;
+}
+
+.search {
+  order: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 7px 12px;
+  flex: 1 0 100%;
+  min-width: 0;
+}
+
+.searchIcon {
+  font-size: 16.5px;
+  line-height: 0;
+  color: var(--faint);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--faint);
+}
+
+/* ---- Column head (lg only) ---- */
+.tableHead {
+  display: none;
+}
+
+.headRight {
+  text-align: right;
+}
+
+/* ---- Rows ---- */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  /* Anchor for the title link's stretched hit area (see .rowTitle::after). */
+  position: relative;
+  cursor: pointer;
+  display: grid;
+  /* minmax(0, …) so the nowrap hook line can be ellipsed instead of widening
+     the card past the viewport. */
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "stripe meta status"
+    "stripe title title"
+    "stripe stats stats";
+  gap: 5px 12px;
+  align-items: center;
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  padding: 13px 14px;
+}
+
+.rowDraft {
+  background: var(--surface-row-draft);
+  border-color: var(--border-pill);
+}
+
+/* Spans the row's content box — top of the first cell to the bottom of the
+   last — rather than a fixed height. */
+.stripe {
+  grid-area: stripe;
+  align-self: stretch;
+  border-radius: 5px;
+  background: var(--row-accent);
+}
+
+.titleCell {
+  grid-area: title;
+  min-width: 0;
+}
+
+.rowTitle {
+  display: block;
+  font-family: var(--font-serif), serif;
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.rowTitle:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* The title link covers the whole row, so clicking anywhere opens the editor.
+   Overlaying rather than wrapping the row keeps the link's accessible name to
+   the title alone, instead of the whole row's text. */
+.rowTitle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.row:hover .rowTitle {
+  color: var(--accent);
+}
+
+.rowSub {
+  display: block;
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--faint);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metaGroup {
+  grid-area: meta;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.chip {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--row-accent);
+  background: color-mix(in srgb, var(--row-accent) 15%, var(--surface-card));
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.dateCell {
+  font-size: 10.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+/* A draft has no date: the card drops the placeholder, the table keeps its
+   column filled with the em dash. */
+.dateEmpty {
+  display: none;
+}
+
+.statsGroup {
+  grid-area: stats;
+  display: flex;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--muted-2);
+  white-space: nowrap;
+}
+
+.numberCell {
+  white-space: nowrap;
+}
+
+/* The em dash standing in for a draft's missing figures. */
+.cellEmpty {
+  color: var(--faint);
+  font-weight: 400;
+}
+
+.statusCell {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: end;
+}
+
+.pill {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--status-published-fg);
+  background: var(--status-published-bg);
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.pillDraft {
+  color: var(--status-draft-fg);
+  background: var(--status-draft-bg);
+}
+
+/* ---- Empty state ---- */
+.empty {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted);
+  margin: 24px 0;
+}
+
+/* ---- Pagination ---- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.paginationCount {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.pager {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.pagerStep,
+.pagerPage {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--nav-idle);
+  cursor: pointer;
+}
+
+.pagerStep:hover:not(:disabled),
+.pagerPage:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.pagerStep:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+
+.pagerPageActive,
+.pagerPageActive:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+/* ---- Mobile FAB (design 8b) ---- */
+.fab {
+  position: fixed;
+  bottom: 22px;
+  right: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  font-size: 28px;
+  line-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px -6px rgba(60, 40, 20, 0.55);
+  cursor: pointer;
+  z-index: 40;
+  text-decoration: none;
+  text-box: trim-both cap alphabetic;
+  padding-bottom: 3px;
+}
+
+.fab:hover {
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+/* ---- lg: the dense table of design 8a ---- */
+@media (min-width: 1024px) {
+  .page {
+    gap: 18px;
+  }
+
+  .header {
+    display: flex;
+  }
+
+  .newButton {
+    display: flex;
+  }
+
+  .toolbarSpacer {
+    display: block;
+    order: 0;
+    flex: 1;
+  }
+
+  .segmented,
+  .toolbarSelect,
+  .search {
+    order: 0;
+  }
+
+  .search {
+    flex: none;
+    width: 214px;
+  }
+
+  .tableHead,
+  .row {
+    display: grid;
+    grid-template-columns: 12px 1fr 96px 92px 62px 58px 62px 84px;
+    grid-template-areas: none;
+    gap: 0 12px;
+    align-items: center;
+  }
+
+  /* The named areas are gone — cells fall back to DOM order, which is exactly
+     the column order: stripe, titre, médium, date, vues, ♥, comm., statut. */
+  .stripe,
+  .titleCell,
+  .metaGroup,
+  .statsGroup,
+  .statusCell {
+    grid-area: auto;
+  }
+
+  .tableHead {
+    padding: 12px 4px 9px;
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-2);
+  }
+
+  .rows {
+    gap: 0;
+  }
+
+  .row {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    padding: 13px 4px;
+  }
+
+  .row:hover {
+    background: var(--nav-hover);
+  }
+
+  .rowDraft {
+    background: var(--surface-row-draft);
+  }
+
+  /* The mobile grouping wrappers dissolve so their cells join the row grid. */
+  .metaGroup,
+  .statsGroup {
+    display: contents;
+  }
+
+  .rowTitle {
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dateCell {
+    font-size: 12.5px;
+    color: var(--muted-2);
+  }
+
+  .dateEmpty {
+    display: block;
+    color: var(--faint);
+  }
+
+  .numberCell {
+    font-size: 12.5px;
+    color: var(--muted-2);
+    text-align: right;
+  }
+
+  /* Views are the column the editor scans first (design 8a). */
+  .viewsCell {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* "vues" / "comm." / "♥" only label the figures on the stacked card. */
+  .cellUnit {
+    display: none;
+  }
+
+  .statusCell {
+    justify-content: flex-end;
+  }
+
+  .fab {
+    display: none;
+  }
+}

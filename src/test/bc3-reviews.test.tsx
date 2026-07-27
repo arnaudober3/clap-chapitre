@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import BilanReview from '../pages/BilanCulturel/BilanReview';
 import MediumSections from '../pages/BilanCulturel/MediumSections';
-import type { Article } from '../mock/types';
+import type { PublishedArticle } from '../mock/types';
 import type { MonthlyBilan } from '../mock/bilans';
 
-const full: Article = {
+const full: PublishedArticle = {
   id: 'r-full',
   title: 'La lumière du Nord',
   medium: 'film',
@@ -15,13 +15,16 @@ const full: Article = {
   author: 'Marie-Zoé',
   likes: 88,
   comments: 15,
+  status: 'published',
+  publishedAt: '2026-06-12',
+  views: 420,
   hook: 'Peut-on se réchauffer à une lumière qui vient du froid ?',
   forThoseWho: 'Pour ceux qui aiment les drames lumineux.',
   body: 'Premier paragraphe du corps.\n\nDeuxième paragraphe du corps.',
   relatedTo: { title: 'Un dernier été', note: 'Même goût pour les silences.' },
 };
 
-const minimal: Article = {
+const minimal: PublishedArticle = {
   id: 'r-min',
   title: 'Marges',
   medium: 'livre',
@@ -31,6 +34,9 @@ const minimal: Article = {
   author: 'Marie-Zoé',
   likes: 49,
   comments: 6,
+  status: 'published',
+  publishedAt: '2026-06-12',
+  views: 420,
 };
 
 describe('BC-3 BilanReview', () => {

@@ -7,8 +7,12 @@
 /** The four media the site reviews. */
 export type Medium = 'film' | 'serie' | 'livre' | 'doc';
 
-/** A single review / "avis" entry. */
-export interface Article {
+/**
+ * The fields every avis carries, whatever its publication state. Internal —
+ * consumers take `Article`, or `DraftArticle` / `PublishedArticle` when the
+ * state is known.
+ */
+interface BaseArticle {
   id: string;
   title: string;
   medium: Medium;
@@ -23,6 +27,8 @@ export interface Article {
   likes: number;
   /** Comment count — shown on every card and the hero. */
   comments: number;
+  /** View count. Not surfaced publicly — the admin listing shows it. */
+  views: number;
   /** Italic question line under the title (hero uses it). */
   hook?: string;
   /** The "Pour ceux qui…" one-liner (hero uses it). */
@@ -40,6 +46,23 @@ export interface Article {
   /** "À rapprocher de" — ids of up to 2 other avis + why they're close. */
   related?: Array<{ id: string; note: string }>;
 }
+
+/** An avis still being written: no publication date, but a "last edited" line. */
+export interface DraftArticle extends BaseArticle {
+  status: 'draft';
+  /** e.g. "Modifié il y a 2 jours". */
+  updatedLabel: string;
+}
+
+/** A live avis — the only kind the public site ever renders. */
+export interface PublishedArticle extends BaseArticle {
+  status: 'published';
+  /** Sortable ISO date, '2026-07-12'. */
+  publishedAt: string;
+}
+
+/** Any avis. Narrow on `status` to reach the state-specific fields. */
+export type Article = DraftArticle | PublishedArticle;
 
 /** A comment on an article / bilan thread. */
 export interface Comment {

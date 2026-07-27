@@ -23,6 +23,13 @@
   --positive: #6a7a45;      /* positive KPI delta (↑ green, admin dashboard) */
   --negative: #a8412b;      /* negative KPI delta (↓ terracotta, admin dashboard) */
 
+  /* Publication status pills (admin article listing, design 8a) */
+  --status-published-fg: #6a7a45;
+  --status-published-bg: #eef1e2;
+  --status-draft-fg: #a07a2c;
+  --status-draft-bg: #f7ecd6;
+  --surface-row-draft: #f9f4ea; /* the highlighted draft row/card */
+
   /* Fixed foregrounds — constant across themes (NOT overridden in dark) because
      they sit on always-dark/always-gold surfaces (the --dark-grad newsletter
      card, the gold CTA button) whose colors do not follow the page theme. */
@@ -104,6 +111,14 @@
   --gold-hover: #dbaa55;    /* CTA hover */
   --positive: #92a86a;      /* positive KPI delta (brightened for dark) */
   --negative: #d0705a;      /* negative KPI delta (brightened for dark) */
+
+  /* Publication status pills — foregrounds brightened, backgrounds sunk into
+     the night palette so the pills stay legible without glowing. */
+  --status-published-fg: #92a86a;
+  --status-published-bg: #2b3122;
+  --status-draft-fg: #d3a559;
+  --status-draft-bg: #362c1c;
+  --surface-row-draft: #2c251c; /* the highlighted draft row/card */
 
   /* Borders */
   --border: #3a3128;        /* hairline borders/dividers */

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { newsletter } from '../../mock/dashboard';
-import { frNumber } from './format';
+import { frNumber } from '../../format';
 import styles from './AdminDashboard.module.css';
 
 /**
