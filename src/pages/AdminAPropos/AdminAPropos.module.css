@@ -1,0 +1,414 @@
+/* Admin "À propos" editor (design 7e mobile → 6f desktop). Mobile-first: one
+   column, the portrait centred above the fields, the title block and the
+   secondary action dropped (the shell's top bar carries the header there).
+   Colors via var(--…) only. */
+
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    /* Newsreader's font box is lopsided: 0.735em of ascent over 0.265em of
+       descent, for a cap height of 0.670em. A single-line field centres that
+       box, which leaves 0.065em of air above the capitals against 0.265em
+       below the baseline — the text reads high. Shifting the vertical padding
+       by half that difference centres the cap-to-baseline block instead. In em,
+       so it holds at every font size the fields take. */
+    --serif-optical: 0.1em;
+}
+
+/* ---- Top bar ---- */
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-2);
+}
+
+/* Mobile hands this block to the shell's top bar (design 7e): the section name
+   and the "Ce que voient les visiteurs…" line live there. */
+.headerText {
+    display: none;
+    min-width: 0;
+}
+
+.title {
+    font-family: var(--font-serif), serif;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--ink);
+    margin: 0;
+    font-weight: 500;
+}
+
+.subtitle {
+    font-size: 12.5px;
+    color: var(--muted-2);
+    margin: 5px 0 0;
+}
+
+.topbarActions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+/* Only rendered after a save — it is the whole feedback of the action, since
+   this editor stays on the page instead of navigating away. */
+.saveState {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--faint);
+    white-space: nowrap;
+}
+
+.saveDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border-pill);
+}
+
+/* Design 7e keeps the primary action alone on the phone bar. */
+.cancelButton {
+    display: none;
+    align-items: center;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--nav-idle);
+    background: var(--surface-card);
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+}
+
+.cancelButton:hover {
+    border-color: var(--border-pill);
+    color: var(--ink);
+}
+
+.primaryButton {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bg);
+    background: var(--ink);
+    border: none;
+    border-radius: 9px;
+    padding: 10px 16px;
+    cursor: pointer;
+}
+
+.primaryButton:hover {
+    background: var(--accent);
+}
+
+/* ---- Form body ---- */
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.identity {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.identityFields {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.label {
+    display: block;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+/* ---- Portrait ---- */
+.portraitField {
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.portraitLabel {
+    display: none;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* The portrait is a CSS gradient on the public page too — nothing is fetched,
+   and there is no upload behind the button in this prototype. */
+.portrait {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    flex: none;
+    border: none;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--portrait-grad);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+/* The same veil the drawer uses — dark enough for the label to read on the
+   portrait in both themes. */
+.portraitOverlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--scrim);
+}
+
+.portraitIcon {
+    font-size: 19px;
+    line-height: 1;
+    color: var(--on-dark);
+}
+
+.portraitAction {
+    font-size: 10.5px;
+    color: var(--on-dark);
+}
+
+/* ---- Text fields ---- */
+.titleInput,
+.introInput,
+.bioInput,
+.quoteInput {
+    box-sizing: border-box;
+    border: 1px solid var(--border-2);
+    background: var(--surface-card);
+    font-family: var(--font-serif), serif;
+    color: var(--ink);
+}
+
+/* The single-line serif fields pin their line box to the font box, so the
+   optical shift below is the only thing moving the text. */
+.titleInput,
+.introInput,
+.quoteInput {
+    line-height: 1;
+}
+
+.titleInput {
+    border-radius: 9px;
+    padding: calc(10px + var(--serif-optical)) 13px calc(10px - var(--serif-optical));
+    font-size: 19px;
+}
+
+.introInput {
+    border-radius: 9px;
+    padding: calc(10px + var(--serif-optical)) 13px calc(10px - var(--serif-optical));
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.bioInput {
+    border-radius: 10px;
+    padding: 13px 14px;
+    min-height: 140px;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--body);
+    resize: vertical;
+}
+
+/* The gold rule is the pull-quote's signature on the public page. */
+.quoteInput {
+    border-left: 3px solid var(--gold);
+    border-radius: 9px;
+    padding: calc(11px + var(--serif-optical)) 13px calc(11px - var(--serif-optical));
+    font-style: italic;
+    font-size: 15px;
+}
+
+.titleInput:focus,
+.introInput:focus,
+.bioInput:focus,
+.quoteInput:focus,
+.statLabelInput:focus,
+.statValueInput:focus {
+    outline: none;
+    border-color: var(--border-pill);
+}
+
+.quoteInput:focus {
+    border-left-color: var(--gold);
+}
+
+/* ---- "Cette année" rows ---- */
+.statRows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.statRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--border-2);
+    background: var(--surface-card);
+    border-radius: 9px;
+    padding: 8px 12px;
+}
+
+.statLabelInput {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+}
+
+.statValueInput {
+    width: 64px;
+    flex: none;
+    box-sizing: border-box;
+    border: 1px solid var(--border-2);
+    background: var(--surface);
+    border-radius: 8px;
+    /* Digits have no descender at all, so this is where the lopsided font box
+       shows the most. `text-box` would be the direct tool, but it does not
+       reach the text inside a replaced <input>. */
+    padding: calc(6px + var(--serif-optical)) 6px calc(6px - var(--serif-optical));
+    font-family: var(--font-serif), serif;
+    font-size: 17px;
+    color: var(--accent);
+    text-align: center;
+    line-height: 1;
+}
+
+.titleInput::placeholder,
+.introInput::placeholder,
+.bioInput::placeholder,
+.quoteInput::placeholder,
+.statLabelInput::placeholder,
+.statValueInput::placeholder {
+    color: var(--faint);
+}
+
+/* ---- lg: design 6f — the page names itself, portrait beside the fields ---- */
+@media (min-width: 1024px) {
+    .topbar {
+        align-items: flex-end;
+        padding-bottom: 18px;
+    }
+
+    .headerText {
+        display: block;
+    }
+
+    .cancelButton {
+        display: inline-flex;
+    }
+
+    .primaryButton {
+        font-size: 12.5px;
+        border-radius: 8px;
+        padding: 8px 16px;
+    }
+
+    /* No sidebar here, but the column keeps the width the article editor's main
+       column has next to its 290px settings panel, so the two editors line up
+       instead of each finding their own measure. */
+    .body {
+        gap: 20px;
+        margin-right: 290px;
+    }
+
+    .identity {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 18px;
+    }
+
+    .identityFields {
+        gap: 16px;
+    }
+
+    .portraitField {
+        flex: none;
+        align-self: flex-start;
+    }
+
+    .portraitLabel {
+        display: block;
+    }
+
+    .portrait {
+        width: 110px;
+        height: 110px;
+    }
+
+    .portraitIcon {
+        font-size: 20px;
+    }
+
+    .label {
+        font-size: 11px;
+        margin-bottom: 8px;
+    }
+
+    .titleInput {
+        font-size: 22px;
+        padding: calc(9px + var(--serif-optical)) 13px calc(9px - var(--serif-optical));
+    }
+
+    .introInput {
+        font-size: 14.5px;
+    }
+
+    .bioInput {
+        min-height: 170px;
+        padding: 14px 15px;
+        font-size: 15px;
+        line-height: 1.75;
+    }
+
+    .quoteInput {
+        padding: calc(11px + var(--serif-optical)) 14px calc(11px - var(--serif-optical));
+        font-size: 16px;
+    }
+
+    .statValueInput {
+        width: 72px;
+        font-size: 18px;
+    }
+}
