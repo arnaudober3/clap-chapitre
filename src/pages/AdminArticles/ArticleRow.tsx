@@ -1,15 +1,8 @@
 import { Link } from 'react-router-dom';
-import type { Article, Medium } from '../../mock/types';
+import type { Article } from '../../mock/types';
+import { MEDIUM_ACCENT, MEDIUM_CHIP_LABEL } from '../../media';
 import { frNumber, shortDate } from '../../format';
 import styles from './AdminArticles.module.css';
-
-/** Medium → singular chip label + accent token (design 8a chips). */
-const MEDIUM_CHIP: Record<Medium, { label: string; accent: string }> = {
-  film: { label: 'Film', accent: 'var(--medium-film)' },
-  serie: { label: 'Série', accent: 'var(--medium-serie)' },
-  livre: { label: 'Livre', accent: 'var(--medium-livre)' },
-  doc: { label: 'Docs', accent: 'var(--medium-docs)' },
-};
 
 /** Placeholder for the figures a draft doesn't have yet. */
 const EMPTY = '—';
@@ -24,12 +17,11 @@ const EMPTY = '—';
  */
 export default function ArticleRow({ item }: { item: Article }) {
   const draft = item.status === 'draft';
-  const chip = MEDIUM_CHIP[item.medium];
 
   return (
     <li
       className={draft ? `${styles.row} ${styles.rowDraft}` : styles.row}
-      style={{ ['--row-accent' as string]: chip.accent }}
+      style={{ ['--row-accent' as string]: MEDIUM_ACCENT[item.medium] }}
       data-testid="admin-article-row"
     >
       <span className={styles.stripe} aria-hidden="true" />
@@ -45,7 +37,7 @@ export default function ArticleRow({ item }: { item: Article }) {
 
       <span className={styles.metaGroup}>
         <span className={styles.mediumCell}>
-          <span className={styles.chip}>{chip.label}</span>
+          <span className={styles.chip}>{MEDIUM_CHIP_LABEL[item.medium]}</span>
         </span>
         <span className={draft ? `${styles.dateCell} ${styles.dateEmpty}` : styles.dateCell}>
           {item.status === 'draft' ? EMPTY : shortDate(item.publishedAt)}

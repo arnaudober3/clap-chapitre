@@ -23,6 +23,11 @@ const counts = adminBilanCounts();
 const draft = currentDraftBilan()!;
 const firstPage = filterAdminBilans(DEFAULT_QUERY).slice(0, PAGE_SIZE);
 
+/** What a row's link reads: the month a bilan covers, then its editorial title. */
+function rowLabel(bilan: { monthLabel: string; year: number; title: string }) {
+  return `${bilan.monthLabel} ${bilan.year} — ${bilan.title}`;
+}
+
 function rows() {
   return screen.getAllByTestId('admin-bilan-row');
 }
@@ -35,9 +40,9 @@ describe('AB-3 AdminBilansPage', () => {
     expect(
       screen.getByText(`${counts.published} bilans publiés · depuis ${counts.sinceLabel}`),
     ).toBeInTheDocument();
-    for (const link of screen.getAllByRole('link', { name: 'Nouveau bilan' })) {
-      expect(link).toHaveAttribute('href', '/admin/bilans/nouveau');
-    }
+    // A month is written once, and one is already in progress: there is
+    // nothing to start, so neither the header button nor the FAB is offered.
+    expect(screen.queryAllByRole('link', { name: 'Nouveau bilan' })).toHaveLength(0);
   });
 
   it('gives the month in progress its own card, above and outside the listing', () => {
@@ -53,9 +58,9 @@ describe('AB-3 AdminBilansPage', () => {
     );
     // The card has the room to spell the tally out, unlike the table's chips
     // (the figure and its label are two nodes, hence the textContent match).
-    expect(card).toHaveTextContent('3 films');
-    expect(card).toHaveTextContent('2 séries');
-    expect(card).toHaveTextContent('2 livres');
+    expect(card).toHaveTextContent('1 film');
+    expect(card).toHaveTextContent('1 série');
+    expect(card).toHaveTextContent('1 livre');
     // A medium with no avis yet is simply absent from the tally.
     expect(card).not.toHaveTextContent('docs');
     // …and it is never repeated among the published months.
@@ -66,7 +71,7 @@ describe('AB-3 AdminBilansPage', () => {
     renderPage();
     expect(rows()).toHaveLength(PAGE_SIZE);
     const titles = rows().map((row) => within(row).getAllByRole('link')[0].textContent);
-    expect(titles).toEqual(firstPage.map((bilan) => bilan.title));
+    expect(titles).toEqual(firstPage.map(rowLabel));
 
     for (const row of rows()) {
       const links = within(row).getAllByRole('link');
@@ -76,15 +81,22 @@ describe('AB-3 AdminBilansPage', () => {
     }
   });
 
-  it('searches by title and falls back to an empty state', async () => {
+  it('searches by month or title and falls back to an empty state', async () => {
     const user = userEvent.setup();
     renderPage();
     const search = screen.getByLabelText('Rechercher un bilan');
 
+    // The month is searchable even though it left the title.
     await user.type(search, 'fevrier');
     expect(rows()).toHaveLength(1);
-    expect(screen.getByText('Février 2026 — le mois le plus court, les films les plus longs'))
-      .toBeInTheDocument();
+    expect(
+      screen.getByText('Février 2026 — Le mois le plus court, les films les plus longs'),
+    ).toBeInTheDocument();
+
+    await user.clear(search);
+    await user.type(search, 'resolutions');
+    expect(rows()).toHaveLength(1);
+    expect(screen.getByText('Janvier 2026 — Les bonnes résolutions de lecture')).toBeInTheDocument();
 
     await user.clear(search);
     await user.type(search, 'zzz');
@@ -99,6 +111,7 @@ describe('AB-3 AdminBilansPage', () => {
   it('pages through the catalogue and resets to page 1 when the query changes', async () => {
     const user = userEvent.setup();
     renderPage();
+    // The pager counts the listing's rows — the card above it is not one.
     const pageCount = Math.ceil(counts.published / PAGE_SIZE);
 
     expect(
@@ -114,7 +127,7 @@ describe('AB-3 AdminBilansPage', () => {
     await user.click(within(pager).getByRole('button', { name: String(pageCount) }));
     const lastPage = filterAdminBilans(DEFAULT_QUERY).slice(PAGE_SIZE * (pageCount - 1));
     expect(rows().map((row) => within(row).getAllByRole('link')[0].textContent)).toEqual(
-      lastPage.map((bilan) => bilan.title),
+      lastPage.map(rowLabel),
     );
 
     // Changing the sort sends the listing back to the first page.
@@ -129,6 +142,6 @@ describe('AB-3 AdminBilansPage', () => {
         name: '1',
       }),
     ).toHaveAttribute('aria-current', 'page');
-    expect(rows()[0]).toHaveTextContent('Mai 2025 — le tout premier bilan');
+    expect(rows()[0]).toHaveTextContent('Mai 2025 — Le tout premier bilan');
   });
 });

@@ -18,15 +18,20 @@ import styles from './AdminBilans.module.css';
 /**
  * Admin "Bilans culturels" listing (design 9a desktop → 9b mobile). Bilans are
  * monthly, so the month in progress gets a card of its own above a listing of
- * the published months. All data is static mock content from
- * src/mock/adminBilans.ts — filtering happens in pure selectors, this page only
- * owns the query.
+ * the published months — it is the thing the editor comes back to, and a card
+ * tells it apart at a glance where a table row would not. All data is static
+ * mock content from src/mock/adminBilans.ts — filtering happens in pure
+ * selectors, this page only owns the query.
  */
 export default function AdminBilansPage() {
   const [query, setQuery] = useState<BilanQuery>(DEFAULT_QUERY);
   const [page, setPage] = useState(1);
   const counts = adminBilanCounts();
   const draft = currentDraftBilan();
+  // A bilan covers a month, and a month is only written once: while one is in
+  // progress there is nothing to start, so the page offers no way to — the card
+  // above the listing already leads back to it.
+  const canCreate = draft === undefined;
   const subtitle = `${counts.published} bilans publiés · depuis ${counts.sinceLabel}`;
   // On mobile the shell's top bar carries this line instead (design 9b), where
   // the backlog matters more than the start date.
@@ -51,12 +56,14 @@ export default function AdminBilansPage() {
           <h1 className={styles.title}>Bilans culturels</h1>
           <p className={styles.subtitle}>{subtitle}</p>
         </div>
-        <Link to="/admin/bilans/nouveau" className={styles.newButton}>
-          <span className={styles.newButtonPlus} aria-hidden="true">
-            +
-          </span>
-          Nouveau bilan
-        </Link>
+        {canCreate && (
+          <Link to="/admin/bilans/nouveau" className={styles.newButton}>
+            <span className={styles.newButtonPlus} aria-hidden="true">
+              +
+            </span>
+            Nouveau bilan
+          </Link>
+        )}
       </div>
 
       {draft && <CurrentBilanCard bilan={draft} />}
@@ -91,9 +98,11 @@ export default function AdminBilansPage() {
         </>
       )}
 
-      <Link to="/admin/bilans/nouveau" className={styles.fab} aria-label="Nouveau bilan">
-        +
-      </Link>
+      {canCreate && (
+        <Link to="/admin/bilans/nouveau" className={styles.fab} aria-label="Nouveau bilan">
+          +
+        </Link>
+      )}
     </section>
   );
 }

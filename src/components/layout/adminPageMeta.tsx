@@ -23,6 +23,8 @@ const AdminPageMetaContext = createContext<AdminPageMeta>({
  * Lets an admin page hand its subtitle to the shell. On mobile the top bar is
  * the page header (design 8b): it shows the section name over the page's own
  * summary, so the page itself drops its title block rather than repeating it.
+ * The section name itself is never overridden — an editor keeps its own
+ * breadcrumb instead, so the two form pages read the same way.
  */
 export function AdminPageMetaProvider({ children }: { children: ReactNode }) {
   const [kicker, setKicker] = useState<string>();

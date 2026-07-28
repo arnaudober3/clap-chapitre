@@ -6,20 +6,24 @@ import {
   currentDraftBilan,
   bilanSortOptions,
   filterAdminBilans,
+  nextBilanMonth,
   DEFAULT_QUERY,
   PAGE_SIZE,
 } from '../mock/adminBilans';
 import { bilans } from '../mock/bilans';
-import type { Medium } from '../mock/types';
+import type { Medium, PublishedBilan } from '../mock/types';
 
 const catalogue = adminBilans();
+const published = catalogue.filter((b): b is PublishedBilan => b.status === 'published');
 
 describe('AB-1 admin bilan catalogue', () => {
   it('holds every published month plus the one in progress', () => {
     // The design headline is "14 bilans publiés · 1 en cours".
-    expect(catalogue).toHaveLength(14);
+    expect(published).toHaveLength(14);
     expect(currentDraftBilan()?.status).toBe('draft');
-    expect(catalogue.every((bilan) => bilan.status === 'published')).toBe(true);
+    // The draft is a row of the catalogue, not a thing beside it.
+    expect(catalogue).toHaveLength(published.length + 1);
+    expect(catalogue[0]).toBe(currentDraftBilan());
   });
 
   it('exposes the public bilans under the same ids, without duplicating them', () => {
@@ -28,17 +32,27 @@ describe('AB-1 admin bilan catalogue', () => {
     for (const publicBilan of bilans) {
       expect(ids).toContain(publicBilan.id);
     }
-    // The draft is never part of the published catalogue.
-    expect(ids).not.toContain(currentDraftBilan()!.id);
+    // The month in progress has no published counterpart.
+    expect(published.map((bilan) => bilan.id)).not.toContain(currentDraftBilan()!.id);
   });
 
   it('gives every bilan a YYYY-MM id matching its year and month', () => {
-    for (const bilan of [...catalogue, currentDraftBilan()!]) {
+    for (const bilan of catalogue) {
       expect(bilan.id).toMatch(/^\d{4}-\d{2}$/);
       const [year, month] = bilan.id.split('-').map(Number);
       expect(year).toBe(bilan.year);
       expect(month).toBe(bilan.month);
     }
+  });
+
+  it('points a new bilan at the first month the catalogue has no bilan for', () => {
+    const next = nextBilanMonth();
+    expect(catalogue.map((bilan) => bilan.id)).not.toContain(next.id);
+    expect(next.id).toMatch(/^\d{4}-\d{2}$/);
+    // The catalogue has no gap, so "free" means "right after the latest one".
+    const latest = catalogue.map((bilan) => bilan.id).sort().at(-1)!;
+    expect(next.id > latest).toBe(true);
+    expect(next).toEqual({ id: '2026-08', year: 2026, month: 8, monthLabel: 'Août' });
   });
 
   it('keeps the per-medium tally in step with the detailed avis when there are any', () => {
@@ -54,7 +68,7 @@ describe('AB-1 admin bilan catalogue', () => {
 
   it('reports the totals the page headers show', () => {
     const counts = adminBilanCounts();
-    expect(counts.published).toBe(catalogue.length);
+    expect(counts.published).toBe(published.length);
     expect(counts.drafts).toBe(1);
     // The oldest published month is the site's very first bilan.
     expect(counts.sinceLabel).toBe('mai 2025');
@@ -69,9 +83,11 @@ describe('AB-1 admin bilan catalogue', () => {
 });
 
 describe('AB-1 filterAdminBilans', () => {
-  it('returns the whole catalogue newest-first by default', () => {
+  it('returns the published months newest-first by default', () => {
     const result = filterAdminBilans(DEFAULT_QUERY);
-    expect(result).toHaveLength(catalogue.length);
+    // The month in progress has its own card, so it is never a listing row.
+    expect(result).toHaveLength(published.length);
+    expect(result).not.toContain(currentDraftBilan());
     const dates = result.map((bilan) => bilan.publishedAt);
     expect([...dates].sort((a, b) => b.localeCompare(a))).toEqual(dates);
     // The catalogue is longer than a page, so the pager has something to do.

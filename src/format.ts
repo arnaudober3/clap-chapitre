@@ -22,6 +22,13 @@ export function frNumber(value: number): string {
   return value.toLocaleString('fr-FR').replace(/[  ]/g, ' ');
 }
 
+/** French month name from its 1–12 number, capitalised ("Août"). */
+export function monthName(month: number): string {
+  // Any year works — only the month part is read.
+  const label = new Date(2000, month - 1, 1).toLocaleDateString('fr-FR', { month: 'long' });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 /**
  * Short French date from a sortable ISO day ("2026-07-12" → "12 juil. 2026").
  * The parts are parsed by hand and rebuilt as a local date so the result never

@@ -62,6 +62,7 @@
   line-height: 1;
   color: var(--ink);
   white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
   text-box: trim-both cap alphabetic;
 }

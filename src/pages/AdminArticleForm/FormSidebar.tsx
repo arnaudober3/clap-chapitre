@@ -1,14 +1,6 @@
-import { MEDIA } from '../../media';
+import { MEDIA, MEDIUM_CHIP_LABEL } from '../../media';
 import type { Medium } from '../../mock/types';
 import styles from './AdminArticleForm.module.css';
-
-/** Singular chip labels of design 6c ("Films" reads as a feed, "Film" as a category). */
-const CHIP_LABEL: Record<Medium, string> = {
-  film: 'Film',
-  serie: 'Série',
-  livre: 'Livre',
-  doc: 'Docs',
-};
 
 /** The three metadata slots that make up an avis' `genreMeta` line. */
 export interface MetaFields {
@@ -53,7 +45,7 @@ export default function FormSidebar({
                 aria-pressed={active}
                 onClick={() => onMediumChange(entry.medium)}
               >
-                {CHIP_LABEL[entry.medium]}
+                {MEDIUM_CHIP_LABEL[entry.medium]}
               </button>
             );
           })}

@@ -9,14 +9,16 @@ import styles from './AdminBilans.module.css';
  * (9a) and a stacked card below it (9b) — the `metaGroup` / `statsGroup`
  * wrappers collapse via `display: contents` on desktop so their children join
  * the row grid directly. The title link is stretched over the whole row, so
- * clicking anywhere opens the bilan.
+ * clicking anywhere opens the bilan. The month leads the title: this is the
+ * "Mois" column, and a bilan's title is editorial only — the month it covers
+ * lives in the model, not in the copy.
  */
 export default function BilanRow({ bilan }: { bilan: PublishedBilan }) {
   return (
     <li className={styles.row} data-testid="admin-bilan-row">
       <span className={styles.titleCell}>
         <Link to={`/admin/bilans/${bilan.id}`} className={styles.rowTitle}>
-          {bilan.title}
+          {bilan.monthLabel} {bilan.year} - {bilan.title}
         </Link>
         {bilan.mood && <span className={styles.rowSub}>{bilan.mood}</span>}
       </span>

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { PublishedArticle } from '../../mock/types';
 import { relatedArticles } from '../../mock/articles';
-import { MEDIUM_LABEL, MEDIUM_ACCENT } from './ArticleHero';
+import { MEDIUM_ACCENT, MEDIUM_LABEL } from '../../media';
 import styles from './Article.module.css';
 
 /**
