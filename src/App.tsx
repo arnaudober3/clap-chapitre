@@ -13,6 +13,7 @@ import AdminArticlesPage from './pages/AdminArticles';
 import AdminArticleFormPage from './pages/AdminArticleForm';
 import AdminBilansPage from './pages/AdminBilans';
 import AdminBilanFormPage from './pages/AdminBilanForm';
+import AdminNewsletterPage from './pages/AdminNewsletter';
 import AdminAProposPage from './pages/AdminAPropos';
 import AdminPlaceholder from './pages/AdminPlaceholder';
 import NotFoundPage from './pages/NotFound';
@@ -43,7 +44,10 @@ export default function App() {
 
       {/* Espace admin — its own shell (rail/drawer), separate from the public
           Layout. Tableau de bord, Articles and Bilans culturels are wired,
-          listing and editor alike, plus the "À propos" page editor; the other
+          listing and editor alike, and so is the Newsletter; the two "Pages du
+          site" sections land on a shared "à venir" placeholder (as does any
+          unknown /admin/** path). */}
+          listing and editor alike, and so is the Newsletter; plus the "À propos" page editor; the other
           sections land on a shared "à venir" placeholder (as does any unknown
           /admin/** path). */}
       <Route path="/admin" element={<AdminLayout />}>
@@ -55,7 +59,7 @@ export default function App() {
         <Route path="bilans" element={<AdminBilansPage />} />
         <Route path="bilans/nouveau" element={<AdminBilanFormPage />} />
         <Route path="bilans/:id" element={<AdminBilanFormPage />} />
-        <Route path="newsletter" element={<AdminPlaceholder />} />
+        <Route path="newsletter" element={<AdminNewsletterPage />} />
         <Route path="a-propos" element={<AdminAProposPage />} />
         <Route path="me-suivre" element={<AdminPlaceholder />} />
         <Route path="*" element={<AdminPlaceholder />} />

@@ -21,10 +21,10 @@ describe('TB-4 admin routing', () => {
   });
 
   it('lands still-unbuilt admin sections on the shared placeholder', () => {
-    renderAt('/admin/newsletter');
+    renderAt('/admin/a-propos');
     const page = screen.getByTestId('admin-placeholder-page');
     expect(page).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Newsletter');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('À propos');
   });
 
   it('routes unknown /admin/** paths to the placeholder, not the public 404', () => {
