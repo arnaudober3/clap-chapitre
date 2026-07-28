@@ -4,6 +4,8 @@
  * are pure functions (no React, no module-level mutable state), mirroring the
  * discipline of home.ts / bilans.ts.
  */
+import { defaultNewsletterSource, subscriberStats } from './newsletter';
+import { ofMonth } from '../format';
 
 /** A leaderboard row's kind — the four media plus the "bilan" publication type. */
 export type LeaderboardKind = 'bilan' | 'film' | 'serie' | 'livre' | 'doc';
@@ -154,9 +156,14 @@ const DRAFTS: Draft[] = [
   { id: 'fragments', title: 'Fragments', kindLabel: 'Brouillon' },
 ];
 
+/**
+ * Derived, not spelled out: the edition awaiting send is the one the newsletter
+ * section would generate right now, and the audience is the same figure that
+ * page shows — the CTA here and the page it links to must never disagree.
+ */
 const NEWSLETTER: NewsletterStatus = {
-  edition: 'Newsletter d’août',
-  subscribers: 1284,
+  edition: `Newsletter ${ofMonth(defaultNewsletterSource().monthLabel)}`,
+  subscribers: subscriberStats().total,
   ready: true,
 };
 
