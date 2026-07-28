@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import PortraitField from './PortraitField';
-import YearStatsFields from './YearStatsFields';
-import { useAdminPageKicker } from '../../components/layout/adminPageMeta';
+import { useState } from "react";
+import PortraitField from "./PortraitField";
+import YearStatsFields from "./YearStatsFields";
+import { useAdminPageKicker } from "../../components/layout/adminPageMeta";
 import {
   aproposFormValues,
   type AProposFormValues,
   type YearStatField,
-} from '../../mock/apropos';
-import styles from './AdminAPropos.module.css';
+} from "../../mock/apropos";
+import styles from "./AdminAPropos.module.css";
 
 /** Design 6f's standfirst — also the page summary the mobile top bar carries. */
-const SUBTITLE = 'Ce que voient les visiteurs sur la page À propos';
+const SUBTITLE = "Ce que voient les visiteurs sur la page À propos";
 
 /**
  * Admin editor for the public "À propos" page (design 6f desktop → 7e mobile).
@@ -49,11 +49,6 @@ export default function AdminAProposPage() {
     setSaved(true);
   }
 
-  function cancel() {
-    setValues(aproposFormValues());
-    setSaved(false);
-  }
-
   return (
     <section className={styles.page} data-testid="admin-apropos-page">
       <div className={styles.topbar}>
@@ -68,10 +63,11 @@ export default function AdminAProposPage() {
               Enregistré
             </span>
           )}
-          <button type="button" className={styles.cancelButton} onClick={cancel}>
-            Annuler
-          </button>
-          <button type="button" className={styles.primaryButton} onClick={submit}>
+          <button
+            type="button"
+            className={styles.primaryButton}
+            onClick={submit}
+          >
             Enregistrer
           </button>
         </div>

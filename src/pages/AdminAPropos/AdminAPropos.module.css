@@ -74,24 +74,6 @@
 }
 
 /* Design 7e keeps the primary action alone on the phone bar. */
-.cancelButton {
-    display: none;
-    align-items: center;
-    font-family: inherit;
-    font-size: 12.5px;
-    color: var(--nav-idle);
-    background: var(--surface-card);
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    padding: 8px 14px;
-    cursor: pointer;
-}
-
-.cancelButton:hover {
-    border-color: var(--border-pill);
-    color: var(--ink);
-}
-
 .primaryButton {
     font-family: inherit;
     font-size: 13px;
@@ -225,13 +207,15 @@
 
 .titleInput {
     border-radius: 9px;
-    padding: calc(10px + var(--serif-optical)) 13px calc(10px - var(--serif-optical));
+    padding: calc(10px + var(--serif-optical)) 13px
+        calc(10px - var(--serif-optical));
     font-size: 19px;
 }
 
 .introInput {
     border-radius: 9px;
-    padding: calc(10px + var(--serif-optical)) 13px calc(10px - var(--serif-optical));
+    padding: calc(10px + var(--serif-optical)) 13px
+        calc(10px - var(--serif-optical));
     font-style: italic;
     font-size: 14px;
     color: var(--muted);
@@ -251,7 +235,8 @@
 .quoteInput {
     border-left: 3px solid var(--gold);
     border-radius: 9px;
-    padding: calc(11px + var(--serif-optical)) 13px calc(11px - var(--serif-optical));
+    padding: calc(11px + var(--serif-optical)) 13px
+        calc(11px - var(--serif-optical));
     font-style: italic;
     font-size: 15px;
 }
@@ -307,7 +292,8 @@
     /* Digits have no descender at all, so this is where the lopsided font box
        shows the most. `text-box` would be the direct tool, but it does not
        reach the text inside a replaced <input>. */
-    padding: calc(6px + var(--serif-optical)) 6px calc(6px - var(--serif-optical));
+    padding: calc(6px + var(--serif-optical)) 6px
+        calc(6px - var(--serif-optical));
     font-family: var(--font-serif), serif;
     font-size: 17px;
     color: var(--accent);
@@ -333,10 +319,6 @@
 
     .headerText {
         display: block;
-    }
-
-    .cancelButton {
-        display: inline-flex;
     }
 
     .primaryButton {
@@ -388,7 +370,8 @@
 
     .titleInput {
         font-size: 22px;
-        padding: calc(9px + var(--serif-optical)) 13px calc(9px - var(--serif-optical));
+        padding: calc(9px + var(--serif-optical)) 13px
+            calc(9px - var(--serif-optical));
     }
 
     .introInput {
@@ -403,7 +386,8 @@
     }
 
     .quoteInput {
-        padding: calc(11px + var(--serif-optical)) 14px calc(11px - var(--serif-optical));
+        padding: calc(11px + var(--serif-optical)) 14px
+            calc(11px - var(--serif-optical));
         font-size: 16px;
     }
 
