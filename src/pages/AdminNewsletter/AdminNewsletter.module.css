@@ -344,7 +344,7 @@
 }
 
 .sendButton:disabled {
-  background: var(--surface);
+  background: var(--surface-inset);
   color: var(--faint);
   cursor: default;
 }
@@ -380,7 +380,7 @@
 /* The action whose form is open reads as pressed. */
 .secondaryButtonOpen,
 .secondaryButtonOpen:hover {
-  background: var(--surface);
+  background: var(--surface-inset);
   border-color: var(--border-pill);
   color: var(--ink);
 }
@@ -392,7 +392,7 @@
   gap: 8px;
   margin-top: 10px;
   padding: 12px;
-  background: var(--surface);
+  background: var(--surface-inset);
   border-radius: 9px;
 }
 
@@ -491,7 +491,7 @@
 .stat {
   flex: 1;
   text-align: center;
-  background: var(--surface);
+  background: var(--surface-inset);
   border-radius: 9px;
   padding: 11px;
 }
@@ -533,7 +533,7 @@
   font-size: 12px;
   color: var(--nav-idle);
   padding: 6px 0;
-  border-bottom: 1px solid var(--surface);
+  border-bottom: 1px solid var(--surface-inset);
 }
 
 .sendRow:last-child {

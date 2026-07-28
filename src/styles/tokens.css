@@ -10,6 +10,7 @@
   --surface: #f6efe3;       /* rail, cards, panels, inputs */
   --surface-alt: #f0e6d4;   /* hero-band gradient end */
   --surface-card: #fff;     /* white KPI/leaderboard cards (admin dashboard) */
+  --surface-inset: #f6efe3; /* tiles/forms nested INSIDE a --surface-card card */
   --ink: #3f2e20;           /* primary text / active nav bg (dark brown) */
   --body: #5c4a38;          /* body copy */
   --muted: #8a6a4c;         /* italic subheads */
@@ -98,6 +99,9 @@
   --surface: #26201a;       /* rail, cards, panels, inputs */
   --surface-alt: #2f2820;   /* hero-band gradient end */
   --surface-card: #26201a;  /* admin dashboard cards (aligned with --surface in dark) */
+  /* In dark, --surface collapses onto --surface-card, so anything nested inside
+     a card would vanish into it — the inset surface is lifted one step above. */
+  --surface-inset: #322a21; /* tiles/forms nested INSIDE a --surface-card card */
   --ink: #f2e8d8;           /* primary text / active nav bg (cream) */
   --body: #d8c9b4;          /* body copy */
   --muted: #c49a6f;         /* italic subheads */
