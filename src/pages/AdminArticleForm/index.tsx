@@ -52,9 +52,6 @@ function ArticleForm({ article }: { article?: Article }) {
             <span className={styles.saveDot} aria-hidden="true" />
             Brouillon enregistré · 11:42
           </span>
-          <button type="button" className={styles.secondaryButton}>
-            Aperçu
-          </button>
           <button type="button" className={styles.primaryButton} onClick={submit}>
             {editing ? 'Enregistrer' : 'Publier'}
           </button>

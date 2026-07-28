@@ -28,7 +28,13 @@ function bilan(overrides: Partial<MonthlyBilan> = {}): MonthlyBilan {
     year: 2026,
     month: 6,
     monthLabel: 'Juin',
+    title: 'Juin 2026 — un titre',
     avis: [avis('a'), avis('b'), avis('c'), avis('d')],
+    counts: { film: 4 },
+    views: 1200,
+    likes: 40,
+    status: 'published',
+    publishedAt: '2026-07-02',
     ...overrides,
   };
 }

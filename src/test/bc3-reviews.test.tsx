@@ -39,6 +39,24 @@ const minimal: PublishedArticle = {
   views: 420,
 };
 
+/** A published bilan with only the fields a test cares about spelled out. */
+function bilan(overrides: Partial<MonthlyBilan> = {}): MonthlyBilan {
+  return {
+    id: '2026-06',
+    year: 2026,
+    month: 6,
+    monthLabel: 'Juin',
+    title: 'Juin 2026 — un titre',
+    avis: [full],
+    counts: { film: 1 },
+    views: 1200,
+    likes: 40,
+    status: 'published',
+    publishedAt: '2026-07-02',
+    ...overrides,
+  };
+}
+
 describe('BC-3 BilanReview', () => {
   it('renders title, hook, each body paragraph, the relatedTo note, and forThoseWho', () => {
     render(<BilanReview item={full} />);
@@ -68,14 +86,8 @@ describe('BC-3 BilanReview', () => {
 
 describe('BC-3 MediumSections', () => {
   it('renders only the media that have avis, in Films -> Séries -> Livres -> Docs order', () => {
-    const bilan: MonthlyBilan = {
-      id: '2026-06',
-      year: 2026,
-      month: 6,
-      monthLabel: 'Juin',
-      avis: [minimal, full], // livre + film -> should render Films then Livres
-    };
-    render(<MediumSections bilan={bilan} />);
+    // livre + film -> should render Films then Livres
+    render(<MediumSections bilan={bilan({ avis: [minimal, full] })} />);
     const headers = screen
       .getAllByRole('heading', { level: 2 })
       .map((h) => h.textContent);
@@ -88,27 +100,13 @@ describe('BC-3 MediumSections', () => {
   });
 
   it('renders the humeur block when a mood is present and omits it otherwise', () => {
-    const withMood: MonthlyBilan = {
-      id: '2026-06',
-      year: 2026,
-      month: 6,
-      monthLabel: 'Juin',
-      mood: 'Un mois de lumière rasante.',
-      avis: [full],
-    };
+    const withMood = bilan({ mood: 'Un mois de lumière rasante.' });
     const { unmount } = render(<MediumSections bilan={withMood} />);
     expect(screen.getByText('L’humeur du mois')).toBeInTheDocument();
     expect(screen.getByText('Un mois de lumière rasante.')).toBeInTheDocument();
     unmount();
 
-    const noMood: MonthlyBilan = {
-      id: '2026-05',
-      year: 2026,
-      month: 5,
-      monthLabel: 'Mai',
-      avis: [full],
-    };
-    render(<MediumSections bilan={noMood} />);
+    render(<MediumSections bilan={bilan({ id: '2026-05', month: 5, monthLabel: 'Mai' })} />);
     expect(screen.queryByText('L’humeur du mois')).not.toBeInTheDocument();
   });
 });

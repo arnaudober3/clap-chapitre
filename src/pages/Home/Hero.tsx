@@ -1,13 +1,7 @@
 import { Link } from 'react-router-dom';
-import type { Article, Medium } from '../../mock/types';
+import type { Article } from '../../mock/types';
+import { MEDIUM_LABEL } from '../../media';
 import styles from './Home.module.css';
-
-const MEDIUM_LABEL: Record<Medium, string> = {
-  film: 'Film',
-  serie: 'Série',
-  livre: 'Livre',
-  doc: 'Doc',
-};
 
 /**
  * Salon "Dernier avis" hero for the newest review of a page. Renders the

@@ -11,6 +11,7 @@
 import type { Article, DraftArticle, PublishedArticle, Medium } from './types';
 import { articles } from './articles';
 import { MEDIA } from '../media';
+import { fold } from '../format';
 
 /** Which publication states a listing shows. */
 export type StatusFilter = 'all' | 'published' | 'draft';
@@ -304,14 +305,6 @@ export function sortOptions(): Array<{ id: SortId; label: string }> {
     { id: 'oldest', label: 'Plus anciens' },
     { id: 'views', label: 'Plus vus' },
   ];
-}
-
-/** Lowercased and stripped of diacritics, so "ete" matches "été". */
-function fold(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
 }
 
 /**

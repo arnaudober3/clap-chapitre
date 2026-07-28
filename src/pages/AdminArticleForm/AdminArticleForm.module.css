@@ -69,23 +69,6 @@
   background: var(--border-pill);
 }
 
-.secondaryButton {
-  display: none;
-  font-family: inherit;
-  font-size: 12.5px;
-  color: var(--nav-idle);
-  border: 1px solid var(--border-2);
-  background: var(--surface-card);
-  border-radius: 8px;
-  padding: 8px 14px;
-  cursor: pointer;
-}
-
-.secondaryButton:hover {
-  border-color: var(--border-pill);
-  color: var(--ink);
-}
-
 .primaryButton {
   font-family: inherit;
   font-size: 12.5px;
@@ -431,8 +414,7 @@
     justify-content: flex-start;
   }
 
-  .saveState,
-  .secondaryButton {
+  .saveState {
     display: flex;
   }
 

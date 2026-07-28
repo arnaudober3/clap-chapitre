@@ -1,14 +1,12 @@
 import { leaderboardRanked, type LeaderboardKind } from '../../mock/dashboard';
+import { MEDIUM_ACCENT } from '../../media';
 import { frNumber } from '../../format';
 import styles from './AdminDashboard.module.css';
 
-/** Kind → accent color token (mirrors MEDIUM_ACCENT in ReviewCard); bilan = gold. */
+/** Kind → accent color token: the four media, plus gold for a bilan. */
 const KIND_ACCENT: Record<LeaderboardKind, string> = {
+  ...MEDIUM_ACCENT,
   bilan: 'var(--gold)',
-  film: 'var(--medium-film)',
-  serie: 'var(--medium-serie)',
-  livre: 'var(--medium-livre)',
-  doc: 'var(--medium-docs)',
 };
 
 /**

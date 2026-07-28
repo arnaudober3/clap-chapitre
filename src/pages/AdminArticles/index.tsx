@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ArticlesToolbar from './ArticlesToolbar';
 import ArticleRow from './ArticleRow';
-import Pagination from './Pagination';
+import { Pagination } from '../../components/ui';
 import { useAdminPageKicker } from '../../components/layout/adminPageMeta';
 import {
   adminArticleCounts,
@@ -80,6 +80,7 @@ export default function AdminArticlesPage() {
             pageCount={pageCount}
             shown={rows.length}
             total={matching.length}
+            noun="article"
             onPageChange={setPage}
           />
         </>
