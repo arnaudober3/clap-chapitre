@@ -1,0 +1,557 @@
+/* Admin Bilans listing (design 9a desktop → 9b mobile). Mobile-first: the month
+   in progress is a card, each published month is a card, and at lg the months
+   become a dense table row. Colors via var(--…) only. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---- Header ----
+   Mobile hands this block to the shell's top bar (design 9b): the section name
+   and the "14 publiés · 1 en cours" line live there. */
+.header {
+  display: none;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--font-serif), serif;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ink);
+  margin: 0;
+  font-weight: 500;
+}
+
+.subtitle {
+  font-size: 12.5px;
+  color: var(--muted-2);
+  margin: 5px 0 0;
+}
+
+/* On mobile the FAB carries this action (design 9b). */
+.newButton {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 8px;
+  padding: 8px 15px;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.newButton:hover {
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+.newButtonPlus {
+  font-size: 15px;
+  line-height: 0;
+}
+
+/* ---- The month in progress ---- */
+.current {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 13px;
+  background: var(--surface-row-draft);
+  border: 1px solid var(--border-pill);
+  border-radius: 14px;
+  padding: 15px 15px 13px;
+}
+
+/* The date rail only fits the wide card (design 9a). */
+.currentDate {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: 58px;
+  flex: none;
+  border-right: 1px solid var(--border-pill);
+  padding-right: 14px;
+}
+
+.currentMonth {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+}
+
+.currentYear {
+  font-family: var(--font-serif), serif;
+  font-size: 24px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.currentBody {
+  min-width: 0;
+}
+
+.currentMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.currentUpdated {
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+.currentTitle {
+  font-family: var(--font-serif), serif;
+  font-size: 19px;
+  line-height: 1.25;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 8px 0 0;
+}
+
+.currentMood {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted-2);
+  margin: 5px 0 0;
+}
+
+.currentChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 11px 0 0;
+}
+
+.currentCta {
+  display: block;
+  text-align: center;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 9px;
+  padding: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.currentCta:hover {
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+/* ---- Toolbar ---- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-2);
+}
+
+/* Search and sort sit side by side, the way the article toolbar groups its
+   controls. The bilan listing carries no other filter, so keeping the pair
+   together on the left reads as one control rather than two stray widgets.
+   The basis lets the field wrap onto its own line on the narrowest phones. */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 7px 12px;
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.searchIcon {
+  font-size: 16.5px;
+  line-height: 0;
+  color: var(--faint);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--faint);
+}
+
+.toolbarSelect {
+  flex: none;
+}
+
+/* ---- Column head (lg only) ---- */
+.tableHead {
+  display: none;
+}
+
+.headRight {
+  text-align: right;
+}
+
+/* ---- Rows ---- */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* The stacked card of design 9b: one column, cells in DOM order — title, then
+   the tally and the date, then the figures. minmax(0, …) so the nowrap mood
+   line can be ellipsed instead of widening the card past the viewport. */
+.row {
+  /* Anchor for the title link's stretched hit area (see .rowTitle::after). */
+  position: relative;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  padding: 13px 14px;
+}
+
+.titleCell {
+  min-width: 0;
+}
+
+.rowTitle {
+  display: block;
+  font-family: var(--font-serif), serif;
+  font-size: 17.5px;
+  line-height: 1.25;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.rowTitle:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* The title link covers the whole row, so clicking anywhere opens the bilan.
+   Overlaying rather than wrapping the row keeps the link's accessible name to
+   the title alone, instead of the whole row's text. */
+.rowTitle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.row:hover .rowTitle {
+  color: var(--accent);
+}
+
+/* The card already carries the date, the tally and the figures; the mood line
+   would be a fourth stacked row for a sentence it has to truncate anyway, so
+   design 9b drops it and keeps it for the table alone. */
+.rowSub {
+  display: none;
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--faint);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Design 9b splits this pair: the publication date leads the card, the tally
+   follows the title. The wrapper dissolves so both become grid items that can
+   order themselves around the title. */
+.metaGroup {
+  display: contents;
+}
+
+.chips {
+  order: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.chip {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--chip-accent);
+  background: color-mix(in srgb, var(--chip-accent) 15%, var(--surface-card));
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.dateCell {
+  order: -1;
+  font-size: 10.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+.statsGroup {
+  order: 2;
+  display: flex;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--muted-2);
+  white-space: nowrap;
+}
+
+.numberCell {
+  white-space: nowrap;
+}
+
+/* Every month in the listing is published — the pill only earns its column on
+   the dense table (design 9b drops it from the card entirely). */
+.statusCell {
+  display: none;
+  align-items: center;
+}
+
+.pill {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--status-published-fg);
+  background: var(--status-published-bg);
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.pillDraft {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--status-draft-fg);
+  background: var(--status-draft-bg);
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+/* ---- Empty state ---- */
+.empty {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted);
+  margin: 24px 0;
+}
+
+/* ---- Mobile FAB (design 9b) ---- */
+.fab {
+  position: fixed;
+  bottom: 22px;
+  right: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 28px;
+  line-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px -6px rgba(60, 40, 20, 0.55);
+  z-index: 40;
+  text-decoration: none;
+  text-box: trim-both cap alphabetic;
+  padding-bottom: 3px;
+}
+
+.fab:hover {
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+/* ---- lg: the dense table of design 9a ---- */
+@media (min-width: 1024px) {
+  .page {
+    gap: 18px;
+  }
+
+  .header {
+    display: flex;
+  }
+
+  .newButton {
+    display: flex;
+  }
+
+  /* The card turns into the wide banner of 9a: date rail, copy, action. */
+  .current {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+  }
+
+  .currentDate {
+    display: flex;
+  }
+
+  .currentTitle {
+    font-size: 20px;
+  }
+
+  .currentMood {
+    font-size: 13.5px;
+  }
+
+  .currentCta {
+    padding: 9px 17px;
+    font-size: 12.5px;
+    border-radius: 8px;
+  }
+
+  .currentCtaUnit {
+    display: none;
+  }
+
+  /* The pair sits at the far right of the toolbar, where the article listing
+     puts its own search and sort. */
+  .search {
+    flex: none;
+    width: 260px;
+    margin-left: auto;
+  }
+
+  .tableHead,
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 128px 118px 74px 62px 92px;
+    gap: 0 12px;
+    align-items: center;
+  }
+
+  /* The card stacked its cells; here they line up in DOM order, which is
+     exactly the column order: mois, œuvres, publié le, vues, ♥, statut. */
+  .statusCell {
+    display: flex;
+  }
+
+  .tableHead {
+    padding: 12px 4px 9px;
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-2);
+  }
+
+  .rows {
+    gap: 0;
+  }
+
+  .row {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    padding: 13px 4px;
+  }
+
+  .row:hover {
+    background: var(--nav-hover);
+  }
+
+  /* The figures wrapper dissolves too, so its cells join the row grid. */
+  .statsGroup {
+    display: contents;
+  }
+
+  /* The columns follow the DOM again — the card's reordering is undone. */
+  .chips,
+  .dateCell {
+    order: 0;
+  }
+
+  .chips {
+    flex-wrap: nowrap;
+  }
+
+  .rowTitle {
+    font-size: 16.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rowSub {
+    display: block;
+  }
+
+  .dateCell {
+    font-size: 12.5px;
+    color: var(--muted-2);
+  }
+
+  .numberCell {
+    font-size: 12.5px;
+    color: var(--muted-2);
+    text-align: right;
+  }
+
+  /* Views are the column the editor scans first (design 9a). */
+  .viewsCell {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* "vues" / "publié le" / "♥" only label the figures on the stacked card. */
+  .cellUnit {
+    display: none;
+  }
+
+  /* The table's Œuvres column is too narrow to spell the media out, and its
+     column head already says what the chips count — but the card above it has
+     the room, so it keeps "3 films · 2 séries" in full (design 9a). */
+  .chips .chipUnit {
+    display: none;
+  }
+
+  .statusCell {
+    justify-content: flex-end;
+  }
+
+  .fab {
+    display: none;
+  }
+}

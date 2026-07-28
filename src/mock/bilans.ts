@@ -6,30 +6,34 @@
  * author is Marie-Zoé. Selectors are pure — no React, no module-level mutable
  * state. Grouping-by-medium is a page concern, not a selector.
  */
-import type { PublishedArticle } from './types';
+import type { PublishedBilan } from './types';
 
-/** A month's cultural review, grouped as an "article" on the Bilan page. */
-export interface MonthlyBilan {
-  id: string; // 'YYYY-MM', e.g. '2026-06'
-  year: number; // 2026
-  month: number; // 1–12
-  monthLabel: string; // 'Juin'
-  mood?: string; // "l'humeur du mois" — rendered by the Bilan page
-  avis: PublishedArticle[]; // the month's reviews (the page groups them by medium)
-}
+/**
+ * A month's cultural review, grouped as an "article" on the Bilan page.
+ * Kept as an alias: the public site only ever renders published bilans, and the
+ * DEV-19-05 contract froze this name. The shape itself now lives in `types.ts`
+ * next to the article hierarchy it mirrors.
+ */
+export type MonthlyBilan = PublishedBilan;
 
 /**
  * All monthly bilans, newest-first. Covers ≥ 2 years; the current year (2026)
  * holds ≥ 3 months so DEV-19-05's BilanCulturelArchives renders one expanded year + a
  * collapsed year. The newest month is Juin 2026 and carries full detail.
  */
-export const bilans: MonthlyBilan[] = [
+export const bilans: PublishedBilan[] = [
   {
     id: '2026-06',
     year: 2026,
     month: 6,
     monthLabel: 'Juin',
+    title: 'Juin 2026 — les longues soirées',
     mood: 'Un mois de lumière rasante, où chaque œuvre semblait chercher la sortie du tunnel. On a beaucoup regardé le ciel, un peu moins l’écran, et pourtant tout ce qu’on a vu nous a tenus éveillés.',
+    counts: { film: 1, serie: 1, livre: 1 },
+    views: 3420,
+    likes: 148,
+    status: 'published',
+    publishedAt: '2026-07-02',
     avis: [
       {
         id: 'bilan-2026-06-la-lumiere-du-nord',
@@ -106,7 +110,13 @@ export const bilans: MonthlyBilan[] = [
     year: 2026,
     month: 5,
     monthLabel: 'Mai',
+    title: 'Mai 2026 — tout dehors',
     mood: 'Un mois plus turbulent, traversé de coups de foudre et de quelques déceptions assumées. On a préféré l’audace au confort.',
+    counts: { film: 1, livre: 1 },
+    views: 2960,
+    likes: 121,
+    status: 'published',
+    publishedAt: '2026-06-03',
     avis: [
       {
         id: 'bilan-2026-05-la-fete-immobile',
@@ -145,6 +155,12 @@ export const bilans: MonthlyBilan[] = [
     year: 2026,
     month: 4,
     monthLabel: 'Avril',
+    title: 'Avril 2026 — rien fini, tout commencé',
+    counts: { serie: 1, doc: 1 },
+    views: 2410,
+    likes: 97,
+    status: 'published',
+    publishedAt: '2026-05-02',
     avis: [
       {
         id: 'bilan-2026-04-saison-basse',
@@ -183,7 +199,13 @@ export const bilans: MonthlyBilan[] = [
     year: 2025,
     month: 12,
     monthLabel: 'Décembre',
+    title: 'Décembre 2025 — bilan de l’année',
     mood: 'On a clôturé l’année au coin du feu, avec des œuvres qui réchauffent sans mièvrerie.',
+    counts: { film: 1, livre: 1 },
+    views: 6740,
+    likes: 312,
+    status: 'published',
+    publishedAt: '2026-01-02',
     avis: [
       {
         id: 'bilan-2025-12-hiver-clair',
@@ -220,6 +242,12 @@ export const bilans: MonthlyBilan[] = [
     year: 2025,
     month: 11,
     monthLabel: 'Novembre',
+    title: 'Novembre 2025 — sous la couette',
+    counts: { serie: 1, doc: 1 },
+    views: 2130,
+    likes: 88,
+    status: 'published',
+    publishedAt: '2025-12-01',
     avis: [
       {
         id: 'bilan-2025-11-brumes',

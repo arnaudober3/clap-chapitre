@@ -4,6 +4,17 @@
  * listing format the same figures and dates.
  */
 
+/**
+ * Lowercased and stripped of diacritics, so "ete" matches "été". Shared by the
+ * admin listings' title search.
+ */
+export function fold(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
 /** French thousands grouping with a plain space ("8940" → "8 940"). */
 export function frNumber(value: number): string {
   // fr-FR grouping uses narrow/no-break spaces (U+202F / U+00A0); normalize to a
