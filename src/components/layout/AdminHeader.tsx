@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Link, useLocation, useResolvedPath } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useResolvedPath,
+} from "react-router-dom";
 import {
   adminPrimaryNav,
   adminPagesNav,
@@ -7,6 +12,7 @@ import {
   type AdminNavItem,
 } from "./adminNav";
 import { ThemeToggle } from "../ui";
+import { useAuth } from "../../auth/AuthContext";
 import { useAdminKicker } from "./adminPageMeta";
 import styles from "./AdminLayout.module.css";
 
@@ -95,13 +101,37 @@ function NavGroups({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-/** "Voir le site" link + Marie-Zoé identity block, shared by rail and drawer. */
+/** "Voir le site" link, sign-out and theme toggle, shared by rail and drawer. */
 function RailFoot({ onNavigate }: { onNavigate?: () => void }) {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  // Signing out drops the token, which makes RequireAuth reject every /admin
+  // path — going to the login page ourselves keeps the transition explicit.
+  function onSignOut() {
+    onNavigate?.();
+    signOut();
+    navigate("/admin/login", { replace: true });
+  }
+
   return (
     <div className={styles.foot}>
-      <Link to="/" className={styles.backLink} onClick={onNavigate}>
-        ← Voir le site
-      </Link>
+      <div className={styles.footRow}>
+        <Link to="/" className={styles.backLink} onClick={onNavigate}>
+          ← Voir le site
+        </Link>
+        {/* Icon only: the label would double the height of the foot for an
+            action taken once a session. The name lives in aria-label/title. */}
+        <button
+          type="button"
+          className={styles.footAction}
+          onClick={onSignOut}
+          aria-label="Se déconnecter"
+          title="Se déconnecter"
+        >
+          <span aria-hidden="true">⏻</span>
+        </button>
+      </div>
       <ThemeToggle />
     </div>
   );

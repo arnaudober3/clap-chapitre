@@ -122,10 +122,29 @@
   padding: 0 28px 26px;
 }
 
-/* Theme toggle anchored to the bottom of the sticky rail. */
+/* Admin link + theme toggle anchored to the bottom of the sticky rail. */
 .railFoot {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding: 24px 16px 0;
+}
+
+/* Mirror of the admin shell's .backLink — same micro-capitals, opposite arrow.
+   Only rendered for a signed-in editor (see AdminLink in Header.tsx). */
+.adminLink {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.adminLink:hover {
+  color: var(--accent);
+  text-decoration: none;
 }
 
 /* ---- Mobile top bar ---- */
@@ -248,9 +267,12 @@
   padding: 0 22px 22px;
 }
 
-/* Theme toggle anchored to the bottom of the mobile drawer. */
+/* Admin link + theme toggle anchored to the bottom of the mobile drawer. */
 .drawerFoot {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding: 24px 22px 0;
 }
 
