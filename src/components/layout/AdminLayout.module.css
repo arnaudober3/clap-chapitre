@@ -172,6 +172,40 @@
   text-decoration: none;
 }
 
+/* "Voir le site" on the left, sign-out pushed to the right — one line instead
+   of two, since signing out happens once a session. */
+.footRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Sign-out — glyph only (the label is carried by aria-label/title), sized to
+   match the rail's other tap targets. */
+.footAction {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--faint);
+  background: none;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0;
+  cursor: pointer;
+}
+
+.footAction:hover {
+  color: var(--accent);
+  background: var(--nav-hover);
+}
+
 .avatar {
   width: 30px;
   height: 30px;

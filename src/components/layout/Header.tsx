@@ -4,6 +4,7 @@ import { primaryNav, secondaryNav, drawerNav, type NavItem } from './nav';
 import { articleById } from '../../mock/articles';
 import { MEDIUM_TO_SEGMENT } from '../../media';
 import { ThemeToggle } from '../ui';
+import { useAuth } from '../../auth/AuthContext';
 import styles from './Layout.module.css';
 
 /**
@@ -140,6 +141,20 @@ function DrawerNav({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+/**
+ * Mirror of the admin shell's "← Voir le site" link. It only exists for a
+ * signed-in editor: a visitor never learns the back-office is there.
+ */
+function AdminLink({ onNavigate }: { onNavigate?: () => void }) {
+  const { status } = useAuth();
+  if (status !== 'authenticated') return null;
+  return (
+    <Link to="/admin" className={styles.adminLink} onClick={onNavigate}>
+      Administration →
+    </Link>
+  );
+}
+
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const closeDrawer = () => setDrawerOpen(false);
@@ -156,6 +171,7 @@ export default function Header() {
         </div>
         <NavGroups activeFeed={activeFeed} />
         <div className={styles.railFoot}>
+          <AdminLink />
           <ThemeToggle />
         </div>
       </aside>
@@ -203,6 +219,7 @@ export default function Header() {
           </div>
           <DrawerNav onNavigate={closeDrawer} />
           <div className={styles.drawerFoot}>
+            <AdminLink onNavigate={closeDrawer} />
             <ThemeToggle />
           </div>
         </div>

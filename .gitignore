@@ -5,6 +5,13 @@ node_modules
 dist
 dist-ssr
 
+# secrets — Cloudflare Pages Functions (.dev.vars) and any env file.
+# The committed reference is .dev.vars.example.
+.dev.vars
+.env
+.env.*
+.wrangler
+
 # Claude AI
 .claude/*
 
