@@ -17,8 +17,7 @@ const SUBTITLE = "Ce que voient les visiteurs sur la page À propos";
  * Unlike the article and bilan editors this is a singleton page: there is no
  * listing above it, so the header names the page instead of a breadcrumb.
  * Nothing is persisted in this prototype — the fields are local state seeded
- * from src/mock/apropos.ts, "Annuler" reseeds them and "Enregistrer" only
- * flips a passive state line.
+ * from src/mock/apropos.ts, and "Enregistrer" only flips a passive state line.
  */
 export default function AdminAProposPage() {
   const [values, setValues] = useState<AProposFormValues>(aproposFormValues);

@@ -96,23 +96,6 @@ describe('AAP-2 admin À propos form', () => {
     expect(screen.queryByText('Enregistré')).toBeNull();
   });
 
-  it('restores the mock content when "Annuler" is clicked', async () => {
-    const user = userEvent.setup();
-    renderPage();
-
-    const title = screen.getByLabelText('Titre');
-    await user.clear(title);
-    await user.type(title, 'Autre chose');
-    const firstValue = screen.getByLabelText('Valeur de la ligne 1');
-    await user.clear(firstValue);
-    expect(title).toHaveValue('Autre chose');
-    expect(firstValue).toHaveValue('');
-
-    await user.click(screen.getByRole('button', { name: 'Annuler' }));
-    expect(title).toHaveValue(initial.title);
-    expect(firstValue).toHaveValue(initial.stats[0].value);
-  });
-
   it('offers the portrait control without requesting anything from the network', () => {
     renderPage();
     expect(screen.getByRole('button', { name: 'Changer le portrait' })).toBeInTheDocument();

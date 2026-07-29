@@ -1,17 +1,24 @@
 /**
- * Reordering rules for the bilan editor's coups de cœur. Pure functions on the
- * `highlights` array — no React, no mutation: each returns the *same* array
- * reference when the move is a no-op, so a drag hovering its own card doesn't
- * restart the render loop.
+ * Reordering rules shared by the admin editors that let the author arrange a
+ * list by hand — the bilan's coups de cœur (design 6d) and the "Me suivre"
+ * links (design 6g).
  *
- * The order is editorial, not structural: a bilan can read livre, film, livre
- * if that is how the month is best told. Nothing is grouped by medium — each
- * card carries its own colour band and chip instead.
+ * Pure functions on any array of id-carrying items — no React, no mutation:
+ * each returns the *same* array reference when the move is a no-op, so a drag
+ * hovering its own row doesn't restart the render loop.
  */
-import type { Highlight } from './HighlightCard';
+
+/** Anything these helpers can move: a list item with a stable id. */
+export interface Reorderable {
+  id: string;
+}
 
 /** Move `fromId` to `toId`'s position. No-op on unknown ids or on itself. */
-export function moveTo(list: Highlight[], fromId: string, toId: string): Highlight[] {
+export function moveTo<T extends Reorderable>(
+  list: T[],
+  fromId: string,
+  toId: string,
+): T[] {
   if (fromId === toId) return list;
   const from = list.findIndex((item) => item.id === fromId);
   const to = list.findIndex((item) => item.id === toId);
@@ -27,7 +34,11 @@ export function moveTo(list: Highlight[], fromId: string, toId: string): Highlig
  * Move `id` one place up (-1) or down (+1) — the keyboard counterpart of a
  * drag, and the only way to reorder without a pointer. No-op at either end.
  */
-export function moveByOne(list: Highlight[], id: string, delta: -1 | 1): Highlight[] {
+export function moveByOne<T extends Reorderable>(
+  list: T[],
+  id: string,
+  delta: -1 | 1,
+): T[] {
   const from = list.findIndex((item) => item.id === id);
   if (from === -1) return list;
   const target = list[from + delta];

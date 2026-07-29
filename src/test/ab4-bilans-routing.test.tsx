@@ -15,7 +15,7 @@ describe('AB-4 admin bilans routing', () => {
   it('renders the listing inside the admin shell at /admin/bilans', () => {
     renderAt('/admin/bilans');
     expect(screen.getByTestId('admin-bilans-page')).toBeInTheDocument();
-    expect(screen.queryByTestId('admin-placeholder-page')).toBeNull();
+    expect(screen.queryByTestId('admin-not-found-page')).toBeNull();
     // The public bilan page must not be the one that answered.
     expect(screen.queryByTestId('bilan-culturel-page')).toBeNull();
   });
@@ -32,7 +32,7 @@ describe('AB-4 admin bilans routing', () => {
     for (const path of ['/admin/bilans/nouveau', '/admin/bilans/2026-07']) {
       const { unmount } = renderAt(path);
       expect(screen.getByTestId('admin-bilan-form-page')).toBeInTheDocument();
-      expect(screen.queryByTestId('admin-placeholder-page')).toBeNull();
+      expect(screen.queryByTestId('admin-not-found-page')).toBeNull();
       expect(screen.queryByTestId('not-found-page')).toBeNull();
       unmount();
     }

@@ -39,7 +39,9 @@ describe('AAP-1 admin À propos form values', () => {
     }
   });
 
-  it('returns a fresh, detached object on every call (that is what "Annuler" needs)', () => {
+  // The editor edits this object in place through its state, so it must never
+  // be a window onto the mock the public page renders.
+  it('returns a fresh, detached object on every call', () => {
     const first = aproposFormValues();
     const second = aproposFormValues();
     expect(first).toEqual(second);

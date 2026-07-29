@@ -17,7 +17,7 @@ describe('AN-5 admin newsletter routing', () => {
   it('renders the newsletter inside the admin shell at /admin/newsletter', () => {
     renderAt('/admin/newsletter');
     expect(screen.getByTestId('admin-newsletter-page')).toBeInTheDocument();
-    expect(screen.queryByTestId('admin-placeholder-page')).toBeNull();
+    expect(screen.queryByTestId('admin-not-found-page')).toBeNull();
     expect(screen.queryByTestId('not-found-page')).toBeNull();
   });
 

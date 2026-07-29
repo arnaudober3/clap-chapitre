@@ -15,7 +15,7 @@ describe('AAP-3 admin À propos routing', () => {
   it('renders the editor inside the admin shell at /admin/a-propos', () => {
     renderAt('/admin/a-propos');
     expect(screen.getByTestId('admin-apropos-page')).toBeInTheDocument();
-    expect(screen.queryByTestId('admin-placeholder-page')).toBeNull();
+    expect(screen.queryByTestId('admin-not-found-page')).toBeNull();
     // The public À propos page must not be the one that answered.
     expect(screen.queryByTestId('a-propos-page')).toBeNull();
   });
@@ -34,8 +34,15 @@ describe('AAP-3 admin À propos routing', () => {
     expect(screen.queryByTestId('admin-apropos-page')).toBeNull();
     unmount();
 
-    renderAt('/admin/me-suivre');
-    expect(screen.getByTestId('admin-placeholder-page')).toBeInTheDocument();
+    // The neighbouring "Pages du site" editor answers for itself, and an
+    // unknown admin path still lands on the admin 404.
+    const second = renderAt('/admin/me-suivre');
+    expect(screen.getByTestId('admin-mesuivre-page')).toBeInTheDocument();
+    expect(screen.queryByTestId('admin-apropos-page')).toBeNull();
+    second.unmount();
+
+    renderAt('/admin/inconnu');
+    expect(screen.getByTestId('admin-not-found-page')).toBeInTheDocument();
     expect(screen.queryByTestId('admin-apropos-page')).toBeNull();
   });
 });

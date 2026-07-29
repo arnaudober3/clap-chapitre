@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { moveByOne, moveTo } from '../pages/AdminBilanForm/reorder';
+import { moveByOne, moveTo } from '../reorder';
 import type { Highlight } from '../pages/AdminBilanForm/HighlightCard';
 import type { DraftBilan, Medium, PublishedArticle } from '../mock/types';
 
