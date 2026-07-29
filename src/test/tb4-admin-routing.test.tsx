@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
+import { adminNav } from '../components/layout/adminNav';
 
 function renderAt(path: string) {
   return render(
@@ -20,16 +21,27 @@ describe('TB-4 admin routing', () => {
     expect(screen.queryByText('et')).toBeNull();
   });
 
-  it('lands still-unbuilt admin sections on the shared placeholder', () => {
-    renderAt('/admin/a-propos');
-    const page = screen.getByTestId('admin-placeholder-page');
-    expect(page).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('À propos');
+  // Every nav destination is now built ("Me suivre" was the last one), so the
+  // 404 is reachable through unknown paths only — see the test below.
+  it('leaves no admin nav destination on the 404', () => {
+    for (const item of adminNav) {
+      const { unmount } = renderAt(item.to);
+      expect(screen.queryByTestId('admin-not-found-page'), item.to).toBeNull();
+      unmount();
+    }
   });
 
-  it('routes unknown /admin/** paths to the placeholder, not the public 404', () => {
+  it('answers an unknown /admin/** path with the admin 404, not the public one', () => {
     renderAt('/admin/zzz');
-    expect(screen.getByTestId('admin-placeholder-page')).toBeInTheDocument();
+    const page = screen.getByTestId('admin-not-found-page');
+    // Same affiche as the public 404, one way out, and the rail is still there.
+    expect(
+      within(page).getByRole('heading', { name: /Ce chapitre reste à écrire/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(page).getByRole('link', { name: 'Retour au dashboard' }),
+    ).toHaveAttribute('href', '/admin');
+    expect(within(page).getAllByRole('link')).toHaveLength(1);
     expect(screen.queryByTestId('not-found-page')).toBeNull();
   });
 });

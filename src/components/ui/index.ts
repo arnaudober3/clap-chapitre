@@ -7,9 +7,11 @@ export { default as NewsletterBlock } from './NewsletterBlock';
 export { default as ThemeToggle } from './ThemeToggle';
 export { default as AdminSelect } from './AdminSelect';
 export { default as Pagination } from './Pagination';
+export { default as NotFoundPanel } from './NotFoundPanel';
 export type {
   NewsletterBlockProps,
   NewsletterBlockVariant,
 } from './NewsletterBlock';
 export type { AdminSelectOption, AdminSelectProps } from './AdminSelect';
 export type { PaginationProps } from './Pagination';
+export type { NotFoundPanelProps } from './NotFoundPanel';

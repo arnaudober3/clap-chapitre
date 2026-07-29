@@ -23,7 +23,7 @@ describe('AA-5 admin articles routing', () => {
   it('renders the listing at /admin/articles inside the admin shell', () => {
     renderAt('/admin/articles');
     expect(screen.getByTestId('admin-articles-page')).toBeInTheDocument();
-    expect(screen.queryByTestId('admin-placeholder-page')).toBeNull();
+    expect(screen.queryByTestId('admin-not-found-page')).toBeNull();
     expect(articlesIsCurrent()).toBe(true);
   });
 

@@ -55,6 +55,23 @@
   --social-babelio: #9a3b2a;
   --social-linkedin: #1f5079;
 
+  /* Chip tints — admin "Me suivre" editor (design 6g/7f). Pastel plate + accent
+     mark, one pair per network. Unlike --social-*, these sit on a light card and
+     DO get overridden in dark. The light marks coincide with the --medium-*
+     accents: same Salon accent family, different axis — kept separate so the two
+     can drift. */
+  --chip-threads-bg: #f6e4dc;
+  --chip-threads-fg: #b0502f;
+  --chip-letterboxd-bg: #eef1e2;
+  --chip-letterboxd-fg: #6a7a45;
+  --chip-babelio-bg: #efe3ec;
+  --chip-babelio-fg: #8a5a7a;
+  --chip-linkedin-bg: #e3ecef;
+  --chip-linkedin-fg: #4f6f7c;
+  /* Fallback: a row the editor added, or a network with no tint of its own. */
+  --chip-bg: #ece2d1;
+  --chip-fg: #8a7460;
+
   /* Interactive helpers */
   --nav-hover: #efe6d6;     /* nav item hover surface */
   --nav-idle: #6c5a46;      /* idle nav link text */
@@ -134,6 +151,19 @@
   --medium-serie: #6fa0b0;
   --medium-docs: #b884a6;
   --medium-film: #e0714a;
+
+  /* Chip tints — plates desaturated down to --surface-inset's range, marks
+     brightened like the medium accents above. */
+  --chip-threads-bg: #3a2620;
+  --chip-threads-fg: #e0714a;
+  --chip-letterboxd-bg: #2b3122;
+  --chip-letterboxd-fg: #92a86a;
+  --chip-babelio-bg: #35262f;
+  --chip-babelio-fg: #b884a6;
+  --chip-linkedin-bg: #22323a;
+  --chip-linkedin-fg: #6fa0b0;
+  --chip-bg: #322a21;
+  --chip-fg: #b39d84;
 
   /* Interactive helpers */
   --nav-hover: #2f2820;     /* nav item hover surface */

@@ -15,7 +15,8 @@ import AdminBilansPage from "./pages/AdminBilans";
 import AdminBilanFormPage from "./pages/AdminBilanForm";
 import AdminNewsletterPage from "./pages/AdminNewsletter";
 import AdminAProposPage from "./pages/AdminAPropos";
-import AdminPlaceholder from "./pages/AdminPlaceholder";
+import AdminMeSuivrePage from "./pages/AdminMeSuivre";
+import AdminNotFoundPage from "./pages/AdminNotFound";
 import NotFoundPage from "./pages/NotFound";
 
 export default function App() {
@@ -49,10 +50,11 @@ export default function App() {
       </Route>
 
       {/* Espace admin — its own shell (rail/drawer), separate from the public
-          Layout. Tableau de bord, Articles and Bilans culturels are wired,
-          listing and editor alike, and so is the Newsletter; plus the "À propos" page editor; the other
-          sections land on a shared "à venir" placeholder (as does any unknown
-          /admin/** path). */}
+          Layout. Every rail destination is built: Tableau de bord, Articles and
+          Bilans culturels (listing and editor alike), Newsletter, and both
+          "Pages du site" editors ("À propos" and "Me suivre"). An unknown
+          /admin/** path gets the same 404 affiche as the public site, inside
+          the admin shell. */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboardPage />} />
         <Route path="articles" element={<AdminArticlesPage />} />
@@ -64,8 +66,8 @@ export default function App() {
         <Route path="bilans/:id" element={<AdminBilanFormPage />} />
         <Route path="newsletter" element={<AdminNewsletterPage />} />
         <Route path="a-propos" element={<AdminAProposPage />} />
-        <Route path="me-suivre" element={<AdminPlaceholder />} />
-        <Route path="*" element={<AdminPlaceholder />} />
+        <Route path="me-suivre" element={<AdminMeSuivrePage />} />
+        <Route path="*" element={<AdminNotFoundPage />} />
       </Route>
     </Routes>
   );

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import HighlightCard, { type Highlight, type HighlightPatch } from './HighlightCard';
 import AddHighlightPicker from './AddHighlightPicker';
-import { moveByOne, moveTo } from './reorder';
+import { moveByOne, moveTo } from '../../reorder';
 import { useAdminPageKicker } from '../../components/layout/adminPageMeta';
 import { adminBilanById, nextBilanMonth } from '../../mock/adminBilans';
 import type { Bilan, PublishedArticle } from '../../mock/types';
@@ -59,7 +59,13 @@ function BilanForm({ bilan }: { bilan?: Bilan }) {
     );
   }
 
-  /** Live reorder: the dragged card swaps with whichever card it hovers. */
+  /**
+   * Live reorder: the dragged card swaps with whichever card it hovers.
+   *
+   * The order is editorial, not structural: a bilan can read livre, film, livre
+   * if that is how the month is best told. Nothing is grouped by medium — each
+   * card carries its own colour band and chip instead.
+   */
   function dragOver(overId: string) {
     if (!dragging) return;
     setHighlights((previous) => moveTo(previous, dragging, overId));
