@@ -97,10 +97,22 @@ only table is a probe. `GET /api/db-health` reads it and is the sole consumer:
 Local data lives in `.wrangler/state/v3` (gitignored), and `getPlatformProxy()`
 persists to that same directory — so `npm run dev` and `npm run preview:cf` share
 **one** SQLite file. Run `npm run db:migrate` after cloning; the tests need no
-database. `database_id` in `wrangler.toml` is a placeholder until someone runs
-`wrangler d1 create clap-et-chapitre`; deploying also means mirroring the
-`[[d1_databases]]` block under `[env.preview]` and running `db:migrate:remote`,
-since Pages does not apply migrations on deploy.
+database.
+
+Remotely there is a **single** database, `clap-chapitre`, and preview deployments
+inherit the top-level binding — they read the same one production does. Acceptable
+while it is empty; the day it holds real content, previews need their own under
+`[[env.preview.d1_databases]]`. Pages never applies migrations on deploy, so a
+schema change means running `npm run db:migrate:remote` by hand.
+
+The Pages project is Git-connected: `main` deploys to production, every other
+branch to a preview. Checking a deployment is one request, because `db-health`
+reads the database live — a migration fixes a 503 with no rebuild:
+
+```bash
+npx wrangler pages deployment list --project-name clap-chapitre   # find the URL
+curl https://<id>.clap-chapitre.pages.dev/api/db-health           # 200 / 503 / 500
+```
 
 D1 is typed structurally in `functions/types.ts`, for the same reason `Env` is —
 `@cloudflare/workers-types` would force Workers globals onto the tsconfig that
