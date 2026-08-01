@@ -1,4 +1,7 @@
-name = "clap-et-chapitre"
+# Matches the Pages project, which is named `clap-chapitre`: `wrangler pages
+# deploy` targets whatever name is written here, and would cheerfully create a
+# second project under any other one.
+name = "clap-chapitre"
 compatibility_date = "2026-07-01"
 
 # Cloudflare Pages: `dist/` is served statically, `functions/` becomes the
@@ -12,11 +15,13 @@ pages_build_output_dir = "dist"
 #
 # Locally only the binding name matters — wrangler keeps the SQLite file under
 # `.wrangler/state/v3` (gitignored), shared by `npm run dev` and `preview:cf`.
+#
+# Preview deployments inherit this block: they read the *same* remote database as
+# production. Verified — `/api/db-health` answers 200 on a preview URL. That is
+# fine while the database is empty; the day it holds real content, previews need
+# their own, declared as `[[env.preview.d1_databases]]` with a second UUID.
 [[d1_databases]]
 binding = "DB"
-database_name = "clap-et-chapitre"
-# Placeholder. Replace with the UUID returned by
-# `npx wrangler d1 create clap-et-chapitre` before the first deploy, and mirror
-# this whole block under `[env.preview]` — previews get their own database.
+database_name = "clap-chapitre"
 database_id = "cf7da22f-dfcb-4b6a-a8b2-8dbf5c55ea50"
 migrations_dir = "migrations"
