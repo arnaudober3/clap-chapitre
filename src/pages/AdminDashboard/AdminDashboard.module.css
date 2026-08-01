@@ -1,0 +1,404 @@
+/* Admin Tableau de bord (design 6b → 6h). Mobile-first: single column, KPI 2×2,
+   leaderboard bars hidden; the desktop grid + full bars come in at md/lg. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- Header ---- */
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--font-serif), serif;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ink);
+  margin: 0;
+  font-weight: 500;
+}
+
+.subtitle {
+  font-size: 12.5px;
+  color: var(--muted-2);
+  margin: 5px 0 0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+
+/* The period dropdown now comes from the shared <AdminSelect> primitive. */
+
+.newButton {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 15px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.newButton:hover {
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+.newButtonPlus {
+  font-size: 15px;
+  line-height: 0;
+}
+
+/* ---- KPI band ---- */
+.statStrip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.statCell {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-2);
+  border-left: 1px solid var(--border-2);
+}
+
+/* Top row + first column shed their inner borders so only interior gridlines show. */
+.statCell:nth-child(-n + 2) {
+  border-top: none;
+}
+
+.statCell:nth-child(odd) {
+  border-left: none;
+}
+
+.statLabel {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.statValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.statValue {
+  font-family: var(--font-serif), serif;
+  font-size: 23px;
+  color: var(--ink);
+}
+
+.statDelta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--positive);
+}
+
+.statDelta.negative {
+  color: var(--negative);
+}
+
+/* ---- Grid (leaderboard + side column) ---- */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- Card base ---- */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+}
+
+.cardTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 3px;
+}
+
+.cardTitleSm {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.cardSubtitle {
+  font-size: 11.5px;
+  color: var(--faint);
+  margin: 0 0 16px;
+}
+
+/* ---- Leaderboard ---- */
+.rankList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.rankHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.rankTitleWrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rankChip {
+  flex: none;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--row-accent);
+  background: color-mix(in srgb, var(--row-accent) 15%, var(--surface-card));
+  padding: 1px 7px;
+  border-radius: 5px;
+}
+
+.rankTitle {
+  font-size: 13px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rankViews {
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.rankTrack {
+  height: 8px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--row-accent) 12%, var(--surface-card));
+}
+
+.rankBar {
+  height: 8px;
+  border-radius: 5px;
+  background: var(--row-accent);
+}
+
+/* ---- Trend sparkline ---- */
+.spark {
+  width: 100%;
+  height: 96px;
+  display: block;
+}
+
+/* ---- À terminer ---- */
+.todoHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.countBadge {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--faint);
+  background: var(--surface-alt);
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.todoList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.todoRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.todoRow:last-child {
+  border-bottom: none;
+}
+
+.todoDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--gold);
+  flex: none;
+}
+
+.todoTitle {
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.todoStatus {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+/* ---- Newsletter CTA ---- */
+.newsletter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--dark-grad);
+  border-radius: var(--radius-card);
+  padding: 15px 18px;
+}
+
+.newsletterText {
+  flex: 1;
+  min-width: 0;
+}
+
+.newsletterTitle {
+  font-family: var(--font-serif), serif;
+  font-size: 15px;
+  color: var(--on-dark);
+}
+
+.newsletterMeta {
+  font-size: 11px;
+  color: var(--on-dark-muted);
+  margin-top: 2px;
+}
+
+.newsletterButton {
+  flex: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--on-gold);
+  background: var(--gold);
+  border: none;
+  padding: 7px 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.newsletterButton:hover {
+  background: var(--gold-hover);
+  color: var(--on-gold);
+  text-decoration: none;
+}
+
+/* ---- Mobile FAB ---- */
+.fab {
+  position: fixed;
+  bottom: 22px;
+  right: 18px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-dark);
+  border: none;
+  font-size: 30px;
+  line-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 24px -6px rgba(176, 80, 47, 0.6);
+  cursor: pointer;
+  z-index: 40;
+  text-decoration: none;
+  text-box: trim-both cap alphabetic;
+  padding-bottom: 3px;
+}
+
+.fab:hover {
+  opacity: 0.92;
+  color: var(--on-dark);
+  text-decoration: none;
+}
+
+/* ---- md: KPI 4-across ---- */
+@media (min-width: 768px) {
+  .statStrip {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .statCell {
+    border-top: none;
+  }
+
+  /* Only interior vertical gridlines: every cell but the first keeps its left border. */
+  .statCell:nth-child(odd) {
+    border-left: 1px solid var(--border-2);
+  }
+
+  .statCell:first-child {
+    border-left: none;
+  }
+
+  .statValue {
+    font-size: 26px;
+  }
+}
+
+/* ---- lg: desktop grid, no FAB ---- */
+@media (min-width: 1024px) {
+  .page {
+    gap: 20px;
+  }
+
+  .grid {
+    grid-template-columns: 1.6fr 1fr;
+  }
+
+  .fab {
+    display: none;
+  }
+}

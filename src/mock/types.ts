@@ -7,8 +7,12 @@
 /** The four media the site reviews. */
 export type Medium = 'film' | 'serie' | 'livre' | 'doc';
 
-/** A single review / "avis" entry. */
-export interface Article {
+/**
+ * The fields every avis carries, whatever its publication state. Internal —
+ * consumers take `Article`, or `DraftArticle` / `PublishedArticle` when the
+ * state is known.
+ */
+interface BaseArticle {
   id: string;
   title: string;
   medium: Medium;
@@ -23,6 +27,8 @@ export interface Article {
   likes: number;
   /** Comment count — shown on every card and the hero. */
   comments: number;
+  /** View count. Not surfaced publicly — the admin listing shows it. */
+  views: number;
   /** Italic question line under the title (hero uses it). */
   hook?: string;
   /** The "Pour ceux qui…" one-liner (hero uses it). */
@@ -40,6 +46,68 @@ export interface Article {
   /** "À rapprocher de" — ids of up to 2 other avis + why they're close. */
   related?: Array<{ id: string; note: string }>;
 }
+
+/** An avis still being written: no publication date, but a "last edited" line. */
+export interface DraftArticle extends BaseArticle {
+  status: 'draft';
+  /** e.g. "Modifié il y a 2 jours". */
+  updatedLabel: string;
+}
+
+/** A live avis — the only kind the public site ever renders. */
+export interface PublishedArticle extends BaseArticle {
+  status: 'published';
+  /** Sortable ISO date, '2026-07-12'. */
+  publishedAt: string;
+}
+
+/** Any avis. Narrow on `status` to reach the state-specific fields. */
+export type Article = DraftArticle | PublishedArticle;
+
+/**
+ * The fields every monthly bilan carries, whatever its publication state.
+ * Internal — consumers take `Bilan`, or `DraftBilan` / `PublishedBilan` when the
+ * state is known. Mirrors the article hierarchy above.
+ */
+interface BaseBilan {
+  /** 'YYYY-MM', e.g. '2026-06'. */
+  id: string;
+  year: number;
+  /** 1–12. */
+  month: number;
+  /** 'Juin'. */
+  monthLabel: string;
+  /** Editorial title, e.g. "Juin 2026 — les longues soirées". */
+  title: string;
+  /** "L'humeur du mois" — the Bilan page renders it in full, listings truncate. */
+  mood?: string;
+  /** The month's reviews. Empty on the months only the admin listing shows. */
+  avis: PublishedArticle[];
+  /** Œuvres per medium — the listing's chips. Kept explicit because the
+      archive months carry no detailed `avis` to count. */
+  counts: Partial<Record<Medium, number>>;
+  /** View count. Not surfaced publicly — the admin listing shows it. */
+  views: number;
+  /** ♡ like count on the bilan itself. */
+  likes: number;
+}
+
+/** A bilan still being written: no publication date, but a "last edited" line. */
+export interface DraftBilan extends BaseBilan {
+  status: 'draft';
+  /** e.g. "Modifié il y a 2 jours". */
+  updatedLabel: string;
+}
+
+/** A live bilan — the only kind the public site ever renders. */
+export interface PublishedBilan extends BaseBilan {
+  status: 'published';
+  /** Sortable ISO date, '2026-07-02'. */
+  publishedAt: string;
+}
+
+/** Any bilan. Narrow on `status` to reach the state-specific fields. */
+export type Bilan = DraftBilan | PublishedBilan;
 
 /** A comment on an article / bilan thread. */
 export interface Comment {

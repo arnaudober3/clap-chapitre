@@ -2,24 +2,13 @@ import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import type { Article, Medium } from '../../mock/types';
 import type { MonthlyBilan } from '../../mock/bilans';
-import { MEDIA, MEDIUM_TO_SEGMENT } from '../../media';
+import {
+  MEDIA,
+  MEDIUM_ACCENT,
+  MEDIUM_LABEL,
+  MEDIUM_TO_SEGMENT,
+} from '../../media';
 import styles from './Article.module.css';
-
-/** Singular medium label used by the hero eyebrow and the related cards. */
-export const MEDIUM_LABEL: Record<Medium, string> = {
-  film: 'Film',
-  serie: 'Série',
-  livre: 'Livre',
-  doc: 'Doc',
-};
-
-/** Medium → its accent color token (the eyebrow / related-card label color). */
-export const MEDIUM_ACCENT: Record<Medium, string> = {
-  film: 'var(--medium-film)',
-  serie: 'var(--medium-serie)',
-  livre: 'var(--medium-livre)',
-  doc: 'var(--medium-docs)',
-};
 
 /** Plural archive label ("Films", "Séries", …) — the breadcrumb's medium crumb. */
 function archiveLabel(medium: Medium): string {

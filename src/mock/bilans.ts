@@ -6,30 +6,34 @@
  * author is Marie-Zoé. Selectors are pure — no React, no module-level mutable
  * state. Grouping-by-medium is a page concern, not a selector.
  */
-import type { Article } from './types';
+import type { PublishedBilan } from './types';
 
-/** A month's cultural review, grouped as an "article" on the Bilan page. */
-export interface MonthlyBilan {
-  id: string; // 'YYYY-MM', e.g. '2026-06'
-  year: number; // 2026
-  month: number; // 1–12
-  monthLabel: string; // 'Juin'
-  mood?: string; // "l'humeur du mois" — rendered by the Bilan page
-  avis: Article[]; // the month's reviews (the page groups them by medium)
-}
+/**
+ * A month's cultural review, grouped as an "article" on the Bilan page.
+ * Kept as an alias: the public site only ever renders published bilans, and the
+ * DEV-19-05 contract froze this name. The shape itself now lives in `types.ts`
+ * next to the article hierarchy it mirrors.
+ */
+export type MonthlyBilan = PublishedBilan;
 
 /**
  * All monthly bilans, newest-first. Covers ≥ 2 years; the current year (2026)
  * holds ≥ 3 months so DEV-19-05's BilanCulturelArchives renders one expanded year + a
  * collapsed year. The newest month is Juin 2026 and carries full detail.
  */
-export const bilans: MonthlyBilan[] = [
+export const bilans: PublishedBilan[] = [
   {
     id: '2026-06',
     year: 2026,
     month: 6,
     monthLabel: 'Juin',
+    title: 'Les longues soirées',
     mood: 'Un mois de lumière rasante, où chaque œuvre semblait chercher la sortie du tunnel. On a beaucoup regardé le ciel, un peu moins l’écran, et pourtant tout ce qu’on a vu nous a tenus éveillés.',
+    counts: { film: 1, serie: 1, livre: 1 },
+    views: 3420,
+    likes: 148,
+    status: 'published',
+    publishedAt: '2026-07-02',
     avis: [
       {
         id: 'bilan-2026-06-la-lumiere-du-nord',
@@ -42,6 +46,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 88,
         comments: 15,
+        status: 'published',
+        views: 1180,
+        publishedAt: '2026-06-27',
         hook: 'Peut-on se réchauffer à une lumière qui vient du froid ?',
         forThoseWho:
           'Pour ceux qui aiment les drames où le décor parle autant que les acteurs.',
@@ -62,6 +69,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 103,
         comments: 22,
+        status: 'published',
+        views: 1040,
+        publishedAt: '2026-06-15',
         hook: 'Comment continue-t-on à vivre quand il manque quelqu’un ?',
         forThoseWho:
           'Pour ceux qui préfèrent les séries qui chuchotent plutôt qu’elles ne crient.',
@@ -82,6 +92,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 64,
         comments: 9,
+        status: 'published',
+        views: 720,
+        publishedAt: '2026-06-21',
         hook: 'Et si un livre pouvait pousser, page après page ?',
         forThoseWho: 'Pour ceux qui lisent lentement, comme on jardine.',
         body: 'Le jardin suspendu est un roman qui se cultive. La prose y est si dense qu’on a envie de la respirer plutôt que de la lire.\n\nChaque chapitre est une saison ; on referme le livre les mains pleines de terre et l’esprit apaisé.',
@@ -97,7 +110,13 @@ export const bilans: MonthlyBilan[] = [
     year: 2026,
     month: 5,
     monthLabel: 'Mai',
+    title: 'Tout dehors',
     mood: 'Un mois plus turbulent, traversé de coups de foudre et de quelques déceptions assumées. On a préféré l’audace au confort.',
+    counts: { film: 1, livre: 1 },
+    views: 2960,
+    likes: 121,
+    status: 'published',
+    publishedAt: '2026-06-03',
     avis: [
       {
         id: 'bilan-2026-05-la-fete-immobile',
@@ -110,6 +129,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 71,
         comments: 11,
+        status: 'published',
+        views: 640,
+        publishedAt: '2026-05-24',
       },
       {
         id: 'bilan-2026-05-marges',
@@ -122,6 +144,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 49,
         comments: 6,
+        status: 'published',
+        views: 470,
+        publishedAt: '2026-05-17',
       },
     ],
   },
@@ -130,6 +155,12 @@ export const bilans: MonthlyBilan[] = [
     year: 2026,
     month: 4,
     monthLabel: 'Avril',
+    title: 'Rien fini, tout commencé',
+    counts: { serie: 1, doc: 1 },
+    views: 2410,
+    likes: 97,
+    status: 'published',
+    publishedAt: '2026-05-02',
     avis: [
       {
         id: 'bilan-2026-04-saison-basse',
@@ -142,6 +173,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 84,
         comments: 14,
+        status: 'published',
+        views: 820,
+        publishedAt: '2026-04-19',
       },
       {
         id: 'bilan-2026-04-voix-off',
@@ -154,6 +188,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 38,
         comments: 4,
+        status: 'published',
+        views: 360,
+        publishedAt: '2026-04-05',
       },
     ],
   },
@@ -162,7 +199,13 @@ export const bilans: MonthlyBilan[] = [
     year: 2025,
     month: 12,
     monthLabel: 'Décembre',
+    title: 'Bilan de l’année',
     mood: 'On a clôturé l’année au coin du feu, avec des œuvres qui réchauffent sans mièvrerie.',
+    counts: { film: 1, livre: 1 },
+    views: 6740,
+    likes: 312,
+    status: 'published',
+    publishedAt: '2026-01-02',
     avis: [
       {
         id: 'bilan-2025-12-hiver-clair',
@@ -174,6 +217,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 92,
         comments: 18,
+        status: 'published',
+        views: 910,
+        publishedAt: '2025-12-20',
       },
       {
         id: 'bilan-2025-12-le-livre-des-nuits',
@@ -185,6 +231,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 55,
         comments: 7,
+        status: 'published',
+        views: 520,
+        publishedAt: '2025-12-11',
       },
     ],
   },
@@ -193,6 +242,12 @@ export const bilans: MonthlyBilan[] = [
     year: 2025,
     month: 11,
     monthLabel: 'Novembre',
+    title: 'Sous la couette',
+    counts: { serie: 1, doc: 1 },
+    views: 2130,
+    likes: 88,
+    status: 'published',
+    publishedAt: '2025-12-01',
     avis: [
       {
         id: 'bilan-2025-11-brumes',
@@ -204,6 +259,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 67,
         comments: 10,
+        status: 'published',
+        views: 660,
+        publishedAt: '2025-11-22',
       },
       {
         id: 'bilan-2025-11-les-voix-basses',
@@ -215,6 +273,9 @@ export const bilans: MonthlyBilan[] = [
         author: 'Marie-Zoé',
         likes: 41,
         comments: 5,
+        status: 'published',
+        views: 390,
+        publishedAt: '2025-11-08',
       },
     ],
   },

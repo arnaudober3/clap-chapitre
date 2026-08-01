@@ -1,0 +1,691 @@
+/* Admin newsletter (design 7d mobile → 6e desktop). Mobile-first: one column,
+   the preview above the send panel and the audience card. At lg the panel moves
+   into a 320px sidebar beside the preview. Colors via var(--…) only. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- Header ----
+   Mobile hands the title and the edition line to the shell's top bar (design
+   7d); the status pill stays on the page, where the bar has no room for it. */
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.headerTitles {
+  display: none;
+}
+
+.title {
+  font-family: var(--font-serif), serif;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ink);
+  margin: 0;
+  font-weight: 500;
+}
+
+.subtitle {
+  font-size: 12.5px;
+  color: var(--muted-2);
+  margin: 5px 0 0;
+}
+
+/* Ambre while the edition waits, green once it has gone out. */
+.status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--status-draft-fg);
+  background: var(--status-draft-bg);
+  padding: 7px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.statusSent {
+  color: var(--status-published-fg);
+  background: var(--status-published-bg);
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.statusSent .statusDot {
+  background: var(--positive);
+}
+
+/* "Prête" on the phone, "Prête à envoyer" once the header has room. */
+.statusLong {
+  display: none;
+}
+
+/* ---- Body ---- */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panels {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- The e-mail preview ---- */
+.mail {
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  overflow: hidden;
+  background: var(--surface-card);
+  box-shadow: 0 10px 24px -16px rgba(60, 40, 20, 0.35);
+}
+
+/* The caption bar above the mail: it belongs to the back-office, not to the
+   e-mail, so it sits on the panel surface rather than the mail's cream. */
+.mailChrome {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 9px 14px;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+}
+
+/* The mail body keeps the cream page colour — it is a document inside the
+   back-office, not another card. */
+.mailBody {
+  background: var(--bg);
+  padding: 22px 20px;
+}
+
+.masthead {
+  font-family: var(--font-serif), serif;
+  font-size: 16px;
+  color: var(--ink);
+  text-align: center;
+}
+
+.mastheadEt {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.mastheadRule {
+  width: 22px;
+  height: 2px;
+  background: var(--gold);
+  margin: 9px auto 16px;
+  border-radius: 2px;
+}
+
+.mailEyebrow {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  text-align: center;
+}
+
+.mailTitle {
+  font-family: var(--font-serif), serif;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.1;
+  color: var(--ink);
+  text-align: center;
+  margin: 9px 0 12px;
+}
+
+.mailMood {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+  max-width: 440px;
+  margin: 0 auto 18px;
+}
+
+.mailDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 0 16px;
+}
+
+.highlight {
+  display: flex;
+  gap: 11px;
+  margin-bottom: 14px;
+}
+
+/* PosterThumb already carries the 2/3 ratio and the gradient. */
+.highlightCover {
+  width: 38px;
+  flex: none;
+}
+
+.highlightLabel {
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--highlight-accent);
+  margin-bottom: 2px;
+}
+
+.highlightTitle {
+  font-family: var(--font-serif), serif;
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+
+.highlightHook {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--body);
+}
+
+.mailCta {
+  text-align: center;
+  background: var(--surface);
+  border-radius: 11px;
+  padding: 16px;
+}
+
+.mailCtaCopy {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--body);
+  margin: 0 0 11px;
+}
+
+.mailCtaLink {
+  display: inline-block;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 11px 20px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+}
+
+.mailCtaLink:hover {
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+/* Inert on purpose — "Se désabonner" belongs to the mail, not to the admin. */
+.mailFoot {
+  text-align: center;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--faint);
+  margin: 18px 0 0;
+}
+
+/* ---- Side panels ---- */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.cardLabel {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.field {
+  margin-bottom: 12px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 11px;
+  color: var(--faint);
+  margin-bottom: 5px;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border-2);
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 10px 11px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--border-pill);
+}
+
+/* Stretch the shared AdminSelect to the panel's width: the design's source row
+   is a full-width field with the caret pinned right, not a compact pill. The
+   element selectors reach the primitive's own trigger and menu. */
+.sourceSelect > button {
+  width: 100%;
+  justify-content: space-between;
+  padding: 9px 11px;
+  color: var(--ink);
+}
+
+.sourceSelect > ul {
+  left: 0;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 13px;
+  color: var(--nav-idle);
+}
+
+.rowDivided {
+  border-top: 1px solid var(--border);
+}
+
+.rowValueStrong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.sendButton {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px;
+  border-radius: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.sendButton:hover {
+  background: var(--accent);
+}
+
+.sendButton:disabled {
+  background: var(--surface-inset);
+  color: var(--faint);
+  cursor: default;
+}
+
+.secondaryActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.secondaryButton {
+  flex: 1;
+  border: 1px solid var(--border-2);
+  background: var(--surface-card);
+  color: var(--nav-idle);
+  font-family: inherit;
+  font-size: 12.5px;
+  padding: 11px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  border-color: var(--border-pill);
+  color: var(--ink);
+}
+
+.secondaryButton:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+
+/* The action whose form is open reads as pressed. */
+.secondaryButtonOpen,
+.secondaryButtonOpen:hover {
+  background: var(--surface-inset);
+  border-color: var(--border-pill);
+  color: var(--ink);
+}
+
+/* ---- The inline forms behind the two secondary actions ---- */
+.actionForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 12px;
+  background: var(--surface-inset);
+  border-radius: 9px;
+}
+
+/* Date and time share a line — together they are one slot. */
+.slotFields {
+  display: flex;
+  gap: 8px;
+}
+
+.slotFields > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.actionConfirmCopy {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--body);
+}
+
+.actionError {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--negative);
+}
+
+.actionFormActions {
+  display: flex;
+  gap: 8px;
+}
+
+.actionConfirm {
+  flex: 1;
+  border: none;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.actionConfirm:hover {
+  background: var(--accent);
+}
+
+.actionCancel {
+  flex: none;
+  border: 1px solid var(--border-2);
+  background: var(--surface-card);
+  color: var(--nav-idle);
+  font-family: inherit;
+  font-size: 12.5px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.actionCancel:hover {
+  border-color: var(--border-pill);
+  color: var(--ink);
+}
+
+/* What the panel says once an action has been taken. */
+.actionNote {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted-2);
+}
+
+.actionUndo {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.actionUndo:hover {
+  text-decoration: underline;
+}
+
+/* ---- Abonnés ---- */
+.stats {
+  display: flex;
+  gap: 9px;
+}
+
+.stat {
+  flex: 1;
+  text-align: center;
+  background: var(--surface-inset);
+  border-radius: 9px;
+  padding: 11px;
+}
+
+.statValue {
+  font-family: var(--font-serif), serif;
+  font-size: 20px;
+  color: var(--ink);
+}
+
+.statValuePositive {
+  color: var(--positive);
+}
+
+.statValueNegative {
+  color: var(--negative);
+}
+
+.statLabel {
+  font-size: 9.5px;
+  color: var(--faint);
+  margin-top: 2px;
+}
+
+.sendsLabel {
+  margin-top: 14px;
+}
+
+.sends {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sendRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--nav-idle);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--surface-inset);
+}
+
+.sendRow:last-child {
+  border-bottom: none;
+}
+
+.sendMeta {
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+/* ---- lg: design 6e — the panel becomes a sidebar, the mail breathes ---- */
+@media (min-width: 1024px) {
+  .headerTitles {
+    display: block;
+  }
+
+  .statusLong {
+    display: inline;
+  }
+
+  .body {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 22px;
+    align-items: start;
+  }
+
+  .mailChrome {
+    font-size: 11px;
+  }
+
+  .mail {
+    border-color: var(--border-2);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px -18px rgba(60, 40, 20, 0.35);
+  }
+
+  .mailBody {
+    padding: 30px 34px;
+  }
+
+  .masthead {
+    font-size: 19px;
+    letter-spacing: -0.01em;
+  }
+
+  .mastheadRule {
+    width: 26px;
+    margin: 12px auto 22px;
+  }
+
+  .mailEyebrow {
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+  }
+
+  .mailTitle {
+    font-size: 30px;
+    line-height: 1.12;
+    margin: 12px 0 16px;
+  }
+
+  .mailMood {
+    font-size: 15px;
+    line-height: 1.55;
+    margin-bottom: 26px;
+  }
+
+  .mailDivider {
+    margin-bottom: 22px;
+  }
+
+  .highlight {
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .highlightCover {
+    width: 46px;
+  }
+
+  .highlightLabel {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+  }
+
+  .highlightTitle {
+    font-size: 16px;
+    margin-bottom: 3px;
+  }
+
+  .highlightHook {
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .mailCta {
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+
+  .mailCtaCopy {
+    font-size: 15px;
+    margin-bottom: 14px;
+  }
+
+  .mailCtaLink {
+    font-size: 13px;
+    padding: 11px 24px;
+  }
+
+  .mailFoot {
+    margin-top: 22px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .cardLabel {
+    font-size: 11px;
+  }
+
+  .row {
+    padding: 8px 0;
+    font-size: 12.5px;
+  }
+
+  .sendButton {
+    font-size: 13.5px;
+    padding: 12px;
+    border-radius: 9px;
+    margin-top: 12px;
+  }
+
+  .secondaryButton {
+    font-size: 12px;
+    padding: 9px;
+    border-radius: 8px;
+  }
+
+  .stats {
+    gap: 10px;
+  }
+
+  .statValue {
+    font-size: 22px;
+  }
+
+  .statLabel {
+    font-size: 10px;
+  }
+}

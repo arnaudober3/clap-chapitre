@@ -83,6 +83,8 @@ describe('AR-1 tokens only', () => {
     'src/components/ui/SectionHeader.tsx',
     'src/components/ui/index.ts',
     'src/components/ui/ui.module.css',
+    'src/components/ui/Pagination/index.tsx',
+    'src/components/ui/Pagination/Pagination.module.css',
   ];
 
   it('no src/components/ui file contains a raw hex color literal', () => {

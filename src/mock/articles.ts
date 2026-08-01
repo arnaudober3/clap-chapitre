@@ -6,7 +6,7 @@
  * it. No React, no module-level mutable state, no I/O; `src/mock/bilans.ts` and
  * `src/mock/home.ts` are read-only here.
  */
-import type { Article } from './types';
+import type { PublishedArticle } from './types';
 import { feed } from './home';
 import { bilans, type MonthlyBilan } from './bilans';
 
@@ -15,9 +15,9 @@ import { bilans, type MonthlyBilan } from './bilans';
  * bilan avis (bilans newest-first, avis in their bilan order). The first
  * occurrence of an id wins, so a feed entry shadows a bilan entry.
  */
-export const articles: Article[] = (() => {
+export const articles: PublishedArticle[] = (() => {
   const seen = new Set<string>();
-  const all: Article[] = [];
+  const all: PublishedArticle[] = [];
   for (const article of [
     ...feed,
     ...bilans.flatMap((bilan) => bilan.avis),
@@ -30,7 +30,7 @@ export const articles: Article[] = (() => {
 })();
 
 /** Resolve an avis by id. Returns undefined for an unknown/empty id. */
-export function articleById(id: string): Article | undefined {
+export function articleById(id: string): PublishedArticle | undefined {
   if (!id) return undefined;
   return articles.find((article) => article.id === id);
 }
@@ -41,8 +41,8 @@ export function articleById(id: string): Article | undefined {
  * neither — a neighbour is never the article itself.
  */
 export function articleNeighbours(id: string): {
-  prev?: Article;
-  next?: Article;
+  prev?: PublishedArticle;
+  next?: PublishedArticle;
 } {
   const index = articles.findIndex((article) => article.id === id);
   if (index === -1) return {};
@@ -58,10 +58,10 @@ export function articleNeighbours(id: string): {
  * returned. An article with no `related` resolves to an empty list.
  */
 export function relatedArticles(
-  article: Article,
-): Array<Article & { note: string }> {
+  article: PublishedArticle,
+): Array<PublishedArticle & { note: string }> {
   if (!article.related) return [];
-  const resolved: Array<Article & { note: string }> = [];
+  const resolved: Array<PublishedArticle & { note: string }> = [];
   const seen = new Set<string>();
   for (const entry of article.related) {
     if (resolved.length === 2) break;

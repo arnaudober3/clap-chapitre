@@ -1,20 +1,6 @@
-import type { Article, Medium } from '../../mock/types';
+import type { Article } from '../../mock/types';
+import { MEDIUM_ACCENT, MEDIUM_LABEL } from '../../media';
 import styles from './BilanCulturel.module.css';
-
-const MEDIUM_LABEL: Record<Medium, string> = {
-  film: 'Film',
-  serie: 'Série',
-  livre: 'Livre',
-  doc: 'Doc',
-};
-
-/** Maps a medium to its accent color token for the review label. */
-const MEDIUM_ACCENT: Record<Medium, string> = {
-  film: 'var(--medium-film)',
-  serie: 'var(--medium-serie)',
-  livre: 'var(--medium-livre)',
-  doc: 'var(--medium-docs)',
-};
 
 /** Splits body copy into paragraphs on blank lines. */
 function paragraphs(body: string): string[] {

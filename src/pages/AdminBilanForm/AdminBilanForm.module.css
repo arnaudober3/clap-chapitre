@@ -1,0 +1,723 @@
+/* Admin bilan editor (design 7c mobile → 6d desktop). Mobile-first: one column,
+   the "À rapprocher" pair stacks, the drag handle and the secondary action are
+   dropped. Colors via var(--…) only. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- Top bar ---- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-2);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--faint);
+  min-width: 0;
+}
+
+.breadcrumbLink {
+  color: var(--muted-2);
+  text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.breadcrumbCurrent {
+  color: var(--ink);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* The state line is passive — nothing autosaves behind it. */
+.saveState {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+.saveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-pill);
+}
+
+.primaryButton {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--ink);
+  border: none;
+  border-radius: 9px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.primaryButton:hover {
+  background: var(--accent);
+}
+
+/* "Publier" on the phone, "Publier le bilan" once the bar has room. */
+.publishLong {
+  display: none;
+}
+
+/* ---- Form body ---- */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.label {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+  margin-bottom: 7px;
+}
+
+/* The month rides along with the label — it is derived, never typed. It reads
+   darker than the label itself: it is the one piece of information there, not
+   a caption. */
+.labelSuffix {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--muted-2);
+}
+
+.titleInput {
+  border: 1px solid var(--border-2);
+  background: var(--surface-card);
+  border-radius: 9px;
+  padding: 10px 13px;
+  font-family: var(--font-serif), serif;
+  font-size: 21px;
+  color: var(--ink);
+}
+
+.moodInput {
+  border: 1px solid var(--border-2);
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 13px 14px;
+  min-height: 96px;
+  font-family: var(--font-serif), serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--body);
+  resize: vertical;
+}
+
+.titleInput:focus,
+.moodInput:focus,
+.workBody:focus {
+  outline: none;
+  border-color: var(--border-pill);
+}
+
+/* ---- The coups de cœur, in the author's order ---- */
+.highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---- Coup de cœur card ---- */
+.card {
+  display: flex;
+  gap: 12px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: 11px;
+  padding: 12px;
+}
+
+/* The colour code replaces the cover art: the design dropped the affiche, so
+   the card stays a pure gradient and never requests an image. Mixing toward
+   --ink darkens the band in the light theme and lightens it in the dark one. */
+.band {
+  width: 12px;
+  flex: none;
+  align-self: stretch;
+  border-radius: 5px;
+  background: linear-gradient(
+    160deg,
+    var(--band-accent),
+    color-mix(in srgb, var(--band-accent) 55%, var(--ink))
+  );
+}
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.mediumChip {
+  flex: none;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--chip-accent);
+  background: color-mix(in srgb, var(--chip-accent) 15%, var(--surface-card));
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+/* Every field inside a card is an underlined slot rather than a boxed input —
+   the card itself is the box (design 6d). */
+.workTitle,
+.workHook,
+.relatedTitle,
+.relatedNote {
+  min-width: 0;
+  border: none;
+  border-bottom: 1px solid var(--border-2);
+  background: transparent;
+  font-family: inherit;
+  color: var(--ink);
+  padding: 2px 0;
+}
+
+.workTitle:focus,
+.workHook:focus,
+.relatedTitle:focus,
+.relatedNote:focus,
+.forThoseWhoInput:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.workTitle {
+  flex: 1;
+  font-family: var(--font-serif), serif;
+  font-size: 15px;
+  padding: 0 0 3px;
+}
+
+.workHook {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 2px 0 5px;
+}
+
+.workBody {
+  border: 1px solid var(--border-2);
+  background: var(--bg);
+  border-radius: 7px;
+  padding: 8px 10px;
+  min-height: 132px;
+  font-family: inherit;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--body);
+  resize: vertical;
+}
+
+.related {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.relatedLabel {
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+}
+
+.relatedLabelFull {
+  display: none;
+}
+
+.relatedTitle {
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.relatedNote {
+  font-size: 12px;
+  color: var(--muted-2);
+}
+
+/* The em dash only reads as a separator once the pair sits on one line. */
+.relatedDash {
+  display: none;
+  flex: none;
+  font-size: 12.5px;
+  color: var(--faint);
+}
+
+.forThoseWho {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--surface);
+  border-radius: 7px;
+  padding: 7px 9px;
+}
+
+.forThoseWhoLabel {
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--chip-accent);
+  font-weight: 600;
+}
+
+.forThoseWhoInput {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--body);
+}
+
+.workTitle::placeholder,
+.workHook::placeholder,
+.workBody::placeholder,
+.relatedTitle::placeholder,
+.relatedNote::placeholder,
+.forThoseWhoInput::placeholder,
+.titleInput::placeholder,
+.moodInput::placeholder {
+  color: var(--faint);
+}
+
+/* The reorder grip. Design 7c has no handle, so it only appears at lg — see
+   HighlightCard for why the drag is desktop-only. */
+.handle {
+  display: none;
+  flex: none;
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 2px 0 0;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--border-pill);
+  cursor: grab;
+}
+
+.handle:hover {
+  color: var(--muted-2);
+}
+
+.handle:active {
+  cursor: grabbing;
+}
+
+.handle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* The card in flight — its neighbours shift under it as it moves. */
+.cardDragging {
+  opacity: 0.45;
+}
+
+/* ---- Add + newsletter hand-off ---- */
+/* The dashed trigger + its popover. Relative so the panel hangs off the button. */
+.picker {
+  position: relative;
+}
+
+.addButton {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1.5px dashed var(--border-pill);
+  border-radius: 11px;
+  padding: 13px;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--muted-2);
+  cursor: pointer;
+}
+
+.addButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.addPlus {
+  font-size: 17px;
+  line-height: 0;
+}
+
+/* The avis list. Capped and scrollable so a long catalogue never runs off the
+   page; it still only renders a batch at a time (see AddHighlightPicker). */
+.pickerPanel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  /* No gap: a flex gap leaves a strip above the first row that the sticky
+     header can't cover, so scrolling rows would show through it. Rows carry
+     their own padding for spacing instead. */
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: 11px;
+  padding: 0 8px 8px 8px;
+  box-shadow: 0 16px 30px -12px rgba(63, 46, 32, 0.45);
+}
+
+/* An opaque band that stays pinned to the top of the panel: it spans the full
+   width (negative margins cancel the panel's padding) from the very top down to
+   below the field, so scrolling rows never show through beside or above the
+   search. */
+.pickerHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-card);
+  margin: -8px -8px 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border-2);
+}
+
+.pickerSearch {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border-2);
+  background: var(--surface-card);
+  border-radius: 8px;
+  padding: 8px 11px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.pickerSearch:focus {
+  outline: none;
+  border-color: var(--border-pill);
+}
+
+.pickerSearch::placeholder {
+  color: var(--faint);
+}
+
+.pickerSectionLabel {
+  margin: 8px 8px 4px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 600;
+}
+
+.pickerSectionLabel:first-child {
+  margin-top: 2px;
+}
+
+.pickerRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  padding: 8px 9px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pickerRow:hover {
+  background: var(--nav-hover);
+}
+
+.pickerChip {
+  flex: none;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--chip-accent);
+  background: color-mix(in srgb, var(--chip-accent) 15%, var(--surface-card));
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.pickerRowTitle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.pickerMore {
+  margin: 4px 2px 2px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  text-align: center;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.pickerMore:hover {
+  text-decoration: underline;
+}
+
+.pickerEmpty {
+  margin: 0;
+  padding: 12px 9px;
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.newsletter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--dark-grad);
+  border-radius: 11px;
+  padding: 14px 16px;
+}
+
+.newsletterText {
+  flex: 1;
+  min-width: 0;
+}
+
+.newsletterTitle {
+  margin: 0;
+  font-family: var(--font-serif), serif;
+  font-size: 15px;
+  color: var(--on-dark);
+}
+
+.newsletterCopy {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--on-dark-muted);
+}
+
+.newsletterCta {
+  flex: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-gold);
+  background: var(--gold);
+  padding: 9px 13px;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.newsletterCta:hover {
+  background: var(--gold-hover);
+  text-decoration: none;
+}
+
+.newsletterCtaLong {
+  display: none;
+}
+
+/* ---- lg: design 6d — a wider column, denser cards, the handle comes back ---- */
+@media (min-width: 1024px) {
+  /* No sidebar here, but the column keeps the exact width the article form's
+     main column has (its 1fr next to a 290px sidebar, 26px apart), so the two
+     editors line up instead of each finding their own measure. */
+  .body {
+    gap: 22px;
+    padding-right: calc(290px + 26px);
+  }
+
+  .saveState {
+    display: flex;
+  }
+
+  .primaryButton {
+    font-size: 12.5px;
+    border-radius: 8px;
+    padding: 8px 16px;
+  }
+
+  .publishLong,
+  .newsletterCtaLong,
+  .relatedLabelFull {
+    display: inline;
+  }
+
+  .relatedLabelShort {
+    display: none;
+  }
+
+  .label {
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  .titleInput {
+    font-size: 22px;
+    padding: 10px 14px;
+  }
+
+  .moodInput {
+    padding: 14px 15px;
+  }
+
+  .highlights {
+    gap: 16px;
+  }
+
+  .card {
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .band {
+    width: 14px;
+    border-radius: 6px;
+  }
+
+  .cardBody {
+    gap: 9px;
+  }
+
+  .cardHead {
+    gap: 8px;
+  }
+
+  .workTitle {
+    font-size: 16px;
+    padding: 0 0 4px;
+  }
+
+  .workHook {
+    font-size: 14px;
+    padding: 2px 0 6px;
+  }
+
+  .workBody {
+    min-height: 150px;
+    padding: 9px 11px;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  /* The pair fits one line: fixed-width title, dash, note taking the rest. */
+  .related {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .relatedLabel {
+    flex: none;
+    font-size: 9px;
+  }
+
+  .relatedTitle {
+    flex: none;
+    width: 160px;
+  }
+
+  .relatedNote {
+    flex: 1;
+    font-size: 12.5px;
+    color: var(--body);
+  }
+
+  .relatedDash {
+    display: inline;
+  }
+
+  .forThoseWho {
+    gap: 4px;
+    padding: 8px 10px;
+  }
+
+  .forThoseWhoLabel {
+    font-size: 9px;
+  }
+
+  .forThoseWhoInput {
+    font-size: 13px;
+  }
+
+  .handle {
+    display: block;
+  }
+
+
+  .newsletter {
+    justify-content: space-between;
+    padding: 15px 18px;
+  }
+
+  .newsletterCta {
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+}

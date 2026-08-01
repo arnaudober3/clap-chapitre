@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Article } from '../mock/types';
+import type { PublishedArticle } from '../mock/types';
 import { feed } from '../mock/home';
 import { bilans } from '../mock/bilans';
 import {
@@ -97,7 +97,7 @@ describe('ART-1 relatedArticles', () => {
   });
 
   it('drops only the unknown ids and returns [] when there is no related', () => {
-    const withUnknown: Article = {
+    const withUnknown: PublishedArticle = {
       ...articleById('un-dernier-ete')!,
       related: [
         { id: 'ceci-nexiste-pas', note: 'jamais rendu' },
@@ -108,7 +108,7 @@ describe('ART-1 relatedArticles', () => {
     expect(resolved).toHaveLength(1);
     expect(resolved[0].id).toBe('les-nuits-blanches');
 
-    const withoutRelated: Article = {
+    const withoutRelated: PublishedArticle = {
       ...articleById('un-dernier-ete')!,
       related: undefined,
     };

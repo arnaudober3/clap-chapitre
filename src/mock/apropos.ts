@@ -67,3 +67,46 @@ export const apropos: AProposContent = {
 };
 
 export default apropos;
+
+/** One editable row of the "Cette année" block in the back-office form. */
+export interface YearStatField {
+  label: string;
+  /**
+   * Kept as a string, unlike `YearStat.value`: the field has to accept being
+   * emptied while the editor types, which a `number` cannot represent.
+   */
+  value: string;
+}
+
+/**
+ * The flat shape the admin editor manipulates (design 6f / 7e). The page reads
+ * its initial state from here rather than restating any copy: the mock above
+ * stays the single source of truth.
+ */
+export interface AProposFormValues {
+  /** Greeting and name are one field in the form: 'Bonjour, moi c’est Marie-Zoé'. */
+  title: string;
+  intro: string;
+  /** The bio paragraphs as one editable text, blank line between them. */
+  bio: string;
+  /** The pull-quote without its guillemets — the public page adds them back. */
+  quote: string;
+  stats: YearStatField[];
+}
+
+/** Strip the display guillemets so the editor shows the sentence alone. */
+function unquote(quote: string): string {
+  return quote.replace(/^«\s*/, '').replace(/\s*»$/, '');
+}
+
+/** Fresh editable values, straight from the page content. Pure — call it again
+ *  to reset the form (that is exactly what "Annuler" does). */
+export function aproposFormValues(): AProposFormValues {
+  return {
+    title: `${apropos.greeting} ${apropos.name}`,
+    intro: apropos.intro,
+    bio: apropos.bio.join('\n\n'),
+    quote: unquote(apropos.quote),
+    stats: apropos.stats.map((stat) => ({ label: stat.label, value: String(stat.value) })),
+  };
+}

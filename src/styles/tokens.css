@@ -9,6 +9,8 @@
   --bg: #fdf8f0;            /* page background (cream) */
   --surface: #f6efe3;       /* rail, cards, panels, inputs */
   --surface-alt: #f0e6d4;   /* hero-band gradient end */
+  --surface-card: #fff;     /* white KPI/leaderboard cards (admin dashboard) */
+  --surface-inset: #f6efe3; /* tiles/forms nested INSIDE a --surface-card card */
   --ink: #3f2e20;           /* primary text / active nav bg (dark brown) */
   --body: #5c4a38;          /* body copy */
   --muted: #8a6a4c;         /* italic subheads */
@@ -19,6 +21,15 @@
   --accent: #b0502f;        /* eyebrows, the italic "et", links, active accent */
   --gold: #d8a24a;          /* CTA buttons, underline mark, active dot */
   --gold-hover: #e6b45f;    /* CTA hover */
+  --positive: #6a7a45;      /* positive KPI delta (↑ green, admin dashboard) */
+  --negative: #a8412b;      /* negative KPI delta (↓ terracotta, admin dashboard) */
+
+  /* Publication status pills (admin article listing, design 8a) */
+  --status-published-fg: #6a7a45;
+  --status-published-bg: #eef1e2;
+  --status-draft-fg: #a07a2c;
+  --status-draft-bg: #f7ecd6;
+  --surface-row-draft: #f9f4ea; /* the highlighted draft row/card */
 
   /* Fixed foregrounds — constant across themes (NOT overridden in dark) because
      they sit on always-dark/always-gold surfaces (the --dark-grad newsletter
@@ -43,6 +54,23 @@
   --social-letterboxd: #2b6a4a;
   --social-babelio: #9a3b2a;
   --social-linkedin: #1f5079;
+
+  /* Chip tints — admin "Me suivre" editor (design 6g/7f). Pastel plate + accent
+     mark, one pair per network. Unlike --social-*, these sit on a light card and
+     DO get overridden in dark. The light marks coincide with the --medium-*
+     accents: same Salon accent family, different axis — kept separate so the two
+     can drift. */
+  --chip-threads-bg: #f6e4dc;
+  --chip-threads-fg: #b0502f;
+  --chip-letterboxd-bg: #eef1e2;
+  --chip-letterboxd-fg: #6a7a45;
+  --chip-babelio-bg: #efe3ec;
+  --chip-babelio-fg: #8a5a7a;
+  --chip-linkedin-bg: #e3ecef;
+  --chip-linkedin-fg: #4f6f7c;
+  /* Fallback: a row the editor added, or a network with no tint of its own. */
+  --chip-bg: #ece2d1;
+  --chip-fg: #8a7460;
 
   /* Interactive helpers */
   --nav-hover: #efe6d6;     /* nav item hover surface */
@@ -87,6 +115,10 @@
   --bg: #1c1712;            /* page background (brun nuit, not pure black) */
   --surface: #26201a;       /* rail, cards, panels, inputs */
   --surface-alt: #2f2820;   /* hero-band gradient end */
+  --surface-card: #26201a;  /* admin dashboard cards (aligned with --surface in dark) */
+  /* In dark, --surface collapses onto --surface-card, so anything nested inside
+     a card would vanish into it — the inset surface is lifted one step above. */
+  --surface-inset: #322a21; /* tiles/forms nested INSIDE a --surface-card card */
   --ink: #f2e8d8;           /* primary text / active nav bg (cream) */
   --body: #d8c9b4;          /* body copy */
   --muted: #c49a6f;         /* italic subheads */
@@ -98,6 +130,16 @@
   --accent: #e0714a;        /* eyebrows, italic "et", links, active accent */
   --gold: #cd9a45;          /* CTA buttons, underline mark, active dot */
   --gold-hover: #dbaa55;    /* CTA hover */
+  --positive: #92a86a;      /* positive KPI delta (brightened for dark) */
+  --negative: #d0705a;      /* negative KPI delta (brightened for dark) */
+
+  /* Publication status pills — foregrounds brightened, backgrounds sunk into
+     the night palette so the pills stay legible without glowing. */
+  --status-published-fg: #92a86a;
+  --status-published-bg: #2b3122;
+  --status-draft-fg: #d3a559;
+  --status-draft-bg: #362c1c;
+  --surface-row-draft: #2c251c; /* the highlighted draft row/card */
 
   /* Borders */
   --border: #3a3128;        /* hairline borders/dividers */
@@ -109,6 +151,19 @@
   --medium-serie: #6fa0b0;
   --medium-docs: #b884a6;
   --medium-film: #e0714a;
+
+  /* Chip tints — plates desaturated down to --surface-inset's range, marks
+     brightened like the medium accents above. */
+  --chip-threads-bg: #3a2620;
+  --chip-threads-fg: #e0714a;
+  --chip-letterboxd-bg: #2b3122;
+  --chip-letterboxd-fg: #92a86a;
+  --chip-babelio-bg: #35262f;
+  --chip-babelio-fg: #b884a6;
+  --chip-linkedin-bg: #22323a;
+  --chip-linkedin-fg: #6fa0b0;
+  --chip-bg: #322a21;
+  --chip-fg: #b39d84;
 
   /* Interactive helpers */
   --nav-hover: #2f2820;     /* nav item hover surface */

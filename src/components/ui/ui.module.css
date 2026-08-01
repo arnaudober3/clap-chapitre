@@ -278,3 +278,195 @@
     padding: 44px 24px;
   }
 }
+
+/* ---- NotFoundPanel ----
+   404 "affiche" — design Salon 5b (desktop) / 5c (mobile). Shared by the public
+   404 and the admin one. Tokens only — no raw Salon hex values. Mobile-first:
+   5c sizes are the base, the lg breakpoint (1024px) upgrades to 5b.
+   .nfPrimary / .nfSecondary style the action links each page passes in. */
+
+.nfPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 36px 6px 40px;
+}
+
+/* ---- Missing-cover poster ---- */
+.nfPoster {
+  position: relative;
+  overflow: hidden;
+  width: 172px;
+  aspect-ratio: 2 / 3;
+  border-radius: 13px;
+  border: 2px dashed var(--border-pill);
+  background: var(--surface);
+  box-shadow: 0 16px 40px -20px rgba(60, 40, 20, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+}
+
+.nfCode {
+  font-family: var(--font-serif), serif;
+  font-weight: 500;
+  font-size: 64px;
+  line-height: 1;
+  color: var(--gold);
+}
+
+.nfPosterLabel {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* Film-strip perforations hugging each vertical edge. */
+.nfFilmstrip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 13px;
+  background: repeating-linear-gradient(var(--ink) 0 8px, transparent 8px 18px);
+  opacity: 0.12;
+}
+
+.nfFilmstripRight {
+  left: auto;
+  right: 0;
+}
+
+/* ---- Copy ---- */
+.nfTitle {
+  font-family: var(--font-serif), serif;
+  font-weight: 500;
+  font-size: 29px;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 34px 0 10px;
+}
+
+.nfLede {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0 0 26px;
+}
+
+/* ---- Actions ---- */
+.nfActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.nfPrimary,
+.nfSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px;
+  border-radius: var(--radius-card);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.nfPrimary {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.nfPrimary:hover {
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+.nfDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex: none;
+}
+
+.nfSecondary {
+  border: 1px solid var(--border-pill);
+  color: var(--ink);
+}
+
+.nfSecondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* ---- Desktop (lg) — 5b sizes ---- */
+@media (min-width: 1024px) {
+  .nfPage {
+    padding: 56px 20px 64px;
+  }
+
+  .nfPoster {
+    width: 230px;
+    border-radius: 14px;
+    gap: 16px;
+    box-shadow: 0 20px 50px -22px rgba(60, 40, 20, 0.35);
+  }
+
+  .nfCode {
+    font-size: 88px;
+  }
+
+  .nfPosterLabel {
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+  }
+
+  .nfFilmstrip {
+    width: 16px;
+    background: repeating-linear-gradient(var(--ink) 0 10px, transparent 10px 22px);
+  }
+
+  .nfTitle {
+    font-size: 44px;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 44px 0 12px;
+  }
+
+  .nfLede {
+    font-size: 18px;
+    max-width: 430px;
+    margin: 0 0 32px;
+  }
+
+  .nfActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: auto;
+    max-width: none;
+    gap: 12px;
+  }
+
+  .nfPrimary,
+  .nfSecondary {
+    width: auto;
+    padding: 13px 24px;
+  }
+}

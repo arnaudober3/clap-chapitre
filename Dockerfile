@@ -7,6 +7,8 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 5173 8788
+# A single port: the Vite dev server also serves the /api Functions.
+# Signing in needs a .dev.vars file — see .dev.vars.example.
+EXPOSE 5173
 
-CMD ["npm", "run", "dev:all"]
+CMD ["npm", "run", "dev"]

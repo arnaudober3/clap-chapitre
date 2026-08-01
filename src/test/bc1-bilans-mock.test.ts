@@ -1,5 +1,5 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
-import type { Article, Medium } from '../mock/types';
+import type { PublishedArticle, Medium } from '../mock/types';
 import {
   bilans,
   bilansByYear,
@@ -10,7 +10,7 @@ import {
 
 describe('BC-1 Article.relatedTo', () => {
   it('adds an optional relatedTo field without changing existing fields', () => {
-    const article: Article = {
+    const article: PublishedArticle = {
       id: 'a1',
       title: 'La lumière du Nord',
       medium: 'film',
@@ -20,14 +20,17 @@ describe('BC-1 Article.relatedTo', () => {
       author: 'Marie-Zoé',
       likes: 88,
       comments: 15,
+      status: 'published',
+      publishedAt: '2026-06-12',
+      views: 420,
       relatedTo: { title: 'Un dernier été', note: 'Même silences.' },
     };
     expect(article.relatedTo?.title).toBe('Un dernier été');
-    expectTypeOf<Article['relatedTo']>().toEqualTypeOf<
+    expectTypeOf<PublishedArticle['relatedTo']>().toEqualTypeOf<
       { title: string; note: string } | undefined
     >();
     // Still valid without relatedTo (optional, additive).
-    const minimal: Article = {
+    const minimal: PublishedArticle = {
       id: 'a2',
       title: 'x',
       medium: 'livre',
@@ -37,6 +40,9 @@ describe('BC-1 Article.relatedTo', () => {
       author: 'Marie-Zoé',
       likes: 0,
       comments: 0,
+      status: 'published',
+      publishedAt: '2026-06-12',
+      views: 420,
     };
     expect(minimal.relatedTo).toBeUndefined();
   });

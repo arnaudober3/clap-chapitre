@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import type { Article } from '../mock/types';
+import type { PublishedArticle } from '../mock/types';
 import type { MonthlyBilan } from '../mock/bilans';
 import MonthCard from '../pages/BilanCulturelArchives/MonthCard';
 
-function avis(id: string, cover = 'linear-gradient(150deg,#111,#222)'): Article {
+function avis(id: string, cover = 'linear-gradient(150deg,#111,#222)'): PublishedArticle {
   return {
     id,
     title: `Titre ${id}`,
@@ -16,6 +16,9 @@ function avis(id: string, cover = 'linear-gradient(150deg,#111,#222)'): Article 
     author: 'Marie-Zoé',
     likes: 10,
     comments: 2,
+    status: 'published',
+    publishedAt: '2026-06-12',
+    views: 420,
   };
 }
 
@@ -25,7 +28,13 @@ function bilan(overrides: Partial<MonthlyBilan> = {}): MonthlyBilan {
     year: 2026,
     month: 6,
     monthLabel: 'Juin',
+    title: 'Juin 2026 — un titre',
     avis: [avis('a'), avis('b'), avis('c'), avis('d')],
+    counts: { film: 4 },
+    views: 1200,
+    likes: 40,
+    status: 'published',
+    publishedAt: '2026-07-02',
     ...overrides,
   };
 }

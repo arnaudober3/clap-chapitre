@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import BilanReview from '../pages/BilanCulturel/BilanReview';
 import MediumSections from '../pages/BilanCulturel/MediumSections';
-import type { Article } from '../mock/types';
+import type { PublishedArticle } from '../mock/types';
 import type { MonthlyBilan } from '../mock/bilans';
 
-const full: Article = {
+const full: PublishedArticle = {
   id: 'r-full',
   title: 'La lumière du Nord',
   medium: 'film',
@@ -15,13 +15,16 @@ const full: Article = {
   author: 'Marie-Zoé',
   likes: 88,
   comments: 15,
+  status: 'published',
+  publishedAt: '2026-06-12',
+  views: 420,
   hook: 'Peut-on se réchauffer à une lumière qui vient du froid ?',
   forThoseWho: 'Pour ceux qui aiment les drames lumineux.',
   body: 'Premier paragraphe du corps.\n\nDeuxième paragraphe du corps.',
   relatedTo: { title: 'Un dernier été', note: 'Même goût pour les silences.' },
 };
 
-const minimal: Article = {
+const minimal: PublishedArticle = {
   id: 'r-min',
   title: 'Marges',
   medium: 'livre',
@@ -31,7 +34,28 @@ const minimal: Article = {
   author: 'Marie-Zoé',
   likes: 49,
   comments: 6,
+  status: 'published',
+  publishedAt: '2026-06-12',
+  views: 420,
 };
+
+/** A published bilan with only the fields a test cares about spelled out. */
+function bilan(overrides: Partial<MonthlyBilan> = {}): MonthlyBilan {
+  return {
+    id: '2026-06',
+    year: 2026,
+    month: 6,
+    monthLabel: 'Juin',
+    title: 'Juin 2026 — un titre',
+    avis: [full],
+    counts: { film: 1 },
+    views: 1200,
+    likes: 40,
+    status: 'published',
+    publishedAt: '2026-07-02',
+    ...overrides,
+  };
+}
 
 describe('BC-3 BilanReview', () => {
   it('renders title, hook, each body paragraph, the relatedTo note, and forThoseWho', () => {
@@ -62,14 +86,8 @@ describe('BC-3 BilanReview', () => {
 
 describe('BC-3 MediumSections', () => {
   it('renders only the media that have avis, in Films -> Séries -> Livres -> Docs order', () => {
-    const bilan: MonthlyBilan = {
-      id: '2026-06',
-      year: 2026,
-      month: 6,
-      monthLabel: 'Juin',
-      avis: [minimal, full], // livre + film -> should render Films then Livres
-    };
-    render(<MediumSections bilan={bilan} />);
+    // livre + film -> should render Films then Livres
+    render(<MediumSections bilan={bilan({ avis: [minimal, full] })} />);
     const headers = screen
       .getAllByRole('heading', { level: 2 })
       .map((h) => h.textContent);
@@ -82,27 +100,13 @@ describe('BC-3 MediumSections', () => {
   });
 
   it('renders the humeur block when a mood is present and omits it otherwise', () => {
-    const withMood: MonthlyBilan = {
-      id: '2026-06',
-      year: 2026,
-      month: 6,
-      monthLabel: 'Juin',
-      mood: 'Un mois de lumière rasante.',
-      avis: [full],
-    };
+    const withMood = bilan({ mood: 'Un mois de lumière rasante.' });
     const { unmount } = render(<MediumSections bilan={withMood} />);
     expect(screen.getByText('L’humeur du mois')).toBeInTheDocument();
     expect(screen.getByText('Un mois de lumière rasante.')).toBeInTheDocument();
     unmount();
 
-    const noMood: MonthlyBilan = {
-      id: '2026-05',
-      year: 2026,
-      month: 5,
-      monthLabel: 'Mai',
-      avis: [full],
-    };
-    render(<MediumSections bilan={noMood} />);
+    render(<MediumSections bilan={bilan({ id: '2026-05', month: 5, monthLabel: 'Mai' })} />);
     expect(screen.queryByText('L’humeur du mois')).not.toBeInTheDocument();
   });
 });

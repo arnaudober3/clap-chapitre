@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router-dom';
 import ArticleHero from '../pages/Article/ArticleHero';
 import { articleById } from '../mock/articles';
 import { bilans } from '../mock/bilans';
-import type { Article } from '../mock/types';
+import type { PublishedArticle } from '../mock/types';
 import type { MonthlyBilan } from '../mock/bilans';
 
 const root = resolve(__dirname, '../..');
@@ -23,7 +23,7 @@ const feedAvis = articleById('un-dernier-ete')!;
 const juin: MonthlyBilan = bilans[0];
 const bilanAvis = juin.avis[0];
 
-function renderHero(article: Article, bilan?: MonthlyBilan) {
+function renderHero(article: PublishedArticle, bilan?: MonthlyBilan) {
   return render(
     <MemoryRouter>
       <ArticleHero article={article} bilan={bilan} />
@@ -105,7 +105,7 @@ describe('ART-2 hero', () => {
   });
 
   it('degrades without genreMeta, hook or readingTime — no empty blocks, no dangling separator', () => {
-    const bare: Article = {
+    const bare: PublishedArticle = {
       ...feedAvis,
       genreMeta: undefined,
       hook: undefined,
