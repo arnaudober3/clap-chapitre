@@ -6,7 +6,7 @@
  * check". A misconfigured deployment throws, the caller answers 500, and nobody
  * gets in. Failing loudly beats failing open.
  */
-import type { Env } from '../types';
+import type { D1Database, Env } from '../types';
 
 export interface AdminConfig {
   username: string;
@@ -58,4 +58,17 @@ export function requireEnv(env: Partial<Env> | undefined): AdminConfig {
     jwtSecret,
     throttleMs: Number.isFinite(throttleMs) && throttleMs > 0 ? throttleMs : 0,
   };
+}
+
+/**
+ * The D1 binding, or an error. Separate from `requireEnv` because `read` above
+ * insists on strings, and a binding is an object — but the stance is the same:
+ * a missing binding is a misconfigured deployment, not something to work around.
+ */
+export function requireDb(env: Partial<Env> | undefined): D1Database {
+  const db = env?.DB;
+  if (!db || typeof db.prepare !== 'function') {
+    throw new Error('Binding D1 manquant : DB.');
+  }
+  return db;
 }
