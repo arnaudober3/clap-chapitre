@@ -3,9 +3,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
-import { ADMIN_USERNAME } from '../mock/auth';
 import { TOKEN_KEY, getToken } from '../auth/auth';
-import { TEST_PASSWORD as PASSWORD } from './credentials';
+import { TEST_USERNAME as ADMIN_USERNAME, TEST_PASSWORD as PASSWORD } from './credentials';
 
 function renderAt(path: string) {
   return render(

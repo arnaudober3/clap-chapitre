@@ -1,0 +1,7 @@
+name = "clap-et-chapitre"
+compatibility_date = "2026-07-01"
+
+# Cloudflare Pages: `dist/` is served statically, `functions/` becomes the
+# routes under /api. No `nodejs_compat` flag — the Functions only use WebCrypto
+# and the Fetch API, both standard in the Workers runtime.
+pages_build_output_dir = "dist"

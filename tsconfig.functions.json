@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    /* Empty on purpose: the Workers runtime has no Node APIs, and an accidental
+       `node:crypto` import must be a type error here, not a runtime crash in
+       production. */
+    "types": [],
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["functions"]
+}
