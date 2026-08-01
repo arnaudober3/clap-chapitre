@@ -4,9 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 import { adminNav } from '../components/layout/adminNav';
-import { ADMIN_USERNAME, issueMockToken } from '../mock/auth';
 import { TOKEN_KEY } from '../auth/auth';
-import { TEST_PASSWORD as PASSWORD } from './credentials';
+import { signTestToken } from './api-server';
+import { TEST_USERNAME as ADMIN_USERNAME, TEST_PASSWORD as PASSWORD } from './credentials';
 
 function renderAt(path: string) {
   return render(
@@ -40,15 +40,15 @@ describe('AL-3 admin route guard', () => {
     }
   });
 
-  it('lets a signed-in editor through to the real page', () => {
-    window.localStorage.setItem(TOKEN_KEY, issueMockToken(ADMIN_USERNAME));
+  it('lets a signed-in editor through to the real page', async () => {
+    window.localStorage.setItem(TOKEN_KEY, await signTestToken());
     renderAt('/admin/newsletter');
     expect(screen.getByTestId('admin-newsletter-page')).toBeInTheDocument();
     expect(screen.queryByTestId('admin-login-page')).toBeNull();
   });
 
-  it('treats an expired token as anonymous', () => {
-    window.localStorage.setItem(TOKEN_KEY, issueMockToken(ADMIN_USERNAME, -1000));
+  it('treats an expired token as anonymous', async () => {
+    window.localStorage.setItem(TOKEN_KEY, await signTestToken(ADMIN_USERNAME, -1000));
     renderAt('/admin/articles');
     expect(screen.getByTestId('admin-login-page')).toBeInTheDocument();
   });

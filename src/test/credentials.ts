@@ -1,16 +1,13 @@
 /**
- * The admin password in plaintext, for the tests that sign in for real.
+ * The credentials the test suite signs in with.
  *
- * It comes from `.dev.vars` via the `define` block in vite.config.ts, which
- * only populates it under `mode === 'test'` and checks it against
- * ADMIN_PASSWORD_HASH — so the two can never drift apart unnoticed.
+ * Deliberately independent of `.dev.vars`: `npm test` and `npm run build` must
+ * work on a fresh clone and in CI, with no secret anywhere. Only `npm run dev`
+ * needs the real thing. `src/test/api-server.ts` serves exactly these values,
+ * deriving the hash at load time so the password and its digest cannot drift.
  *
  * Not a `*.test.ts` file, so vitest does not collect it.
  */
-export const TEST_PASSWORD: string = __ADMIN_PASSWORD__;
-
-if (!TEST_PASSWORD) {
-  throw new Error(
-    'ADMIN_PASSWORD absent de .dev.vars — la suite ne peut pas tester la connexion.',
-  );
-}
+export const TEST_USERNAME = 'marie-zoe';
+export const TEST_PASSWORD = 'mot-de-passe-de-test';
+export const TEST_JWT_SECRET = 'secret-de-signature-reserve-aux-tests';
