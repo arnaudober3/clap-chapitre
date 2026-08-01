@@ -11,21 +11,63 @@
  * file changes, so editing a Function hot-reloads without restarting the server.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { join } from 'node:path';
 import type { Plugin, ViteDevServer } from 'vite';
+import type { PlatformProxy } from 'wrangler';
 import { readFunctionsEnv } from './devVars';
 
 /** URL path → module the dev server loads. Mirrors Pages' file routing. */
 const ROUTES: Record<string, string> = {
   '/api/login': '/functions/api/login.ts',
   '/api/verify': '/functions/api/verify.ts',
+  '/api/db-health': '/functions/api/db-health.ts',
 };
 
 type Handler = (context: {
   request: Request;
-  env: Record<string, string>;
+  // Not `Record<string, string>` any more: D1 hands over an object, not a value
+  // that can come out of a dotenv file.
+  env: Record<string, unknown>;
 }) => Promise<Response>;
 
 type FunctionModule = Partial<Record<'onRequest' | 'onRequestPost', Handler>>;
+
+/**
+ * The Cloudflare bindings declared in `wrangler.toml`, backed by Miniflare.
+ *
+ * Memoised as a *promise* rather than a value: two requests arriving together
+ * would otherwise each start their own workerd. Started lazily rather than in
+ * `configureServer`, so `npm run dev` boots as fast as it always did — the cost,
+ * roughly a second of workerd startup, lands on the first /api request instead.
+ */
+let platform: Promise<PlatformProxy> | undefined;
+
+function bindings(root: string): Promise<PlatformProxy> {
+  platform ??= (async () => {
+    // Imported here, not at module scope: wrangler's CJS bundle weighs about ten
+    // megabytes, and `vite.config.ts` is evaluated by `vite build` and by Vitest
+    // too — neither of which ever reaches this plugin.
+    const { getPlatformProxy } = await import('wrangler');
+    return getPlatformProxy({
+      configPath: join(root, 'wrangler.toml'),
+      // Where `wrangler pages dev` and `wrangler d1 … --local` keep their data —
+      // one local database, whichever way the site is served. Absolute on
+      // purpose: the default resolves against the cwd, wrangler's own default
+      // against the directory holding wrangler.toml.
+      persist: { path: join(root, '.wrangler/state/v3') },
+      // Nothing here is a remote binding; forbidding the remote session
+      // guarantees a Cloudflare login prompt can never surface in dev.
+      remoteBindings: false,
+    });
+  })().catch((error: unknown) => {
+    // A broken wrangler.toml must not condemn the server: a memoised rejection
+    // would keep answering 500 long after the file was fixed, while everything
+    // else in this plugin is built to recover without a restart.
+    platform = undefined;
+    throw error;
+  });
+  return platform;
+}
 
 export function devApiPlugin(): Plugin {
   let root = process.cwd();
@@ -37,6 +79,14 @@ export function devApiPlugin(): Plugin {
 
     configResolved(config) {
       root = config.root;
+    },
+
+    // Vite runs `buildEnd`/`closeBundle` when the dev server shuts down too, so
+    // this is where the workerd child process gets reaped.
+    async closeBundle() {
+      const started = platform;
+      platform = undefined;
+      await (await started)?.dispose();
     },
 
     configureServer(server: ViteDevServer) {
@@ -52,8 +102,11 @@ export function devApiPlugin(): Plugin {
         }
 
         try {
-          // Re-read per request: editing .dev.vars needs no restart.
-          const env = readFunctionsEnv(root);
+          // Re-read per request: editing .dev.vars needs no restart. The
+          // bindings come second so `.dev.vars` stays the authority on secrets —
+          // the proxy only ever contributes what a file cannot hold.
+          const { env: cfEnv } = await bindings(root);
+          const env = { ...cfEnv, ...readFunctionsEnv(root) };
           const module = (await server.ssrLoadModule(modulePath)) as FunctionModule;
 
           // Same resolution order Pages applies.

@@ -10,6 +10,11 @@
     "preview": "vite preview",
     "preview:cf": "npm run build && wrangler pages dev dist",
     "deploy": "npm run build && wrangler pages deploy dist",
+    "db:migrate": "wrangler d1 migrations apply clap-et-chapitre --local",
+    "db:migrate:remote": "wrangler d1 migrations apply clap-et-chapitre --remote",
+    "db:sql": "wrangler d1 execute clap-et-chapitre --local --command",
+    "db:console": "wrangler d1 execute clap-et-chapitre --local",
+    "db:reset": "rm -rf .wrangler/state/v3/d1 && npm run db:migrate",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -18,19 +18,28 @@ export function misconfigured(): Response {
 }
 
 /**
- * Both `onRequestPost` and `onRequest` are exported by each endpoint, and this
- * builds the latter from the former. Pages is documented to prefer the
+ * Both `onRequestPost` and `onRequest` are exported by each endpoint, and these
+ * build the latter from the former. Pages is documented to prefer the
  * method-specific export, but wiring the fallback to the same handler means we
- * never have to rely on that precedence — nor does the dev plugin.
+ * never have to rely on that precedence — nor does the dev plugin, which only
+ * ever looks at `onRequest` for a GET.
  */
-export function postOnly(handler: Handler): Handler {
+function methodOnly(method: string, handler: Handler): Handler {
   return (context: FunctionContext) => {
-    if (context.request.method === 'POST') return handler(context);
+    if (context.request.method === method) return handler(context);
     return Promise.resolve(
       new Response(JSON.stringify({ error: 'Méthode non autorisée.' }), {
         status: 405,
-        headers: { ...JSON_HEADERS, allow: 'POST' },
+        headers: { ...JSON_HEADERS, allow: method },
       }),
     );
   };
+}
+
+export function postOnly(handler: Handler): Handler {
+  return methodOnly('POST', handler);
+}
+
+export function getOnly(handler: Handler): Handler {
+  return methodOnly('GET', handler);
 }
