@@ -1,14 +1,15 @@
+import { ShareMenu } from '../../components/ui';
 import type { Article } from '../../mock/types';
 import styles from './Article.module.css';
 
 /**
- * The inert social bar, between two hairlines. Desktop (4a): a "♡ J'aime · n"
- * pill, an "Enregistrer" text link, a spacer and an outlined "Partager" pill.
+ * The social bar, between two hairlines. Desktop (4a): a "♡ J'aime · n" pill,
+ * an "Enregistrer" text link, a spacer and an outlined "Partager" pill.
  * Mobile (4b): the compact row — "♡ n", the comment count and "Partager";
  * "Enregistrer" is hidden by CSS at the mobile breakpoint.
  *
- * Every control is a real <button> that does nothing: no state, no navigation,
- * no persistence.
+ * "Partager" is the one live control: it opens the share menu. The others are
+ * real <button>s that do nothing — no state, no navigation, no persistence.
  */
 export default function SocialBar({ article }: { article: Article }) {
   return (
@@ -35,9 +36,13 @@ export default function SocialBar({ article }: { article: Article }) {
 
       <span className={styles.socialSpacer} aria-hidden="true" />
 
-      <button type="button" className={styles.sharePill}>
-        Partager
-      </button>
+      <ShareMenu
+        title={article.title}
+        excerpt={article.excerpt}
+        triggerClassName={styles.sharePill}
+        placement="top"
+        data-testid="article-share"
+      />
     </div>
   );
 }

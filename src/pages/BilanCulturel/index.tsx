@@ -32,7 +32,7 @@ export default function BilanCulturelPage() {
     <section className={styles.page} data-testid="bilan-culturel-page">
       <MonthSwitcher active={active} months={bilans} />
       <MediumSections bilan={active} />
-      <CommentThread />
+      <CommentThread bilan={active} />
     </section>
   );
 }

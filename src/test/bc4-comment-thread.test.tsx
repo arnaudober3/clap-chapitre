@@ -1,7 +1,18 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import CommentThread from '../pages/BilanCulturel/CommentThread';
 import { thread, likes } from '../pages/BilanCulturel/thread';
+import { latestBilan } from '../mock/bilans';
+
+/** The thread holds the share menu, which reads the router location. */
+function renderThread() {
+  return render(
+    <MemoryRouter initialEntries={['/bilan-culturel']}>
+      <CommentThread bilan={latestBilan()} />
+    </MemoryRouter>,
+  );
+}
 
 /** Expected count: top-level entries plus nested replies. */
 const expectedCount = thread.reduce(
@@ -22,7 +33,7 @@ describe('BC-4 thread mock', () => {
 
 describe('BC-4 CommentThread', () => {
   it('renders the "Commentaires" heading with a count equal to the thread length and the "autrice" badge', () => {
-    render(<CommentThread />);
+    renderThread();
     expect(
       screen.getByRole('heading', {
         name: new RegExp(`Commentaires · ${expectedCount}`),
@@ -32,7 +43,7 @@ describe('BC-4 CommentThread', () => {
   });
 
   it('renders a "J\'aime" control and a "<n> commentaires" count derived from the thread', () => {
-    render(<CommentThread />);
+    renderThread();
     expect(
       screen.getByRole('button', { name: /J’aime/ }),
     ).toBeInTheDocument();
@@ -44,7 +55,7 @@ describe('BC-4 CommentThread', () => {
   it('the composer form is inert: submit does not throw, does not navigate, logs no error', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const before = window.location.href;
-    render(<CommentThread />);
+    renderThread();
     const publier = screen.getByRole('button', { name: 'Publier' });
     expect(() => fireEvent.click(publier)).not.toThrow();
     // The composer form submit is prevented.

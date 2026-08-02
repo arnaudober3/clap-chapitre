@@ -25,16 +25,26 @@ const avis = articleById('un-dernier-ete')!;
 const other = articleById('l-annee-de-la-pluie')!;
 const third = articleById('les-nuits-blanches')!;
 
+/** SocialBar holds the share menu, which reads the router location. */
+function renderSocialBar() {
+  return render(
+    <MemoryRouter initialEntries={[`/article/${avis.id}`]}>
+      <SocialBar article={avis} />
+    </MemoryRouter>,
+  );
+}
+
 describe('ART-4 SocialBar', () => {
-  it('renders the like pill, Enregistrer and Partager as inert buttons', () => {
+  it('renders the like pill and Enregistrer as inert buttons, plus a Partager trigger', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const before = window.location.href;
-    const { container } = render(<SocialBar article={avis} />);
+    const { container } = renderSocialBar();
 
     const like = screen.getByRole('button', { name: /J’aime/ });
     expect(like).toHaveTextContent(String(avis.likes));
     const save = screen.getByRole('button', { name: 'Enregistrer' });
-    const share = screen.getByRole('button', { name: 'Partager' });
+    // "Partager" is the one live control here — ART-8 covers the menu it opens.
+    expect(screen.getByRole('button', { name: 'Partager' }).tagName).toBe('BUTTON');
 
     // The compact mobile row shows the comment count.
     expect(
@@ -42,7 +52,7 @@ describe('ART-4 SocialBar', () => {
     ).toHaveTextContent(String(avis.comments));
 
     const markup = container.innerHTML;
-    for (const control of [like, save, share]) {
+    for (const control of [like, save]) {
       expect(control.tagName).toBe('BUTTON');
       expect(() => fireEvent.click(control)).not.toThrow();
     }
@@ -126,7 +136,7 @@ describe('ART-4 responsive rules', () => {
 
 describe('ART-4 accessible names', () => {
   it('names the like button and the comment count independently of the hidden text', () => {
-    render(<SocialBar article={avis} />);
+    renderSocialBar();
     // The visible "J’aime ·" is dropped on mobile — the label carries it.
     expect(
       screen.getByRole('button', { name: `J’aime · ${avis.likes}` }),
