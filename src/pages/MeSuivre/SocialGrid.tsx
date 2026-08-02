@@ -8,7 +8,7 @@ import styles from './MeSuivre.module.css';
  */
 export default function SocialGrid({ socials }: { socials: SocialLink[] }) {
   return (
-    <div className={styles.socialGrid} data-testid="social-grid">
+    <div className={styles.socialGrid} data-testid="social-grid" data-anim="stagger">
       {socials.map((social) => (
         <SocialCard key={social.key} social={social} />
       ))}

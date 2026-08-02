@@ -13,7 +13,7 @@ export default function MeSuivrePage() {
   const { eyebrow, title, intro, newsletter, socials } = meSuivre;
 
   return (
-    <div className={styles.page} data-testid="me-suivre-page">
+    <div className={styles.page} data-testid="me-suivre-page" data-anim="stagger">
       {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
       <h1 className={styles.title}>{title}</h1>
       {intro ? <p className={styles.intro}>{intro}</p> : null}

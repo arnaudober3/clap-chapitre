@@ -31,6 +31,7 @@ export default function HomePage() {
       className={styles.page}
       data-testid="home-page"
       data-medium={medium ?? 'all'}
+      data-anim="stagger"
     >
       {hero ? (
         <Hero item={hero} />

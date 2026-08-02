@@ -40,7 +40,7 @@ export default function AdminArticlesPage() {
   }
 
   return (
-    <section className={styles.page} data-testid="admin-articles-page">
+    <section className={styles.page} data-testid="admin-articles-page" data-anim="stagger">
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Articles</h1>
@@ -70,7 +70,11 @@ export default function AdminArticlesPage() {
             <span className={styles.headRight}>Comm.</span>
             <span className={styles.headRight}>Statut</span>
           </div>
-          <ul className={styles.rows} data-testid="admin-articles-rows">
+          <ul
+            className={styles.rows}
+            data-testid="admin-articles-rows"
+            data-anim="stagger"
+          >
             {rows.map((item) => (
               <ArticleRow key={item.id} item={item} />
             ))}

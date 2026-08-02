@@ -69,3 +69,52 @@ button {
   font-family: inherit;
   cursor: pointer;
 }
+
+/* ---- Reveal cascade ----
+   Driven by data attributes rather than classes: CSS Modules hash class names,
+   so an attribute is what lets one rule reach into all 24 modules without any
+   of them having to export a global name.
+
+   Two attributes, two jobs. `data-anim="stagger"` marks a container in the JSX
+   and means "cascade my blocks"; `data-anim-in` says a block has been seen and
+   is what actually starts its run. src/anim/useReveal.ts adds the second one —
+   before the first paint for whatever is already on screen, and on scroll for
+   the rest — along with the block's rank inside its batch, as --anim-i.
+
+   The rank is set from JS rather than by :nth-child on purpose. What should
+   stagger is what arrives together: a row of cards crossing into view cascades,
+   while a lone section further down starts immediately instead of sitting out a
+   delay earned by siblings the reader scrolled past a minute ago.
+
+   Nothing animates before the flag lands, so a block the hook never reaches
+   renders plainly — no JS, no missing content. */
+
+@keyframes cc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--anim-rise));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Held back until reached. Only ever set from JS, and only on blocks that start
+   off screen — a page where the hook never runs hides nothing. Without this the
+   fade would have to begin below the fold to avoid blinking a visible block out,
+   and would then be over by the time the reader got there. */
+[data-anim-hold] {
+  opacity: 0;
+}
+
+[data-anim-in] {
+  animation: cc-rise var(--dur-enter) var(--ease-enter) both;
+  animation-delay: calc(var(--anim-step) * var(--anim-i, 0));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-anim-in] {
+    animation: none;
+  }
+}

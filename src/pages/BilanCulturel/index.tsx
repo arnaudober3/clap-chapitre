@@ -19,7 +19,7 @@ export default function BilanCulturelPage() {
 
   if (bilans.length === 0) {
     return (
-      <section className={styles.page} data-testid="bilan-culturel-page">
+      <section className={styles.page} data-testid="bilan-culturel-page" data-anim="stagger">
         <p className={styles.eyebrow}>Bilan culturel</p>
         <p className={styles.empty}>Aucun bilan pour l’instant.</p>
       </section>
@@ -29,7 +29,7 @@ export default function BilanCulturelPage() {
   const active = (mois ? bilanById(mois) : undefined) ?? latestBilan();
 
   return (
-    <section className={styles.page} data-testid="bilan-culturel-page">
+    <section className={styles.page} data-testid="bilan-culturel-page" data-anim="stagger">
       <MonthSwitcher active={active} months={bilans} />
       <MediumSections bilan={active} />
       <CommentThread bilan={active} />

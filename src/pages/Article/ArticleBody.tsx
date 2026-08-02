@@ -33,7 +33,7 @@ export default function ArticleBody({ article }: { article: Article }) {
   const quoteAfter = Math.min(3, paragraphs.length);
 
   return (
-    <div className={styles.body} data-testid="article-body">
+    <div className={styles.body} data-testid="article-body" data-anim="stagger">
       {paragraphs.map((paragraph, index) => {
         const isLead = index === 0;
         const block = isLead ? (

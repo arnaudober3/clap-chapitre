@@ -36,7 +36,7 @@ function ArticleForm({ article }: { article?: Article }) {
   }
 
   return (
-    <section className={styles.page} data-testid="admin-new-article-page">
+    <section className={styles.page} data-testid="admin-new-article-page" data-anim="stagger">
       <div className={styles.topbar}>
         <div className={styles.breadcrumb}>
           <Link to="/admin/articles" className={styles.breadcrumbLink}>
@@ -58,8 +58,8 @@ function ArticleForm({ article }: { article?: Article }) {
         </div>
       </div>
 
-      <div className={styles.body}>
-        <div className={styles.main}>
+      <div className={styles.body} data-anim="stagger">
+        <div className={styles.main} data-anim="stagger">
           <div className={`${styles.field} ${styles.fieldTitle}`}>
             <label className={styles.label} htmlFor="article-title">
               Titre
