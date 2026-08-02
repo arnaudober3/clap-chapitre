@@ -96,6 +96,14 @@
   --radius-nav: 9px;
   --radius-pill: 999px;
 
+  /* Motion — the mount cascade. Like every other Salon constant, durations live
+     here and components read them via var(--…). Not overridden in dark: motion
+     does not depend on the theme. */
+  --dur-enter: 320ms;   /* how long one block takes to arrive */
+  --anim-step: 60ms;    /* offset between two consecutive siblings */
+  --anim-rise: 8px;     /* how far a block travels upward */
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+
   /* Breakpoints (mobile-first). Exposed as tokens for reference; media
      queries below/in components use the matching literal px values. */
   --bp-sm: 480px;

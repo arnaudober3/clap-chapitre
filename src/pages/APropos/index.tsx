@@ -77,7 +77,7 @@ export default function AProposPage() {
   } = apropos;
 
   return (
-    <div className={styles.page} data-testid="a-propos-page">
+    <div className={styles.page} data-testid="a-propos-page" data-anim="stagger">
       <Hero
         eyebrow={eyebrow}
         greeting={greeting}
@@ -87,7 +87,7 @@ export default function AProposPage() {
       />
 
       <div className={styles.body}>
-        <div className={styles.mainColumn}>
+        <div className={styles.mainColumn} data-anim="stagger">
           {bio.map((paragraph, index) => (
             <p key={index} className={styles.bioParagraph} data-testid="bio-paragraph">
               {emphasize(paragraph, bioEmphasis)}
@@ -100,7 +100,7 @@ export default function AProposPage() {
           ) : null}
         </div>
 
-        <aside className={styles.aside}>
+        <aside className={styles.aside} data-anim="stagger">
           <YearStats title={statsTitle} stats={stats} />
           <FollowCard
             title={follow.title}

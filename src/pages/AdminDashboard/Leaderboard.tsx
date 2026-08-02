@@ -21,7 +21,7 @@ export default function Leaderboard() {
     <section className={styles.card}>
       <h2 className={styles.cardTitle}>Palmarès des publications</h2>
       <p className={styles.cardSubtitle}>Classées par vues</p>
-      <ol className={styles.rankList}>
+      <ol className={styles.rankList} data-anim="stagger">
         {entries.map((entry) => (
           <li
             key={entry.id}

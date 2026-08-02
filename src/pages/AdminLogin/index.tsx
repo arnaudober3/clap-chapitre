@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import useReveal from '../../anim/useReveal';
 import styles from './AdminLogin.module.css';
 
 /**
@@ -28,6 +29,12 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // This page is its own <main>, outside both shells, so it arms its own reveal
+  // instead of inheriting the one Layout/AdminLayout set up. Above the hooks
+  // rule: it has to run before the early return below.
+  const pageRef = useRef<HTMLElement>(null);
+  useReveal(pageRef, 'admin-login');
+
   const from = (location.state as FromState | null)?.from?.pathname ?? '/admin';
 
   // Already signed in: this page has nothing to offer.
@@ -50,7 +57,12 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className={styles.page} data-testid="admin-login-page">
+    <main
+      className={styles.page}
+      data-testid="admin-login-page"
+      data-anim="stagger"
+      ref={pageRef}
+    >
       <section className={styles.card}>
         <p className={styles.eyebrow}>Espace admin</p>
         <h1 className={styles.title}>

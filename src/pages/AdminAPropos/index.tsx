@@ -49,7 +49,7 @@ export default function AdminAProposPage() {
   }
 
   return (
-    <section className={styles.page} data-testid="admin-apropos-page">
+    <section className={styles.page} data-testid="admin-apropos-page" data-anim="stagger">
       <div className={styles.topbar}>
         <div className={styles.headerText}>
           <h1 className={styles.title}>Page « À propos »</h1>
@@ -72,7 +72,7 @@ export default function AdminAProposPage() {
         </div>
       </div>
 
-      <div className={styles.body}>
+      <div className={styles.body} data-anim="stagger">
         {/* Portrait beside title + accroche at lg (6f); stacked, portrait
             centred, on the phone (7e). */}
         <div className={styles.identity}>

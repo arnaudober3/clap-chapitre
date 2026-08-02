@@ -82,7 +82,7 @@ export default function AdminMeSuivrePage() {
   }
 
   return (
-    <section className={styles.page} data-testid="admin-mesuivre-page">
+    <section className={styles.page} data-testid="admin-mesuivre-page" data-anim="stagger">
       <div className={styles.topbar}>
         <div className={styles.headerText}>
           <h1 className={styles.title}>Page « Me suivre »</h1>
@@ -105,7 +105,7 @@ export default function AdminMeSuivrePage() {
         </div>
       </div>
 
-      <div className={styles.body}>
+      <div className={styles.body} data-anim="stagger">
         <div className={styles.field}>
           <label className={styles.label} htmlFor="mesuivre-intro">
             Petit mot d’intro

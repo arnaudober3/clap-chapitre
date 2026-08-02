@@ -32,7 +32,11 @@ export default function BilanCulturelArchivesPage() {
 
   if (bilans.length === 0) {
     return (
-      <section className={styles.page} data-testid="bilan-culturel-archives-page">
+      <section
+        className={styles.page}
+        data-testid="bilan-culturel-archives-page"
+        data-anim="stagger"
+      >
         <SectionHeader
           eyebrow="Bilan culturel"
           heading="Tous les bilans"
@@ -44,7 +48,11 @@ export default function BilanCulturelArchivesPage() {
   }
 
   return (
-    <section className={styles.page} data-testid="bilan-culturel-archives-page">
+    <section
+      className={styles.page}
+      data-testid="bilan-culturel-archives-page"
+      data-anim="stagger"
+    >
       <Link
         to={`/bilan-culturel?mois=${latestBilan().id}`}
         className={styles.backLink}

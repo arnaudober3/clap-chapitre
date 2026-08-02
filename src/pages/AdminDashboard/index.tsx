@@ -18,12 +18,12 @@ export default function AdminDashboardPage() {
   const [period, setPeriod] = useState(DEFAULT_PERIOD);
 
   return (
-    <section className={styles.page} data-testid="admin-dashboard-page">
+    <section className={styles.page} data-testid="admin-dashboard-page" data-anim="stagger">
       <DashboardHeader period={period} onPeriodChange={setPeriod} />
       <StatStrip period={period} />
-      <div className={styles.grid}>
+      <div className={styles.grid} data-anim="stagger">
         <Leaderboard />
-        <div className={styles.side}>
+        <div className={styles.side} data-anim="stagger">
           <TrendCard />
           <TodoCard />
           <NewsletterCta />

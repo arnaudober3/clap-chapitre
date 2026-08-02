@@ -93,7 +93,11 @@ export default function SendPanel({
   }
 
   return (
-    <section className={styles.card} data-testid="newsletter-send-panel">
+    <section
+      className={styles.card}
+      data-testid="newsletter-send-panel"
+      data-anim="stagger"
+    >
       <p className={styles.cardLabel}>Cet envoi</p>
 
       <div className={styles.field}>

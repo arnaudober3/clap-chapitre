@@ -83,7 +83,7 @@ export default function AdminNewsletterPage() {
   }
 
   return (
-    <section className={styles.page} data-testid="admin-newsletter-page">
+    <section className={styles.page} data-testid="admin-newsletter-page" data-anim="stagger">
       <div className={styles.header}>
         <div className={styles.headerTitles}>
           <h1 className={styles.title}>Newsletter</h1>
@@ -113,11 +113,11 @@ export default function AdminNewsletterPage() {
         </span>
       </div>
 
-      <div className={styles.body}>
+      <div className={styles.body} data-anim="stagger">
         {/* The preview names its own source in its caption bar. */}
         <EmailPreview edition={edition} />
 
-        <div className={styles.panels}>
+        <div className={styles.panels} data-anim="stagger">
           {/* Keyed on the source so the secondary forms close and re-propose
               the new month's slot when the edition changes. */}
           <SendPanel

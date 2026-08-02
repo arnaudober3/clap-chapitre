@@ -50,7 +50,7 @@ export default function AdminBilansPage() {
   }
 
   return (
-    <section className={styles.page} data-testid="admin-bilans-page">
+    <section className={styles.page} data-testid="admin-bilans-page" data-anim="stagger">
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Bilans culturels</h1>
@@ -82,7 +82,11 @@ export default function AdminBilansPage() {
             <span className={styles.headRight}>♥</span>
             <span className={styles.headRight}>Statut</span>
           </div>
-          <ul className={styles.rows} data-testid="admin-bilans-rows">
+          <ul
+            className={styles.rows}
+            data-testid="admin-bilans-rows"
+            data-anim="stagger"
+          >
             {rows.map((bilan) => (
               <BilanRow key={bilan.id} bilan={bilan} />
             ))}
