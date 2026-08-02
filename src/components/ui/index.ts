@@ -8,6 +8,7 @@ export { default as ThemeToggle } from './ThemeToggle';
 export { default as AdminSelect } from './AdminSelect';
 export { default as Pagination } from './Pagination';
 export { default as NotFoundPanel } from './NotFoundPanel';
+export { default as ShareMenu } from './ShareMenu';
 export type {
   NewsletterBlockProps,
   NewsletterBlockVariant,
@@ -15,3 +16,4 @@ export type {
 export type { AdminSelectOption, AdminSelectProps } from './AdminSelect';
 export type { PaginationProps } from './Pagination';
 export type { NotFoundPanelProps } from './NotFoundPanel';
+export type { ShareMenuProps } from './ShareMenu';

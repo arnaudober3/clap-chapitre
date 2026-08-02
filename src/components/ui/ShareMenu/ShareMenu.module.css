@@ -1,0 +1,70 @@
+/* "Partager" dropdown. The trigger is styled by the host page, so only the
+   wrapper and the panel live here. Same panel metrics as AdminSelect.
+   Colors via var(--…) only. */
+
+.share {
+  position: relative;
+  display: inline-flex;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  min-width: 180px;
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+  background: var(--surface-card);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  box-shadow: 0 14px 34px -12px rgba(60, 40, 20, 0.3);
+}
+
+/* Opens upward when the trigger closes a block and there is no room below. */
+.menuTop {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+/* One rule for both entry kinds: the channels are <a>, "Copier le lien" is a
+   <button> — hence the explicit reset. */
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 11px;
+  background: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  color: var(--nav-idle);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.entry:hover {
+  background: var(--nav-hover);
+  color: var(--ink);
+}
+
+/* Monochrome brand mark, sized in px rather than em so the four logos share
+   one optical weight whatever the label. */
+.icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  display: block;
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+
+.entry:hover .icon {
+  color: var(--accent);
+}

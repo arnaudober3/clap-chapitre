@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { ShareMenu } from '../../components/ui';
+import type { MonthlyBilan } from '../../mock/bilans';
 import { thread, likes, type ThreadEntry } from './thread';
 import styles from './BilanCulturel.module.css';
 
@@ -46,10 +48,12 @@ function Entry({ entry, nested }: { entry: ThreadEntry; nested?: boolean }) {
  * thread) and a "Partager" control. Below: a "Commentaires · <n>" heading, an
  * inert composer (comment field, name field, "Publier" button) and the thread
  * entries with an "autrice" badge on author entries and one nested reply.
- * Everything is inert: the composer form calls preventDefault; no control
- * navigates, reloads, mutates, or throws.
+ *
+ * "Partager" opens the share menu — it needs the month it is sharing, so the
+ * page passes `bilan` down. Everything else is inert: the composer form calls
+ * preventDefault; no control navigates, reloads, mutates, or throws.
  */
-export default function CommentThread() {
+export default function CommentThread({ bilan }: { bilan: MonthlyBilan }) {
   const [comment, setComment] = useState('');
   const [name, setName] = useState('');
   const count = countComments(thread);
@@ -61,9 +65,13 @@ export default function CommentThread() {
           ♡ J’aime · {likes}
         </button>
         <span className={styles.socialCount}>{count} commentaires</span>
-        <button type="button" className={styles.socialButton}>
-          Partager
-        </button>
+        <ShareMenu
+          title={bilan.title}
+          excerpt={bilan.mood}
+          path={`/bilan-culturel?mois=${bilan.id}`}
+          triggerClassName={styles.socialButton}
+          data-testid="bilan-share"
+        />
       </div>
 
       <h2 className={styles.commentsHeading}>Commentaires · {count}</h2>
