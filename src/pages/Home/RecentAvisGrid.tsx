@@ -30,7 +30,7 @@ export default function RecentAvisGrid({
       {items.length === 0 ? (
         <p className={styles.empty}>Aucun avis pour ce médium pour l’instant.</p>
       ) : (
-        <div className={styles.grid}>
+        <div className={styles.grid} data-anim="stagger">
           {items.map((item) => (
             <ReviewCard key={item.id} item={item} />
           ))}

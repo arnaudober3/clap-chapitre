@@ -102,7 +102,7 @@ function AProposContentView({ content }: { content: AProposContent }) {
   } = content;
 
   return (
-    <div className={styles.page} data-testid="a-propos-page">
+    <div className={styles.page} data-testid="a-propos-page" data-anim="stagger">
       <Hero
         eyebrow={eyebrow}
         greeting={greeting}
@@ -112,7 +112,7 @@ function AProposContentView({ content }: { content: AProposContent }) {
       />
 
       <div className={styles.body}>
-        <div className={styles.mainColumn}>
+        <div className={styles.mainColumn} data-anim="stagger">
           {bio.map((paragraph, index) => (
             <p key={index} className={styles.bioParagraph} data-testid="bio-paragraph">
               {emphasize(paragraph, bioEmphasis)}
@@ -125,7 +125,7 @@ function AProposContentView({ content }: { content: AProposContent }) {
           ) : null}
         </div>
 
-        <aside className={styles.aside}>
+        <aside className={styles.aside} data-anim="stagger">
           <YearStats title={statsTitle} stats={stats} />
           <FollowCard
             title={follow.title}

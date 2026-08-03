@@ -110,7 +110,7 @@ function BilanForm({
   }
 
   return (
-    <section className={styles.page} data-testid="admin-bilan-form-page">
+    <section className={styles.page} data-testid="admin-bilan-form-page" data-anim="stagger">
       <div className={styles.topbar}>
         <div className={styles.breadcrumb}>
           <Link to="/admin/bilans" className={styles.breadcrumbLink}>
@@ -138,7 +138,7 @@ function BilanForm({
         </div>
       </div>
 
-      <div className={styles.body}>
+      <div className={styles.body} data-anim="stagger">
         <div className={styles.field}>
           <label className={styles.label} htmlFor="bilan-title">
             Titre du bilan

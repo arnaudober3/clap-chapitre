@@ -29,7 +29,7 @@ export default function FormSidebar({
   onMetaChange: (patch: Partial<MetaFields>) => void;
 }) {
   return (
-    <aside className={styles.sidebar}>
+    <aside className={styles.sidebar} data-anim="stagger">
       <div className={`${styles.sideBlock} ${styles.sideCategory}`}>
         <div className={styles.sideTitle}>Catégorie</div>
         <div className={styles.chips}>
@@ -53,7 +53,7 @@ export default function FormSidebar({
       </div>
 
       {/* Cover + metadata share a row on mobile (design 7b) and stack on desktop. */}
-      <div className={styles.sideRow}>
+      <div className={styles.sideRow} data-anim="stagger">
         <div className={styles.sideBlock}>
           <div className={styles.sideTitle}>Affiche</div>
           {/* Covers are CSS gradients in this prototype — the dropzone previews the

@@ -75,7 +75,11 @@ export default function CommentThread({ comments }: { comments: Comment[] }) {
   const count = countComments(comments);
 
   return (
-    <section className={styles.comments} data-testid="article-comments">
+    <section
+      className={styles.comments}
+      data-testid="article-comments"
+      data-anim="stagger"
+    >
       <h2 className={styles.commentsHeading}>Commentaires · {count}</h2>
 
       <form
@@ -104,7 +108,7 @@ export default function CommentThread({ comments }: { comments: Comment[] }) {
         </div>
       </form>
 
-      <div className={styles.thread}>
+      <div className={styles.thread} data-anim="stagger">
         {comments.map((entry) => (
           <Entry key={entry.id} entry={entry} />
         ))}

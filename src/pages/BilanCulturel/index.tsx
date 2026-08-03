@@ -33,7 +33,7 @@ export default function BilanCulturelPage() {
 
   if (active.status === 'loading' || active.status === 'idle') {
     return (
-      <section className={styles.page} data-testid="bilan-culturel-page">
+      <section className={styles.page} data-testid="bilan-culturel-page" data-anim="stagger">
         <PageLoading />
       </section>
     );
@@ -41,7 +41,7 @@ export default function BilanCulturelPage() {
 
   if (!active.data) {
     return (
-      <section className={styles.page} data-testid="bilan-culturel-page">
+      <section className={styles.page} data-testid="bilan-culturel-page" data-anim="stagger">
         <p className={styles.eyebrow}>Bilan culturel</p>
         {active.status === 'error' && !active.notFound ? (
           <PageError onRetry={active.reload} />
@@ -55,7 +55,7 @@ export default function BilanCulturelPage() {
   const { bilan, comments } = active.data;
 
   return (
-    <section className={styles.page} data-testid="bilan-culturel-page">
+    <section className={styles.page} data-testid="bilan-culturel-page" data-anim="stagger">
       <MonthSwitcher active={bilan} months={months.data ?? [bilan]} />
       <MediumSections bilan={bilan} />
       <CommentThread bilan={bilan} comments={comments} />

@@ -41,6 +41,7 @@ function MediumArchive({ medium }: { medium: Medium }) {
       className={styles.page}
       data-testid="avis-archives-page"
       data-medium={medium}
+      data-anim="stagger"
     >
       <SectionHeader
         eyebrow="Avis récents"
@@ -69,7 +70,7 @@ function MediumArchive({ medium }: { medium: Medium }) {
         (items.length === 0 ? (
           <p className={styles.empty}>Aucun avis pour ce média pour l’instant.</p>
         ) : (
-          <div className={styles.grid} data-testid="avis-grid">
+          <div className={styles.grid} data-testid="avis-grid" data-anim="stagger">
             {items.map((item) => (
               <ReviewCard key={item.id} item={item} />
             ))}

@@ -43,7 +43,7 @@ export default function ArticlePage() {
 
   if (status === 'loading' || status === 'idle') {
     return (
-      <section className={styles.page} data-testid="article-page">
+      <section className={styles.page} data-testid="article-page" data-anim="stagger">
         <PageLoading />
       </section>
     );
@@ -51,7 +51,7 @@ export default function ArticlePage() {
 
   if (notFound || (status === 'ready' && !data)) {
     return (
-      <section className={styles.page} data-testid="article-page">
+      <section className={styles.page} data-testid="article-page" data-anim="stagger">
         <p className={styles.notFound}>Cet avis n’existe pas.</p>
         <Link className={styles.notFoundLink} to="/films">
           Revenir aux derniers avis
@@ -62,7 +62,7 @@ export default function ArticlePage() {
 
   if (!data) {
     return (
-      <section className={styles.page} data-testid="article-page">
+      <section className={styles.page} data-testid="article-page" data-anim="stagger">
         <PageError onRetry={reload} />
       </section>
     );
@@ -71,9 +71,9 @@ export default function ArticlePage() {
   const { article, bilan, prev, next, related, comments } = data;
 
   return (
-    <article className={styles.page} data-testid="article-page">
+    <article className={styles.page} data-testid="article-page" data-anim="stagger">
       <ArticleHero article={article} bilan={bilan} />
-      <div className={styles.column}>
+      <div className={styles.column} data-anim="stagger">
         <ArticleBody article={article} />
         <RelatedGrid items={related} />
         <ForThoseWho article={article} />

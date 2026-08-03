@@ -47,7 +47,11 @@ export default function BilanCulturelArchivesPage() {
 
   if (status === 'loading' || status === 'idle') {
     return (
-      <section className={styles.page} data-testid="bilan-culturel-archives-page">
+      <section
+        className={styles.page}
+        data-testid="bilan-culturel-archives-page"
+        data-anim="stagger"
+      >
         {header}
         <PageLoading />
       </section>
@@ -56,7 +60,11 @@ export default function BilanCulturelArchivesPage() {
 
   if (status === 'error') {
     return (
-      <section className={styles.page} data-testid="bilan-culturel-archives-page">
+      <section
+        className={styles.page}
+        data-testid="bilan-culturel-archives-page"
+        data-anim="stagger"
+      >
         {header}
         <PageError onRetry={reload} />
       </section>
@@ -65,7 +73,11 @@ export default function BilanCulturelArchivesPage() {
 
   if (months.length === 0) {
     return (
-      <section className={styles.page} data-testid="bilan-culturel-archives-page">
+      <section
+        className={styles.page}
+        data-testid="bilan-culturel-archives-page"
+        data-anim="stagger"
+      >
         {header}
         <p className={styles.empty}>Aucun bilan archivé pour l’instant.</p>
       </section>
@@ -73,7 +85,11 @@ export default function BilanCulturelArchivesPage() {
   }
 
   return (
-    <section className={styles.page} data-testid="bilan-culturel-archives-page">
+    <section
+        className={styles.page}
+        data-testid="bilan-culturel-archives-page"
+        data-anim="stagger"
+      >
       <Link to={`/bilan-culturel?mois=${months[0].id}`} className={styles.backLink}>
         ‹ Revenir au dernier bilan
       </Link>

@@ -40,6 +40,7 @@ export default function HomePage() {
       className={styles.page}
       data-testid="home-page"
       data-medium={medium ?? 'all'}
+      data-anim="stagger"
     >
       {status === 'loading' && <PageLoading />}
       {status === 'error' && <PageError onRetry={reload} />}

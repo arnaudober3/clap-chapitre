@@ -65,7 +65,7 @@ export default function CommentThread({
   const count = countComments(comments);
 
   return (
-    <section className={styles.social}>
+    <section className={styles.social} data-anim="stagger">
       <div className={styles.socialBar}>
         <button type="button" className={styles.likeButton}>
           ♡ J’aime · {bilan.likes}
@@ -108,7 +108,7 @@ export default function CommentThread({
         </div>
       </form>
 
-      <div className={styles.thread}>
+      <div className={styles.thread} data-anim="stagger">
         {comments.map((entry) => (
           <Entry key={entry.id} entry={entry} />
         ))}

@@ -29,7 +29,7 @@ export default function AdminDashboardPage() {
 
   if (status === 'loading' || status === 'idle') {
     return (
-      <section className={styles.page} data-testid="admin-dashboard-page">
+      <section className={styles.page} data-testid="admin-dashboard-page" data-anim="stagger">
         <PageLoading />
       </section>
     );
@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
 
   if (!data) {
     return (
-      <section className={styles.page} data-testid="admin-dashboard-page">
+      <section className={styles.page} data-testid="admin-dashboard-page" data-anim="stagger">
         <PageError onRetry={reload} />
       </section>
     );
@@ -52,16 +52,16 @@ export default function AdminDashboardPage() {
   }));
 
   return (
-    <section className={styles.page} data-testid="admin-dashboard-page">
+    <section className={styles.page} data-testid="admin-dashboard-page" data-anim="stagger">
       <DashboardHeader
         period={data.period}
         periods={data.periods}
         onPeriodChange={setPeriod}
       />
       <StatStrip stats={data.kpis} />
-      <div className={styles.grid}>
+      <div className={styles.grid} data-anim="stagger">
         <Leaderboard entries={ranked(data.leaderboard)} />
-        <div className={styles.side}>
+        <div className={styles.side} data-anim="stagger">
           <TrendCard points={data.trend} peak={data.trendPeak} />
           <TodoCard items={drafts} />
           <NewsletterCta />

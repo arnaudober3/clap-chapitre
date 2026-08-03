@@ -9,7 +9,7 @@ import styles from './AdminDashboard.module.css';
  */
 export default function StatStrip({ stats }: { stats: KpiStat[] }) {
   return (
-    <div className={styles.statStrip}>
+    <div className={styles.statStrip} data-anim="stagger">
       {stats.map((stat) => {
         const down = stat.deltaPct < 0;
         return (

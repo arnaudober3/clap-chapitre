@@ -42,6 +42,7 @@ export default function LinkRows({
           className={styles.rows}
           aria-labelledby="mesuivre-links-label"
           data-testid="link-rows"
+          data-anim="stagger"
         >
           {rows.map((field, index) => (
             <LinkRow

@@ -19,7 +19,7 @@ export interface NotFoundPanelProps {
  */
 export default function NotFoundPanel({ children, testId }: NotFoundPanelProps) {
   return (
-    <section className={styles.nfPage} data-testid={testId}>
+    <section className={styles.nfPage} data-testid={testId} data-anim="stagger">
       <div className={styles.nfPoster} aria-hidden="true">
         <span className={styles.nfFilmstrip} />
         <span className={styles.nfCode}>404</span>
