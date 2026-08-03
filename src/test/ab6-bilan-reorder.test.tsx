@@ -1,10 +1,12 @@
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { moveByOne, moveTo } from '../reorder';
 import type { Highlight } from '../pages/AdminBilanForm/HighlightCard';
-import type { DraftBilan, Medium, PublishedArticle } from '../mock/types';
+import type { Medium } from '../../shared/content';
+import AdminBilanFormPage from '../pages/AdminBilanForm';
+import { useTestDb } from './api-server';
 
 /** A minimal coup de cœur — only `id` and `medium` drive the reordering. */
 function item(id: string, medium: Medium): Highlight {
@@ -61,62 +63,35 @@ describe('AB-6 reorder rules', () => {
 });
 
 /** A minimal avis — only what the editor reads off the model. */
-function avis(id: string, title: string, medium: Medium): PublishedArticle {
-  return {
-    id,
-    title,
-    medium,
-    excerpt: '',
-    cover: 'linear-gradient(150deg,#000,#111)',
-    date: '1 août 2026',
-    author: 'Marie-Zoé',
-    likes: 0,
-    comments: 0,
-    views: 0,
-    status: 'published',
-    publishedAt: '2026-08-01',
-  };
-}
-
 /**
- * The draft the mock hands the editor: a film and a livre, so a move is both
- * observable and proof that the order ignores the medium.
+ * The draft the editor opens: a film and a livre, so a move is both observable
+ * and proof that the order ignores the medium.
  */
-const MIXED: DraftBilan = {
-  id: '2026-08',
-  year: 2026,
-  month: 8,
-  monthLabel: 'Août',
-  title: 'Un mois mêlé',
-  mood: '',
-  counts: { film: 1, livre: 1 },
-  views: 0,
-  likes: 0,
-  status: 'draft',
-  updatedLabel: 'modifié à l’instant',
-  avis: [avis('a', 'Le premier', 'film'), avis('b', 'Le second', 'livre')],
-};
+const MIXED = `
+INSERT INTO articles (id,title,medium,excerpt,cover,author,status,published_at,likes,views)
+VALUES ('a','Le premier','film','Un excerpt.','grad','Marie-Zoé','published','2026-08-01',0,0),
+       ('b','Le second','livre','Un excerpt.','grad','Marie-Zoé','published','2026-08-02',0,0);
 
-/**
- * Renders the editor over a stubbed catalogue, so the fixture stays readable
- * whatever the real mock's draft happens to hold.
- */
+INSERT INTO bilans (id,year,month,month_label,title,mood,status,updated_at,views,likes)
+VALUES ('2026-08',2026,8,'Août','Un mois mêlé','','draft','2026-08-20T09:00:00Z',0,0);
+
+INSERT INTO bilan_avis (bilan_id,article_id,position) VALUES ('2026-08','a',1),('2026-08','b',2);
+
+INSERT INTO bilan_counts (bilan_id,medium,count) VALUES ('2026-08','film',1),('2026-08','livre',1);
+`;
+
+/** Renders the editor over that month, once its content has arrived. */
 async function renderEditor() {
-  vi.resetModules();
-  vi.doMock('../mock/adminBilans', () => ({
-    adminBilanById: () => MIXED,
-    nextBilanMonth: () => ({ id: '2026-09', year: 2026, month: 9, monthLabel: 'Septembre' }),
-    // The editor's add-picker reads this; reordering doesn't exercise it.
-    avisForBilanPicker: () => ({ thisMonth: [], catalogue: [] }),
-  }));
-  const { default: Page } = await import('../pages/AdminBilanForm');
-  return render(
+  useTestDb(MIXED);
+  const result = render(
     <MemoryRouter initialEntries={['/admin/bilans/2026-08']}>
       <Routes>
-        <Route path="/admin/bilans/:id" element={<Page />} />
+        <Route path="/admin/bilans/:id" element={<AdminBilanFormPage />} />
       </Routes>
     </MemoryRouter>,
   );
+  await screen.findByTestId('admin-bilan-form-page');
+  return result;
 }
 
 /** The order the editor currently reads, top to bottom. */
@@ -127,11 +102,6 @@ function order() {
 }
 
 describe('AB-6 reordering from the editor', () => {
-  afterEach(() => {
-    vi.doUnmock('../mock/adminBilans');
-    vi.resetModules();
-  });
-
   it('labels each handle with its rank in the list', async () => {
     await renderEditor();
     expect(

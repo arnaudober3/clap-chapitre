@@ -1,12 +1,11 @@
-import { drafts } from '../../mock/dashboard';
+import type { Draft } from '../../content/dashboard';
 import styles from './AdminDashboard.module.css';
 
 /**
  * "À terminer" (design 6b): the unfinished drafts with a count badge. Rows are
  * mock affordances — they carry a colored dot, title and status.
  */
-export default function TodoCard() {
-  const items = drafts();
+export default function TodoCard({ items }: { items: Draft[] }) {
 
   return (
     <section className={styles.card}>

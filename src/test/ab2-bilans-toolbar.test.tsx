@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import BilansToolbar from '../pages/AdminBilans/BilansToolbar';
-import { DEFAULT_QUERY, type BilanQuery } from '../mock/adminBilans';
+import { DEFAULT_BILAN_QUERY as DEFAULT_QUERY, type BilanQuery } from '../content/query';
 
 function renderToolbar(query: Partial<BilanQuery> = {}) {
   const onChange = vi.fn();

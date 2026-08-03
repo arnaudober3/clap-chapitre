@@ -5,8 +5,8 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ArticleBody, { ForThoseWho } from '../pages/Article/ArticleBody';
 import RelatedGrid from '../pages/Article/RelatedGrid';
-import { articleById } from '../mock/articles';
-import type { PublishedArticle } from '../mock/types';
+import { anArticle } from './fixtures';
+import type { PublishedArticle } from '../../shared/content';
 
 const root = resolve(__dirname, '../..');
 const bodySource = readFileSync(
@@ -22,7 +22,16 @@ const css = readFileSync(
   'utf8',
 );
 
-const avis = articleById('un-dernier-ete')!;
+// A body long enough to exercise the drop cap, several paragraphs and the quote.
+const avis = anArticle({
+  body: [
+    'Il y a des films qui ressemblent à une maison qu’on quitte en septembre.',
+    'On y entre par une porte ouverte.',
+    'Le dîner dure vingt minutes et contient tout le film.',
+    'La lumière baisse sans qu’on l’ait vue baisser.',
+    'On en ressort avec du sable dans les poches.',
+  ].join('\n\n'),
+});
 const paragraphs = avis.body!.split('\n\n');
 
 describe('ART-3 ArticleBody', () => {
@@ -74,10 +83,23 @@ describe('ART-3 ArticleBody', () => {
 });
 
 describe('ART-3 RelatedGrid', () => {
+  // The links arrive resolved from /api/articles/:id — unknown ids and the cap
+  // at two are the endpoint's job now, and db3 covers them.
+  const related = [
+    {
+      ...anArticle({ id: 'l-annee-de-la-pluie', title: 'L’année de la pluie', medium: 'livre' }),
+      note: 'Même façon de fouiller l’amitié qui vieillit.',
+    },
+    {
+      ...anArticle({ id: 'les-nuits-blanches', title: 'Les nuits blanches', medium: 'serie' }),
+      note: 'Pour prolonger le grain doux-amer.',
+    },
+  ];
+
   it('renders the two related cards with their links, notes, media and gradient thumbs', () => {
     const { container } = render(
       <MemoryRouter>
-        <RelatedGrid article={avis} />
+        <RelatedGrid items={related} />
       </MemoryRouter>,
     );
 
@@ -87,8 +109,8 @@ describe('ART-3 RelatedGrid', () => {
 
     expect(cards[0]).toHaveAttribute('href', '/article/l-annee-de-la-pluie');
     expect(cards[1]).toHaveAttribute('href', '/article/les-nuits-blanches');
-    expect(cards[0]).toHaveTextContent(avis.related![0].note);
-    expect(cards[1]).toHaveTextContent(avis.related![1].note);
+    expect(cards[0]).toHaveTextContent(related[0].note);
+    expect(cards[1]).toHaveTextContent(related[1].note);
     expect(cards[0]).toHaveTextContent('Livre');
     expect(cards[1]).toHaveTextContent('Série');
 
@@ -96,22 +118,13 @@ describe('ART-3 RelatedGrid', () => {
     expect(container.innerHTML).not.toContain('url(');
   });
 
-  it('renders nothing — eyebrow included — when nothing resolves', () => {
+  it('renders nothing — eyebrow included — when there are no neighbours', () => {
     const { container: empty } = render(
       <MemoryRouter>
-        <RelatedGrid article={{ ...avis, related: [] }} />
+        <RelatedGrid items={[]} />
       </MemoryRouter>,
     );
     expect(empty).toBeEmptyDOMElement();
-
-    const { container: unknown } = render(
-      <MemoryRouter>
-        <RelatedGrid
-          article={{ ...avis, related: [{ id: 'nope', note: 'nope' }] }}
-        />
-      </MemoryRouter>,
-    );
-    expect(unknown).toBeEmptyDOMElement();
     expect(screen.queryByText('À rapprocher de')).toBeNull();
   });
 });

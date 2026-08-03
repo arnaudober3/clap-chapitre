@@ -1,5 +1,5 @@
 import { MEDIA, MEDIUM_CHIP_LABEL } from '../../media';
-import type { Medium } from '../../mock/types';
+import type { Medium } from '../../../shared/content';
 import styles from './AdminArticleForm.module.css';
 
 /** The three metadata slots that make up an avis' `genreMeta` line. */

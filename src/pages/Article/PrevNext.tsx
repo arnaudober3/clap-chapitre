@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { Article } from '../../mock/types';
+import type { Article } from '../../../shared/content';
 import styles from './Article.module.css';
 
 /**

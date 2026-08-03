@@ -1,42 +1,28 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import type { PublishedArticle } from '../mock/types';
-import type { MonthlyBilan } from '../mock/bilans';
+import type { BilanSummary } from '../api/content';
 import MonthCard from '../pages/BilanCulturelArchives/MonthCard';
+import { aBilanSummary } from './fixtures';
 
-function avis(id: string, cover = 'linear-gradient(150deg,#111,#222)'): PublishedArticle {
-  return {
-    id,
-    title: `Titre ${id}`,
-    medium: 'film',
-    excerpt: 'Un excerpt.',
-    cover,
-    date: '1 juin 2026',
-    author: 'Marie-Zoé',
-    likes: 10,
-    comments: 2,
-    status: 'published',
-    publishedAt: '2026-06-12',
-    views: 420,
-  };
-}
+const COVER = 'linear-gradient(150deg,#111,#222)';
 
-function bilan(overrides: Partial<MonthlyBilan> = {}): MonthlyBilan {
-  return {
+/**
+ * A month as the archive listing receives it: its own figures, plus the covers
+ * and the count the endpoint derives — the card never opens the month itself.
+ */
+function bilan(overrides: Partial<BilanSummary> = {}): BilanSummary {
+  return aBilanSummary({
     id: '2026-06',
-    year: 2026,
     month: 6,
     monthLabel: 'Juin',
     title: 'Juin 2026 — un titre',
-    avis: [avis('a'), avis('b'), avis('c'), avis('d')],
-    counts: { film: 4 },
-    views: 1200,
-    likes: 40,
-    status: 'published',
-    publishedAt: '2026-07-02',
+    // Four avis in the month, three covers on the card: the endpoint already
+    // caps the collage.
+    avisCount: 4,
+    covers: [COVER, COVER, COVER],
     ...overrides,
-  };
+  });
 }
 
 function wrap(ui: React.ReactElement) {
@@ -66,11 +52,11 @@ describe('AR-2 MonthCard', () => {
   });
 
   it('renders exactly 1 tile for a 1-avis month, and 0 tiles + "0 avis" for empty', () => {
-    wrap(<MonthCard bilan={bilan({ avis: [avis('solo')] })} />);
+    wrap(<MonthCard bilan={bilan({ avisCount: 1, covers: [COVER] })} />);
     expect(screen.getAllByTestId('poster-thumb')).toHaveLength(1);
     expect(screen.getByText('1 avis')).toBeInTheDocument();
 
-    const { container } = wrap(<MonthCard bilan={bilan({ avis: [] })} />);
+    const { container } = wrap(<MonthCard bilan={bilan({ avisCount: 0, covers: [] })} />);
     expect(within(container).queryByTestId('poster-thumb')).toBeNull();
     expect(within(container).getByText('0 avis')).toBeInTheDocument();
     expect(within(container).queryByTestId('month-card-collage')).toBeNull();

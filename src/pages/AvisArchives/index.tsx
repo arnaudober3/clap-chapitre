@@ -1,8 +1,16 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { feed } from '../../mock/home';
+import type { Medium } from '../../../shared/content';
+import { useArticleList } from '../../api/content';
 import { MEDIA, SEGMENT_TO_MEDIUM, DEFAULT_SEGMENT } from '../../media';
-import { SectionHeader, ReviewCard } from '../../components/ui';
+import { PageError, PageLoading, SectionHeader, ReviewCard } from '../../components/ui';
 import styles from './AvisArchives.module.css';
+
+/**
+ * One request covers the archive: no pager is in the design, so the page asks
+ * for a wide slice rather than inventing one. `total` says whether that was
+ * enough, which is what would trigger adding a pager here.
+ */
+const PER_PAGE = 100;
 
 /**
  * The "Tous les avis" archive — the full index of individual reviews (Home's
@@ -17,9 +25,16 @@ export default function AvisArchivesPage() {
   const medium = segment ? SEGMENT_TO_MEDIUM[segment] : undefined;
 
   // Unknown/missing segment → canonical default medium, never a blank page.
+  // Resolved before the archive is mounted, so the fetch below is never started
+  // for a medium that does not exist.
   if (!medium) return <Navigate to={`/archives/${DEFAULT_SEGMENT}`} replace />;
 
-  const items = feed.filter((item) => item.medium === medium);
+  return <MediumArchive medium={medium} />;
+}
+
+function MediumArchive({ medium }: { medium: Medium }) {
+  const { data, status, reload } = useArticleList(medium, 1, PER_PAGE);
+  const items = data?.items ?? [];
 
   return (
     <section
@@ -49,15 +64,18 @@ export default function AvisArchivesPage() {
         ))}
       </nav>
 
-      {items.length === 0 ? (
-        <p className={styles.empty}>Aucun avis pour ce média pour l’instant.</p>
-      ) : (
-        <div className={styles.grid} data-testid="avis-grid" data-anim="stagger">
-          {items.map((item) => (
-            <ReviewCard key={item.id} item={item} />
-          ))}
-        </div>
-      )}
+      {status === 'loading' && <PageLoading />}
+      {status === 'error' && <PageError onRetry={reload} />}
+      {status === 'ready' &&
+        (items.length === 0 ? (
+          <p className={styles.empty}>Aucun avis pour ce média pour l’instant.</p>
+        ) : (
+          <div className={styles.grid} data-testid="avis-grid" data-anim="stagger">
+            {items.map((item) => (
+              <ReviewCard key={item.id} item={item} />
+            ))}
+          </div>
+        ))}
     </section>
   );
 }

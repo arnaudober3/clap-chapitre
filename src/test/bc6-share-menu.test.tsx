@@ -1,13 +1,24 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import BilanCulturelPage from '../pages/BilanCulturel';
-import { bilans, latestBilan } from '../mock/bilans';
+import { aBilan, SEED } from './fixtures';
+import { useTestDb } from './api-server';
 import { SHARE_CHANNELS } from '../share';
 
 /** An older month, to prove the shared link follows `?mois=` and not the page. */
-const older = bilans.find((b) => b.id !== latestBilan().id)!;
+const OLDER = `
+INSERT INTO bilans (id,year,month,month_label,title,mood,status,published_at,views,likes)
+VALUES ('2026-05',2026,5,'Mai','Le mois des seuils','Un mois en demi-teinte.','published','2026-06-02',900,20);
+`;
+
+const latestBilan = () => aBilan();
+const older = { id: '2026-05', title: 'Le mois des seuils', mood: 'Un mois en demi-teinte.' };
+
+beforeEach(() => {
+  useTestDb(SEED + OLDER);
+});
 
 function renderBilan(path = '/bilan-culturel') {
   return render(
@@ -18,7 +29,7 @@ function renderBilan(path = '/bilan-culturel') {
 }
 
 async function openMenu(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole('button', { name: 'Partager' }));
+  await user.click(await screen.findByRole('button', { name: 'Partager' }));
   return screen.getByRole('menu', { name: 'Partager' });
 }
 

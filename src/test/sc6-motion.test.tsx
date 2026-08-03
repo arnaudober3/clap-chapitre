@@ -9,6 +9,14 @@ import Layout from '../components/layout/Layout';
 import HomePage from '../pages/Home';
 import AdminDashboardPage from '../pages/AdminDashboard';
 import useReveal from '../anim/useReveal';
+import { SEED } from './fixtures';
+import { useTestDb } from './api-server';
+
+/** A second film, so the home page has a hero *and* a grid under it. */
+const MORE_FILMS = `
+INSERT INTO articles (id,title,medium,excerpt,cover,author,status,published_at,likes,views)
+VALUES ('la-lumiere-du-nord','La lumière du Nord','film','Un drame glacé.','grad','Marie-Zoé','published','2026-07-10',0,0);
+`;
 
 const root = resolve(__dirname, '../..');
 const tokens = readFileSync(resolve(root, 'src/styles/tokens.css'), 'utf8');
@@ -73,7 +81,10 @@ describe('SC-6 reveal cascade — CSS', () => {
 });
 
 describe('SC-6 reveal cascade — markup', () => {
-  it('marks the public page roots and their grids', () => {
+  it('marks the public page roots and their grids', async () => {
+    // The grid only exists once the feed has arrived, so the page needs content
+    // for there to be anything to cascade over.
+    useTestDb(SEED + MORE_FILMS);
     render(
       <MemoryRouter initialEntries={['/films']}>
         <Routes>
@@ -82,13 +93,17 @@ describe('SC-6 reveal cascade — markup', () => {
       </MemoryRouter>,
     );
     const page = screen.getByTestId('home-page');
+    // The root is marked from the first render — before the data, during the
+    // loading line, and after: the cascade belongs to the page, not to its
+    // content.
     expect(page).toHaveAttribute('data-anim', 'stagger');
-    expect(page.querySelectorAll("[data-anim='stagger']").length).toBeGreaterThan(
-      0,
-    );
+
+    await screen.findByRole('heading', { name: 'Avis récents' });
+    expect(page.querySelectorAll("[data-anim='stagger']").length).toBeGreaterThan(0);
   });
 
-  it('marks the admin page roots', () => {
+  it('marks the admin page roots', async () => {
+    useTestDb(SEED);
     render(
       <MemoryRouter initialEntries={['/admin']}>
         <Routes>
@@ -96,13 +111,14 @@ describe('SC-6 reveal cascade — markup', () => {
         </Routes>
       </MemoryRouter>,
     );
-    expect(screen.getByTestId('admin-dashboard-page')).toHaveAttribute(
-      'data-anim',
-      'stagger',
-    );
+    // Marked while loading, and still marked once the cards are in.
+    expect(screen.getByTestId('admin-dashboard-page')).toHaveAttribute('data-anim', 'stagger');
+    await screen.findByText('Palmarès des publications');
+    expect(screen.getByTestId('admin-dashboard-page')).toHaveAttribute('data-anim', 'stagger');
   });
 
   it('remounts the outlet on navigation so the cascade replays', async () => {
+    useTestDb(SEED);
     // The case that matters: /films and /series render the very same HomePage,
     // so without the key on <main> React would keep the DOM in place and the
     // cascade would never restart. A new <main> node is what replays it.

@@ -8,8 +8,8 @@
  * Static, deterministic, network-free. Selectors are pure functions (no React,
  * no module-level mutable state), mirroring dashboard.ts / adminBilans.ts.
  */
-import type { Medium, PublishedBilan } from './types';
-import { bilans } from './bilans';
+import type { Medium, PublishedBilan } from '../../shared/content';
+import { newsletterBilans as bilans } from './newsletterBilans';
 import { MEDIUM_CHIP_LABEL } from '../media';
 import { ofMonth, shortDate } from '../format';
 

@@ -5,7 +5,9 @@ import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import YearStats from '../pages/APropos/YearStats';
 import FollowCard from '../pages/APropos/FollowCard';
-import { apropos } from '../mock/apropos';
+import { anApropos } from './fixtures';
+
+const apropos = anApropos();
 
 const root = resolve(__dirname, '../..');
 const statsSource = readFileSync(resolve(root, 'src/pages/APropos/YearStats.tsx'), 'utf8');
@@ -22,7 +24,7 @@ describe('AP-3 "Cette année" stats panel', () => {
     render(<YearStats title={apropos.statsTitle} stats={apropos.stats} />);
     expect(screen.getByText('Cette année')).toBeInTheDocument();
     const rows = screen.getAllByTestId('year-stat-row');
-    expect(rows).toHaveLength(3);
+    expect(rows).toHaveLength(apropos.stats.length);
     apropos.stats.forEach((stat, index) => {
       expect(within(rows[index]).getByText(stat.label)).toBeInTheDocument();
       expect(within(rows[index]).getByText(String(stat.value))).toBeInTheDocument();

@@ -6,14 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Clap et chapitre** — a French cultural review site. A single fictional author
 (Marie-Zoé) reviews works across four **media**: films, séries, livres, docs. All
-**content** is static French mock data from `src/mock/` — no CMS. All UI copy is
-in French. A D1 database exists but is **empty**: it is the groundwork for a
-future persistence layer, and nothing on the site reads from it yet.
+UI copy is in French.
 
-The one exception to "no backend" is admin authentication: two Cloudflare Pages
-Functions in `functions/api/` check the editor's credentials server-side. A third,
-`/api/db-health`, does nothing but prove the D1 binding is wired. Nothing else
-crosses the network.
+**Every page reads its content from the D1 database**, through the Pages
+Functions in `functions/api/`. The database ships **empty**: the site knows how
+to render its empty states, and the editor fills it herself. There is a
+demonstration set outside `migrations/` — `npm run db:example` — to see the site
+alive locally.
+
+**Reading only.** No endpoint writes. The admin forms are still inert: they load
+real content, let it be edited on screen, and persist nothing. Writing is the
+next piece of work, and the schema was designed for it (`migrations/0001_contenu.sql`).
+
+What is left of `src/mock/` is the newsletter, which is out of that scope and
+still runs on static data.
 
 ## Commands
 
@@ -26,6 +32,7 @@ npm run preview:cf   # build + wrangler pages dev — the real Cloudflare runtim
 npm run deploy       # build + wrangler pages deploy
 npm run db:migrate   # apply migrations/ to the local D1 (.wrangler/state/v3)
 npm run db:reset     # wipe that local database, then migrate it again
+npm run db:example   # load examples/contenu-exemple.sql into it (never automatic)
 npm run db:sql -- "SELECT name FROM sqlite_master"   # query it
 npm test             # vitest run (one-shot)
 npm run test:watch   # vitest watch mode
@@ -50,7 +57,41 @@ must be imported *first* — ES imports evaluate before the module body), points
 `fetch` at the real Functions via `src/test/api-server.ts`, and stores a signed
 token before each test so the whole suite runs signed in.
 
-**Admin auth** — the only server-side code in the project.
+**The API** — `functions/api/`, all reads, all GET.
+
+```
+GET /api/feed?medium=&limit=          the medium's newest avis (home)
+GET /api/articles?medium=&page=       the medium's archive, paginated
+GET /api/articles/:id                 the avis view: avis, related, prev/next, bilan, thread
+GET /api/bilans                       every published month + chips, counts, covers
+GET /api/bilans/:id                   one month ('AAAA-MM' or 'latest') + its avis and thread
+GET /api/pages/apropos                the "À propos" page
+GET /api/pages/me-suivre              the "Me suivre" page
+
+GET /api/admin/articles?status=&medium=&search=&sort=&page=    listing + catalogue totals
+GET /api/admin/articles/:id                                    one avis, drafts included
+GET /api/admin/bilans?search=&sort=&page=                      listing + the month in progress
+GET /api/admin/bilans/:id                                      one month, or 'next'
+GET /api/admin/dashboard?period=                               the six cards, one request
+```
+
+Two rules run through all of them. **One page, one request**: the avis view
+issues five SQL statements server-side and returns them together, rather than
+letting the page make five round-trips. And **the wire carries ISO only** — no
+French display string is ever built server-side; `src/api/map.ts` turns
+`publishedAt` into "18 juillet 2026" on arrival, so `src/format.ts` stays the
+single source of French formatting.
+
+`/api/admin/**` is behind the JWT (`functions/_lib/admin.ts`, shared with
+`/api/verify`): those routes hand out view counts and unpublished drafts, so an
+anonymous caller gets nothing rather than a filtered version.
+
+Query parameters are validated, not coerced: `?medium=flim` is a 400, never a
+silent fallback to "every medium". Sorts come from a frozen lookup table
+(`functions/_lib/sql.ts`) — an unknown sort is a 400, and no parameter is ever
+interpolated into SQL.
+
+**Admin auth**.
 
 ```
 POST /api/login   { username, password }         → 200 { token } | 401 { error }
@@ -87,22 +128,45 @@ at once. Known gap: no application-level rate limit (a stateless runtime cannot
 count), just a 250ms delay on failure — the real limit is a WAF rule on
 `/api/login`, configured in the dashboard.
 
-**The D1 database** (`DB` binding, `wrangler.toml`) is **empty on purpose**: the
-site's content still comes from `src/mock/`, and the binding exists so the eventual
-persistence layer has somewhere to land. `migrations/` holds one migration, whose
-only table is a probe. `GET /api/db-health` reads it and is the sole consumer:
-200 means the binding is wired and migrated, 503 means migrations are missing,
-500 means there is no binding at all.
+**The D1 database** (`DB` binding, `wrangler.toml`) holds the whole site.
+`migrations/0000_socle.sql` is the probe `GET /api/db-health` reads (200 wired and
+migrated, 503 not migrated, 500 no binding at all); `migrations/0001_contenu.sql`
+is the content schema. Its decisions, worth knowing before changing a query:
+
+- **One `articles` table** for the feed avis and the bilan ones alike. The
+  prototype kept two sets, which is why an avis could be reachable at
+  `/article/:id` yet invisible in the archives.
+- `bilan_avis` is a **join table**, not a column: the editor's picker offers avis
+  from other months, so the relation is genuinely n..n. `position` carries an
+  editorial order, never a grouping by medium.
+- `bilan_counts` is **stored, not derived**. The archive months show their chips
+  without carrying their avis; counting would zero them out.
+- **No display strings are stored.** `articles.published_at` is ISO and the
+  French date is built at render time. `bilans.month_label` is the one exception,
+  and only because the admin search reads it.
+- The comment thread is **one polymorphic table**, one level deep, enforced by a
+  trigger — the only guard there is while nothing writes through an API.
+- The editorial pages are **columns and ordered tables**, not JSON documents: the
+  forms edit field by field, and content gets inserted by hand.
+- Accent-insensitive search is an expression built in `functions/_lib/sql.ts`; it
+  must fold exactly like `fold()` in `functions/_lib/text.ts` and `src/format.ts`,
+  or "été" stops matching "ete" with nothing to show why.
 
 Local data lives in `.wrangler/state/v3` (gitignored), and `getPlatformProxy()`
 persists to that same directory — so `npm run dev` and `npm run preview:cf` share
-**one** SQLite file. Run `npm run db:migrate` after cloning; the tests need no
-database.
+**one** SQLite file. Run `npm run db:migrate` after cloning, then
+`npm run db:example` for something to look at.
+
+Inserting content by hand: `npm run db:sql` passes the whole statement to the
+shell as one argument, and a French apostrophe has to be doubled for SQL *and*
+protected from the shell. Use a `.sql` file and `--file` instead — see
+`examples/contenu-exemple.sql`, whose header spells out both traps.
 
 Remotely there is a **single** database, `clap-chapitre`, and preview deployments
-inherit the top-level binding — they read the same one production does. Acceptable
-while it is empty; the day it holds real content, previews need their own under
-`[[env.preview.d1_databases]]`. Pages never applies migrations on deploy, so a
+inherit the top-level binding — they read the same one production does. That is
+tolerable only while production is empty: **the day it holds real content,
+previews need their own** under `[[env.preview.d1_databases]]`, or a preview
+branch reads live content. Pages never applies migrations on deploy, so a
 schema change means running `npm run db:migrate:remote` by hand.
 
 The Pages project is Git-connected: `main` deploys to production, every other
@@ -136,10 +200,27 @@ also typechecks `src/`. Widen those interfaces as queries need more of the API.
 `secondaryNav` (standalone pages), `drawerNav` (mobile). The `<Layout>` shell is a
 desktop left rail that collapses to a mobile top bar + drawer.
 
-**Content types** (`src/mock/types.ts`): `Article` (an "avis"/review — the central
-type, reused by feeds, article view, and bilans) and `Comment`. Mock data files in
-`src/mock/` export the data plus **pure selector functions** (no React, no
-module-level mutable state) so pages filter without side effects.
+**Content types** (`shared/content.ts`): `Article` (an "avis"/review — the central
+type, reused by feeds, article view and bilans), `Bilan` and `Comment`, each in
+two flavours. The plain ones are what components render; the `Wire*` ones are what
+the API carries, and they differ in exactly one way — the wire holds ISO values
+where the render types hold French display strings.
+
+The file sits outside both `src/` and `functions/` because both read it: a column
+that stops matching a field becomes a compile error rather than an `undefined` in
+a hero. It holds types only, no runtime, so it does not cross the security
+boundary that keeps `functions/_lib/` out of the client bundle.
+
+**Reading data** (`src/api/`): one hook per view — `useFeed`, `useArticleView`,
+`useBilanList`, `useAdminArticles`… They replace the old mock selectors one for
+one. `useApi` carries the three things every page needs: a loading state that is
+*not* "absent" (a 404 arrives as an `ApiError`, never as missing data), a guard so
+a stale answer never overwrites a newer one, and `path === null` for a component
+that must not fetch at all. `client.ts` owns the 401 rule, shared with the auth
+layer.
+
+Rule of thumb for components: **a component that used to call a selector now
+takes the data as a prop.** One page per screen knows there is a network.
 
 **Design system — "Salon"**: all palette hexes and layout constants live **only** in
 `src/styles/tokens.css` as CSS custom properties. Every component references them via
@@ -158,10 +239,16 @@ Cross-page reusable primitives live in `src/components/ui/` (barrel-exported fro
   Article, `bc*` = Bilan culturel, `ap*` = À propos, `ms*` = Me suivre, `sc*` =
   scaffold, `ar*` = archives, `al*` = auth/login, `db*` = database). Match the
   existing prefix when adding tests.
-- **The suite has no D1.** `TEST_ENV` carries no `DB`, and tests that need one
-  build a small object satisfying the interfaces in `functions/types.ts` — which
-  also keeps those declarations honest. Real SQL belongs in a Miniflare-backed
-  suite, the day there are real tables.
+- **The suite runs real SQL.** `src/test/d1.ts` builds an in-memory SQLite
+  database (`node:sqlite`, no dependency) with the project's own migrations
+  applied, and satisfies the `D1Database` interface. A test calls `useTestDb(SEED)`
+  to get one; `src/test/fixtures.ts` holds the shared content, in both its object
+  and its SQL form. `TEST_ENV` still carries **no** `DB` — a test that never asks
+  for one gets the 500 an unconfigured deployment would give, which is what keeps
+  `requireDb` honest.
+- A fake `prepare()` returning canned rows was the alternative, and it was
+  rejected: it would have to recognise queries by their text, so rewording one
+  would break twenty page tests for the wrong reason.
 - **Never `vi.mock` the auth layer.** Tests exercise the real handlers through
   the `fetch` stub, so what runs under vitest is what runs in production. Test
   credentials live in `src/test/credentials.ts`, independent of `.dev.vars` so a

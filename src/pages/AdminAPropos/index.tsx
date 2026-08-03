@@ -2,11 +2,13 @@ import { useState } from "react";
 import PortraitField from "./PortraitField";
 import YearStatsFields from "./YearStatsFields";
 import { useAdminPageKicker } from "../../components/layout/adminPageMeta";
+import { useAPropos, type AProposContent } from "../../api/content";
+import { PageError, PageLoading } from "../../components/ui";
 import {
   aproposFormValues,
   type AProposFormValues,
   type YearStatField,
-} from "../../mock/apropos";
+} from "../../content/apropos";
 import styles from "./AdminAPropos.module.css";
 
 /** Design 6f's standfirst — also the page summary the mobile top bar carries. */
@@ -16,11 +18,23 @@ const SUBTITLE = "Ce que voient les visiteurs sur la page À propos";
  * Admin editor for the public "À propos" page (design 6f desktop → 7e mobile).
  * Unlike the article and bilan editors this is a singleton page: there is no
  * listing above it, so the header names the page instead of a breadcrumb.
- * Nothing is persisted in this prototype — the fields are local state seeded
- * from src/mock/apropos.ts, and "Enregistrer" only flips a passive state line.
+ *
+ * Nothing is persisted yet — the API is read-only, so "Enregistrer" still only
+ * flips a passive state line. What did change is where the fields come from:
+ * the page content is fetched, and the form is mounted only once it has
+ * arrived. That is what lets `useState` keep an initialiser instead of needing
+ * an effect to refill fields the editor may already be typing in.
  */
 export default function AdminAProposPage() {
-  const [values, setValues] = useState<AProposFormValues>(aproposFormValues);
+  const { data, status, reload } = useAPropos();
+
+  if (status === 'loading' || status === 'idle') return <PageLoading />;
+  if (!data) return <PageError onRetry={reload} />;
+  return <AProposForm content={data} />;
+}
+
+function AProposForm({ content }: { content: AProposContent }) {
+  const [values, setValues] = useState<AProposFormValues>(() => aproposFormValues(content));
   const [saved, setSaved] = useState(false);
 
   // On mobile the shell's top bar is the page header (design 7e): it shows

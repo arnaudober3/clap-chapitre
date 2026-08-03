@@ -4,7 +4,9 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import NewsletterFeature from '../pages/MeSuivre/NewsletterFeature';
-import { meSuivre } from '../mock/mesuivre';
+import { aMeSuivre } from './fixtures';
+
+const meSuivre = aMeSuivre();
 
 const root = resolve(__dirname, '../..');
 const source = readFileSync(

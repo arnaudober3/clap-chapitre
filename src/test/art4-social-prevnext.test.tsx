@@ -5,7 +5,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import SocialBar from '../pages/Article/SocialBar';
 import PrevNext from '../pages/Article/PrevNext';
-import { articleById } from '../mock/articles';
+import { anArticle } from './fixtures';
 
 const root = resolve(__dirname, '../..');
 const socialSource = readFileSync(
@@ -21,9 +21,9 @@ const css = readFileSync(
   'utf8',
 );
 
-const avis = articleById('un-dernier-ete')!;
-const other = articleById('l-annee-de-la-pluie')!;
-const third = articleById('les-nuits-blanches')!;
+const avis = anArticle();
+const other = anArticle({ id: 'l-annee-de-la-pluie', title: 'L’année de la pluie', medium: 'livre' });
+const third = anArticle({ id: 'les-nuits-blanches', title: 'Les nuits blanches', medium: 'serie' });
 
 /** SocialBar holds the share menu, which reads the router location. */
 function renderSocialBar() {

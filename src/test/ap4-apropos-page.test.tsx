@@ -1,11 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AProposPage, { emphasize } from '../pages/APropos';
 import App from '../App';
-import { apropos } from '../mock/apropos';
+import { anApropos, SEED } from './fixtures';
+import { useTestDb } from './api-server';
+
+const apropos = anApropos();
 
 const root = resolve(__dirname, '../..');
 
@@ -37,9 +40,13 @@ function renderPage() {
 }
 
 describe('AP-4 À propos page', () => {
-  it('renders the hero, the bio, the pull-quote and the aside', () => {
+  beforeEach(() => {
+    useTestDb(SEED);
+  });
+
+  it('renders the hero, the bio, the pull-quote and the aside', async () => {
     renderPage();
-    const heading = screen.getByRole('heading', { level: 1 });
+    const heading = await screen.findByRole('heading', { level: 1 });
     expect(heading.textContent).toContain(apropos.greeting);
     expect(heading.textContent).toContain(apropos.name);
 
@@ -50,14 +57,15 @@ describe('AP-4 À propos page', () => {
 
     const stats = screen.getByTestId('year-stats');
     expect(within(stats).getByText('Cette année')).toBeInTheDocument();
-    expect(within(stats).getAllByTestId('year-stat-row')).toHaveLength(3);
+    expect(within(stats).getAllByTestId('year-stat-row')).toHaveLength(apropos.stats.length);
 
     const link = screen.getByRole('link', { name: 'Me suivre →' });
     expect(link).toHaveAttribute('href', '/me-suivre');
   });
 
-  it('bolds every bioEmphasis term without dropping or duplicating text', () => {
+  it('bolds every bioEmphasis term without dropping or duplicating text', async () => {
     renderPage();
+    await screen.findByTestId('a-propos-hero');
     const paragraphs = screen.getAllByTestId('bio-paragraph');
 
     paragraphs.forEach((paragraph, index) => {
@@ -104,14 +112,14 @@ describe('AP-4 À propos page', () => {
     expect(heroSource).not.toContain('dangerouslySetInnerHTML');
   });
 
-  it('keeps the routing test id and renders at /a-propos in the App router', () => {
+  it('keeps the routing test id and renders at /a-propos in the App router', async () => {
     render(
       <MemoryRouter initialEntries={['/a-propos']}>
         <App />
       </MemoryRouter>,
     );
     expect(screen.getByTestId('a-propos-page')).toBeInTheDocument();
-    expect(screen.getByTestId('a-propos-hero')).toBeInTheDocument();
+    expect(await screen.findByTestId('a-propos-hero')).toBeInTheDocument();
   });
 
   it('uses tokens only — no raw hex color literal in the page or its CSS module', () => {
@@ -121,26 +129,22 @@ describe('AP-4 À propos page', () => {
 });
 
 describe('AP-4 À propos page empty content', () => {
-  afterEach(() => {
-    vi.doUnmock('../mock/apropos');
-    vi.resetModules();
-  });
-
   it('renders the hero and does not throw with empty bio and stats', async () => {
-    vi.resetModules();
-    vi.doMock('../mock/apropos', () => ({
-      apropos: { ...apropos, bio: [], stats: [] },
-    }));
-    const { default: EmptyPage } = await import('../pages/APropos');
+    // A row with no bio and no stats — reachable by hand, so the page has to
+    // survive it. No module stubbing needed: it is just a different row.
+    useTestDb(`
+      INSERT INTO page_apropos (id,eyebrow,greeting,name,intro,portrait_label,bio,bio_emphasis,quote,stats_title,follow_title,follow_copy,follow_cta,follow_to)
+      VALUES (1,'À propos','Bonjour, moi c’est','Marie-Zoé','J’écris.','Portrait','','','','Cette année','On garde le contact ?','Le bilan du mois.','Me suivre','/me-suivre');
+    `);
     expect(() =>
       render(
         <MemoryRouter>
-          <EmptyPage />
+          <AProposPage />
         </MemoryRouter>,
       ),
     ).not.toThrow();
 
-    expect(screen.getByTestId('a-propos-hero')).toBeInTheDocument();
+    expect(await screen.findByTestId('a-propos-hero')).toBeInTheDocument();
     expect(screen.queryByTestId('bio-paragraph')).not.toBeInTheDocument();
     expect(screen.queryByTestId('year-stat-row')).not.toBeInTheDocument();
     expect(screen.getByText('Cette année')).toBeInTheDocument();

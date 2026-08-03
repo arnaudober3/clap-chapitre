@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { periods } from '../../mock/dashboard';
+import type { Period } from '../../content/dashboard';
 import { AdminSelect } from '../../components/ui';
 import styles from './AdminDashboard.module.css';
 
@@ -11,9 +11,11 @@ import styles from './AdminDashboard.module.css';
  */
 export default function DashboardHeader({
   period,
+  periods,
   onPeriodChange,
 }: {
   period: string;
+  periods: Period[];
   onPeriodChange: (periodId: string) => void;
 }) {
   return (
@@ -26,7 +28,7 @@ export default function DashboardHeader({
         <AdminSelect
           label="Période"
           value={period}
-          options={periods()}
+          options={periods}
           onChange={onPeriodChange}
         />
         <Link to="/admin/articles/nouveau" className={styles.newButton}>

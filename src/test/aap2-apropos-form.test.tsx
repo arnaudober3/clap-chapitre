@@ -1,11 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import AdminAProposPage from '../pages/AdminAPropos';
-import { aproposFormValues } from '../mock/apropos';
+import { aproposFormValues } from '../content/apropos';
+import { anApropos, SEED } from './fixtures';
+import { useTestDb } from './api-server';
 
 const root = resolve(__dirname, '../..');
 
@@ -21,6 +23,11 @@ const sources = [
   'src/pages/AdminAPropos/AdminAPropos.module.css',
 ].map((path) => [path, stripComments(readFileSync(resolve(root, path), 'utf8'))] as const);
 
+/** The editor fetches the page content, so every test starts from a seeded database. */
+beforeEach(() => {
+  useTestDb(SEED);
+});
+
 function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/admin/a-propos']}>
@@ -29,11 +36,12 @@ function renderPage() {
   );
 }
 
-const initial = aproposFormValues();
+const initial = aproposFormValues(anApropos());
 
 describe('AAP-2 admin À propos form', () => {
-  it('prefills every field from the public page content', () => {
+  it('prefills every field from the public page content', async () => {
     renderPage();
+    await screen.findByTestId('admin-apropos-page');
     expect(screen.getByTestId('admin-apropos-page')).toBeInTheDocument();
 
     expect(screen.getByLabelText('Titre')).toHaveValue(initial.title);
@@ -47,8 +55,9 @@ describe('AAP-2 admin À propos form', () => {
     });
   });
 
-  it('names the page and its purpose in the header', () => {
+  it('names the page and its purpose in the header', async () => {
     renderPage();
+    await screen.findByTestId('admin-apropos-page');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Page « À propos »');
     expect(
       screen.getByText('Ce que voient les visiteurs sur la page À propos'),
@@ -58,6 +67,7 @@ describe('AAP-2 admin À propos form', () => {
   it('types into a text field and into a "Cette année" row', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByTestId('admin-apropos-page');
 
     const quote = screen.getByLabelText('Citation mise en avant');
     await user.clear(quote);
@@ -75,6 +85,7 @@ describe('AAP-2 admin À propos form', () => {
   it('saves in place — the state line appears and the page never navigates', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByTestId('admin-apropos-page');
     const before = window.location.href;
 
     expect(screen.queryByText('Enregistré')).toBeNull();
@@ -88,6 +99,7 @@ describe('AAP-2 admin À propos form', () => {
   it('drops the state line as soon as a field changes again', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByTestId('admin-apropos-page');
 
     await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
     expect(screen.getByText('Enregistré')).toBeInTheDocument();
@@ -96,8 +108,9 @@ describe('AAP-2 admin À propos form', () => {
     expect(screen.queryByText('Enregistré')).toBeNull();
   });
 
-  it('offers the portrait control without requesting anything from the network', () => {
+  it('offers the portrait control without requesting anything from the network', async () => {
     renderPage();
+    await screen.findByTestId('admin-apropos-page');
     expect(screen.getByRole('button', { name: 'Changer le portrait' })).toBeInTheDocument();
     for (const [path, code] of sources) {
       expect(code, path).not.toMatch(/<img\b/);

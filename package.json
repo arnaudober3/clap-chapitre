@@ -16,7 +16,8 @@
     "db:console": "wrangler d1 execute clap-chapitre --local",
     "db:reset": "rm -rf .wrangler/state/v3/d1 && npm run db:migrate",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:example": "wrangler d1 execute clap-chapitre --local --file=examples/contenu-exemple.sql"
   },
   "dependencies": {
     "react": "^18.3.1",

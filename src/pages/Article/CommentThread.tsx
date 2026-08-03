@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { thread, type ThreadEntry } from './thread';
+import type { Comment } from '../../../shared/content';
 import styles from './Article.module.css';
 
 /** Total comment count: top-level entries plus any nested replies. */
-function countComments(entries: ThreadEntry[]): number {
+function countComments(entries: Comment[]): number {
   return entries.reduce((total, entry) => total + 1 + (entry.reply ? 1 : 0), 0);
 }
 
@@ -13,7 +13,7 @@ function monogramOf(author: string): string {
 }
 
 /** One entry: avatar, name (+ autrice pill), date, body and inert affordances. */
-function Entry({ entry, nested }: { entry: ThreadEntry; nested?: boolean }) {
+function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
   const anonymous = entry.author === 'Anonyme';
   const avatarClass = [
     styles.commentAvatar,
@@ -61,17 +61,18 @@ function Entry({ entry, nested }: { entry: ThreadEntry; nested?: boolean }) {
 
 /**
  * The article comment section: the "Commentaires · n" heading (n counts nested
- * replies too), an inert composer and the thread.
+ * replies too), an inert composer and the thread, which arrives already nested
+ * from `/api/articles/:id`.
  *
  * The composer is one <form> in both layouts: a card on desktop (comment field,
  * name field, "Publier" pill) that becomes the sticky bottom bar of design 4b
  * at the mobile breakpoint, where the name field is dropped. Submitting calls
  * preventDefault — nothing navigates, persists or appears.
  */
-export default function CommentThread() {
+export default function CommentThread({ comments }: { comments: Comment[] }) {
   const [comment, setComment] = useState('');
   const [name, setName] = useState('');
-  const count = countComments(thread);
+  const count = countComments(comments);
 
   return (
     <section
@@ -108,7 +109,7 @@ export default function CommentThread() {
       </form>
 
       <div className={styles.thread} data-anim="stagger">
-        {thread.map((entry) => (
+        {comments.map((entry) => (
           <Entry key={entry.id} entry={entry} />
         ))}
       </div>

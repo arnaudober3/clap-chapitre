@@ -2,11 +2,13 @@ import { useRef, useState } from "react";
 import LinkRows from "./LinkRows";
 import { moveByOne, moveTo } from "../../reorder";
 import { useAdminPageKicker } from "../../components/layout/adminPageMeta";
+import { useMeSuivre, type MeSuivreContent } from "../../api/content";
+import { PageError, PageLoading } from "../../components/ui";
 import {
   mesuivreFormValues,
   type MeSuivreFormValues,
   type SocialLinkField,
-} from "../../mock/mesuivre";
+} from "../../content/mesuivre";
 import styles from "./AdminMeSuivre.module.css";
 
 /** Design 6g's standfirst — also the page summary the mobile top bar carries. */
@@ -15,12 +17,22 @@ const SUBTITLE = "Les liens affichés sur la page Me suivre";
 /**
  * Admin editor for the public "Me suivre" page (design 6g desktop → 7f mobile).
  * Like the "À propos" editor this is a singleton page: no listing above it, so
- * the header names the page instead of a breadcrumb. Nothing is persisted in
- * this prototype — the fields are local state seeded from src/mock/mesuivre.ts,
- * and "Enregistrer" only flips a passive state line.
+ * the header names the page instead of a breadcrumb.
+ *
+ * Nothing is persisted yet — the API is read-only. The form is mounted only once
+ * the page content has arrived, which is what keeps its fields a plain
+ * `useState` initialiser rather than an effect racing the editor's typing.
  */
 export default function AdminMeSuivrePage() {
-  const [values, setValues] = useState<MeSuivreFormValues>(mesuivreFormValues);
+  const { data, status, reload } = useMeSuivre();
+
+  if (status === 'loading' || status === 'idle') return <PageLoading />;
+  if (!data) return <PageError onRetry={reload} />;
+  return <MeSuivreForm content={data} />;
+}
+
+function MeSuivreForm({ content }: { content: MeSuivreContent }) {
+  const [values, setValues] = useState<MeSuivreFormValues>(() => mesuivreFormValues(content));
   const [saved, setSaved] = useState(false);
   // Added rows need a key that no reorder or removal can reuse. A counter is
   // enough and stays deterministic — no Date, no Math.random anywhere here.

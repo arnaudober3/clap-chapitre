@@ -1,27 +1,18 @@
 /**
- * Monthly "bilan culturel" mock content — the model shared with subtask 05
- * (BilanCulturelArchives). The shape is frozen by the DEV-19-05 contract: `bilans`,
- * `bilansByYear`, `latestBilan`. `bilanById` is an additive selector for the
- * Bilan culturel page. Covers are CSS gradient strings (no network requests);
- * author is Marie-Zoé. Selectors are pure — no React, no module-level mutable
- * state. Grouping-by-medium is a page concern, not a selector.
+ * The bilans the newsletter tooling generates its editions from.
+ *
+ * These months used to be read from `src/mock/bilans.ts`, which the site itself
+ * read too. The site now reads the database; the newsletter does not — sending
+ * e-mail is outside the scope of the read-only work — so rather than leave the
+ * back-office depending on a module that only exists for it, the months it needs
+ * live here, next to it.
+ *
+ * They are a fixture, not content: nothing on the public site renders them, and
+ * they disappear the day the newsletter reads the database too.
  */
-import type { PublishedBilan } from './types';
+import type { PublishedBilan } from '../../shared/content';
 
-/**
- * A month's cultural review, grouped as an "article" on the Bilan page.
- * Kept as an alias: the public site only ever renders published bilans, and the
- * DEV-19-05 contract froze this name. The shape itself now lives in `types.ts`
- * next to the article hierarchy it mirrors.
- */
-export type MonthlyBilan = PublishedBilan;
-
-/**
- * All monthly bilans, newest-first. Covers ≥ 2 years; the current year (2026)
- * holds ≥ 3 months so DEV-19-05's BilanCulturelArchives renders one expanded year + a
- * collapsed year. The newest month is Juin 2026 and carries full detail.
- */
-export const bilans: PublishedBilan[] = [
+const BILANS: PublishedBilan[] = [
   {
     id: '2026-06',
     year: 2026,
@@ -281,31 +272,4 @@ export const bilans: PublishedBilan[] = [
   },
 ];
 
-/**
- * All bilans grouped by year, years descending, months within a year
- * descending (consumed by DEV-19-05's BilanCulturelArchives).
- */
-export function bilansByYear(): Array<{ year: number; months: MonthlyBilan[] }> {
-  const byYear = new Map<number, MonthlyBilan[]>();
-  for (const bilan of bilans) {
-    const months = byYear.get(bilan.year);
-    if (months) months.push(bilan);
-    else byYear.set(bilan.year, [bilan]);
-  }
-  return Array.from(byYear.entries())
-    .sort((a, b) => b[0] - a[0])
-    .map(([year, months]) => ({
-      year,
-      months: [...months].sort((a, b) => b.month - a.month),
-    }));
-}
-
-/** The most recent bilan (default view; "dernier bilan" target for 05). */
-export function latestBilan(): MonthlyBilan {
-  return bilans[0];
-}
-
-/** Additive selector: resolve a bilan by its 'YYYY-MM' id (undefined if none). */
-export function bilanById(id: string): MonthlyBilan | undefined {
-  return bilans.find((bilan) => bilan.id === id);
-}
+export { BILANS as newsletterBilans };

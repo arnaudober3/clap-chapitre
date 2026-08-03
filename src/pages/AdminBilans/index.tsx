@@ -1,48 +1,53 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import BilansToolbar from './BilansToolbar';
 import BilanRow from './BilanRow';
 import CurrentBilanCard from './CurrentBilanCard';
 import { Pagination } from '../../components/ui';
 import { useAdminPageKicker } from '../../components/layout/adminPageMeta';
-import {
-  adminBilanCounts,
-  currentDraftBilan,
-  filterAdminBilans,
-  DEFAULT_QUERY,
-  PAGE_SIZE,
-  type BilanQuery,
-} from '../../mock/adminBilans';
+import { useAdminBilans } from '../../api/admin';
+import { DEFAULT_BILAN_QUERY, type BilanQuery } from '../../content/query';
+import { PageError, PageLoading } from '../../components/ui';
+import { monthName } from '../../format';
+import type { PublishedBilan } from '../../../shared/content';
 import styles from './AdminBilans.module.css';
 
 /**
  * Admin "Bilans culturels" listing (design 9a desktop → 9b mobile). Bilans are
  * monthly, so the month in progress gets a card of its own above a listing of
  * the published months — it is the thing the editor comes back to, and a card
- * tells it apart at a glance where a table row would not. All data is static
- * mock content from src/mock/adminBilans.ts — filtering happens in pure
- * selectors, this page only owns the query.
+ * tells it apart at a glance where a table row would not.
+ *
+ * The search, the sort and the paging happen in SQL. The month in progress
+ * comes back beside the rows rather than among them, so a search never hides
+ * it — it is not one result among fourteen, it is the thing being written.
  */
 export default function AdminBilansPage() {
-  const [query, setQuery] = useState<BilanQuery>(DEFAULT_QUERY);
+  const [query, setQuery] = useState<BilanQuery>(DEFAULT_BILAN_QUERY);
   const [page, setPage] = useState(1);
-  const counts = adminBilanCounts();
-  const draft = currentDraftBilan();
+  const { data, status, reload } = useAdminBilans(query, page);
+
+  const counts = data?.catalogue ?? { published: 0, drafts: 0, since: undefined };
+  const draft = data?.draft;
   // A bilan covers a month, and a month is only written once: while one is in
   // progress there is nothing to start, so the page offers no way to — the card
   // above the listing already leads back to it.
   const canCreate = draft === undefined;
-  const subtitle = `${counts.published} bilans publiés · depuis ${counts.sinceLabel}`;
+  // "depuis mai 2025" — the endpoint sends figures, the French is built here.
+  const since = counts.since
+    ? `${monthName(counts.since.month).toLowerCase()} ${counts.since.year}`
+    : '—';
+  const subtitle = `${counts.published} bilans publiés · depuis ${since}`;
   // On mobile the shell's top bar carries this line instead (design 9b), where
   // the backlog matters more than the start date.
   useAdminPageKicker(`${counts.published} publiés · ${counts.drafts} en cours`);
 
-  const matching = useMemo(() => filterAdminBilans(query), [query]);
-  const pageCount = Math.max(1, Math.ceil(matching.length / PAGE_SIZE));
-  // A search can shrink the list under the current page; clamp instead of
-  // rendering an empty page.
+  // The listing only ever holds published months; the endpoint filters on it.
+  const rows = (data?.items ?? []) as PublishedBilan[];
+  const total = data?.total ?? 0;
+  const perPage = data?.perPage ?? 1;
+  const pageCount = Math.max(1, Math.ceil(total / perPage));
   const currentPage = Math.min(page, pageCount);
-  const rows = matching.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   function updateQuery(patch: Partial<BilanQuery>) {
     setQuery((previous) => ({ ...previous, ...patch }));
@@ -70,7 +75,10 @@ export default function AdminBilansPage() {
 
       <BilansToolbar query={query} onChange={updateQuery} />
 
-      {rows.length === 0 ? (
+      {status === 'loading' && <PageLoading />}
+      {status === 'error' && <PageError onRetry={reload} />}
+
+      {status === 'ready' && (rows.length === 0 ? (
         <p className={styles.empty}>Aucun bilan ne correspond à cette recherche.</p>
       ) : (
         <>
@@ -95,12 +103,12 @@ export default function AdminBilansPage() {
             page={currentPage}
             pageCount={pageCount}
             shown={rows.length}
-            total={matching.length}
+            total={total}
             noun="bilan"
             onPageChange={setPage}
           />
         </>
-      )}
+      ))}
 
       {canCreate && (
         <Link to="/admin/bilans/nouveau" className={styles.fab} aria-label="Nouveau bilan">

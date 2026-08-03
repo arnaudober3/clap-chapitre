@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ArticlesToolbar from '../pages/AdminArticles/ArticlesToolbar';
-import { DEFAULT_QUERY, type ArticleQuery } from '../mock/adminArticles';
+import { DEFAULT_QUERY, type ArticleQuery } from '../content/query';
 
 function renderToolbar(query: Partial<ArticleQuery> = {}) {
   const onChange = vi.fn();

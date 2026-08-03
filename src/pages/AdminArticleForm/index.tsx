@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import BodyEditor from './BodyEditor';
 import FormSidebar, { type MetaFields } from './FormSidebar';
-import { adminArticleById } from '../../mock/adminArticles';
-import type { Article, Medium } from '../../mock/types';
+import { useAdminArticle } from '../../api/admin';
+import { PageError, PageLoading } from '../../components/ui';
+import type { Article, Medium } from '../../../shared/content';
 import styles from './AdminArticleForm.module.css';
 
 /** Split an avis' "Genre · Durée · Année" line back into its three slots. */
@@ -117,13 +118,20 @@ function ArticleForm({ article }: { article?: Article }) {
 /**
  * Route entry: resolves `:id` against the catalogue. `/admin/articles/nouveau`
  * has no id and renders an empty form; an unknown id falls back to the listing.
- * The `key` remounts the form when navigating straight from one avis to another
- * so its local field state restarts from the new avis.
+ *
+ * The form below is only mounted once the avis has arrived, which is what keeps
+ * its fields plain `useState` initialisers — mounting it empty and filling it in
+ * an effect would race whatever the editor had already started typing. The `key`
+ * remounts it when navigating straight from one avis to another, so the fields
+ * restart from the new one.
  */
 export default function AdminArticleFormPage() {
   const { id } = useParams();
+  const { data: article, status, notFound, reload } = useAdminArticle(id);
+
   if (!id) return <ArticleForm />;
-  const article = adminArticleById(id);
-  if (!article) return <Navigate to="/admin/articles" replace />;
+  if (status === 'loading' || status === 'idle') return <PageLoading />;
+  if (notFound) return <Navigate to="/admin/articles" replace />;
+  if (!article) return <PageError onRetry={reload} />;
   return <ArticleForm key={article.id} article={article} />;
 }

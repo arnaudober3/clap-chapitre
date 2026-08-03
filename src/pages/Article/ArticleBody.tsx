@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import type { Article } from '../../mock/types';
+import type { Article } from '../../../shared/content';
 import styles from './Article.module.css';
 
 /** Split a string into non-empty, trimmed paragraphs. */

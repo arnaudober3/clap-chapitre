@@ -1,5 +1,5 @@
 import LinkRow from './LinkRow';
-import type { SocialLinkField } from '../../mock/mesuivre';
+import type { SocialLinkField } from '../../content/mesuivre';
 import styles from './AdminMeSuivre.module.css';
 
 export interface LinkRowsProps {

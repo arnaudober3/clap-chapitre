@@ -1,0 +1,116 @@
+/**
+ * The one module that knows how the site talks to its own API.
+ *
+ * It exists for three things the pages should not each reinvent:
+ *
+ *   1. **The 401 rule**, which is the same one `src/auth/auth.ts` states out
+ *      loud: *only a 401 drops the token*. A network failure or a 5xx keeps the
+ *      session, because a misconfigured deployment quietly signing the editor
+ *      out on a loop is worse than a session that outlives its server.
+ *   2. **In-flight deduplication.** The header and the avis page mount in the
+ *      same tick and want the same avis; without this they would ask twice.
+ *   3. **A typed error.** A 404 has to be distinguishable from "not loaded yet"
+ *      by the page, and `undefined` cannot carry that difference.
+ *
+ * There is no cache. A resolved request is forgotten immediately: caching would
+ * mean owning invalidation, and nothing here changes often enough to pay for it.
+ */
+import { clearToken, getToken } from '../auth/auth';
+import { NETWORK_ERROR, SERVER_ERROR } from './messages';
+
+/**
+ * A failed request. `status` is the HTTP code, or **0 when the request never got
+ * an answer** — offline, DNS, dev server down. Zero is not a status a server can
+ * send, so it cannot be confused with one.
+ */
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+
+  /** True when the row is genuinely absent, as opposed to unreachable. */
+  get isNotFound(): boolean {
+    return this.status === 404;
+  }
+}
+
+type UnauthorizedHandler = () => void;
+
+let onUnauthorized: UnauthorizedHandler | undefined;
+
+/**
+ * Called when the server rejects the stored token. `AuthContext` registers
+ * itself here so the admin shell can step down to the login page immediately,
+ * instead of showing a signed-in layout full of failed panels.
+ */
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | undefined): void {
+  onUnauthorized = handler;
+}
+
+/** Requests currently in flight, keyed by path. Emptied as each settles. */
+const inFlight = new Map<string, Promise<unknown>>();
+
+export interface GetOptions {
+  /** Send the admin bearer token. Required by every `/api/admin/**` route. */
+  admin?: boolean;
+  /** Abort when the caller unmounts or moves on. */
+  signal?: AbortSignal;
+}
+
+/**
+ * GET `path` and parse its JSON, or throw `ApiError`.
+ *
+ * Deduplication is keyed on the path alone, and only applies to anonymous
+ * requests: two admin calls could in principle carry different tokens, and
+ * sharing a promise between them would hand one caller the other's answer.
+ */
+export function apiGet<T>(path: string, options: GetOptions = {}): Promise<T> {
+  if (options.admin || options.signal) return request<T>(path, options);
+
+  const pending = inFlight.get(path) as Promise<T> | undefined;
+  if (pending) return pending;
+
+  const promise = request<T>(path, options).finally(() => {
+    inFlight.delete(path);
+  });
+  inFlight.set(path, promise);
+  return promise;
+}
+
+async function request<T>(path: string, options: GetOptions): Promise<T> {
+  const headers = new Headers();
+  if (options.admin) {
+    const token = getToken();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(path, { headers, signal: options.signal });
+  } catch (error) {
+    // An abort is the caller changing its mind, not a failure to report: it is
+    // rethrown untouched so `useApi` can tell the two apart.
+    if (error instanceof DOMException && error.name === 'AbortError') throw error;
+    throw new ApiError(0, NETWORK_ERROR);
+  }
+
+  if (response.status === 401) {
+    // The single place a token dies, mirroring `checkAuth`.
+    clearToken();
+    onUnauthorized?.();
+    throw new ApiError(401, SERVER_ERROR);
+  }
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    // The wording comes from the server when it sent one, so there is a single
+    // source of truth for it.
+    throw new ApiError(response.status, payload?.error ?? SERVER_ERROR);
+  }
+
+  return (await response.json()) as T;
+}

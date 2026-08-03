@@ -1,11 +1,12 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import ArticlePage from '../pages/Article';
-import { articleById } from '../mock/articles';
+import { anArticle, SEED } from './fixtures';
+import { useTestDb } from './api-server';
 import { SHARE_CHANNELS } from '../share';
 
 const root = resolve(__dirname, '../..');
@@ -14,8 +15,14 @@ const shareSources = readdirSync(shareDir).map((file) =>
   readFileSync(resolve(shareDir, file), 'utf8'),
 );
 
-const avis = articleById('un-dernier-ete')!;
+const avis = anArticle();
 const shareUrl = `${window.location.origin}/article/${avis.id}`;
+
+// The page fetches, so every test starts from a database holding the same avis
+// the fixture describes.
+beforeEach(() => {
+  useTestDb(SEED);
+});
 
 function renderArticle() {
   return render(
@@ -29,14 +36,14 @@ function renderArticle() {
 
 /** Open the article's share menu and hand back its <ul role="menu">. */
 async function openMenu(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole('button', { name: 'Partager' }));
+  await user.click(await screen.findByRole('button', { name: 'Partager' }));
   return screen.getByRole('menu', { name: 'Partager' });
 }
 
 describe('ART-8 ShareMenu', () => {
-  it('stays closed until "Partager" is clicked', () => {
+  it('stays closed until "Partager" is clicked', async () => {
     renderArticle();
-    const trigger = screen.getByRole('button', { name: 'Partager' });
+    const trigger = await screen.findByRole('button', { name: 'Partager' });
     expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('menu')).toBeNull();

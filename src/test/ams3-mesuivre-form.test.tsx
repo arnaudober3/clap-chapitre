@@ -5,7 +5,11 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import AdminMeSuivrePage from '../pages/AdminMeSuivre';
-import { meSuivre, mesuivreFormValues } from '../mock/mesuivre';
+import { mesuivreFormValues } from '../content/mesuivre';
+import { aMeSuivre, SEED } from './fixtures';
+import { useTestDb } from './api-server';
+
+const meSuivre = aMeSuivre();
 
 const root = resolve(__dirname, '../..');
 
@@ -23,6 +27,11 @@ const sources = [
   (path) => [path, stripComments(readFileSync(resolve(root, path), 'utf8'))] as const,
 );
 
+/** The editor fetches its content, so every test starts from a seeded database. */
+beforeEach(() => {
+  useTestDb(SEED);
+});
+
 function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/admin/me-suivre']}>
@@ -31,7 +40,7 @@ function renderPage() {
   );
 }
 
-const initial = mesuivreFormValues();
+const initial = mesuivreFormValues(meSuivre);
 const INTRO_LABEL = /Petit mot d/;
 
 afterEach(() => {
@@ -40,8 +49,9 @@ afterEach(() => {
 });
 
 describe('AMS-3 admin Me suivre form', () => {
-  it('prefills every field from the public page content', () => {
+  it('prefills every field from the public page content', async () => {
     renderPage();
+    await screen.findByTestId('admin-mesuivre-page');
     expect(screen.getByTestId('admin-mesuivre-page')).toBeInTheDocument();
     expect(screen.getByLabelText(INTRO_LABEL)).toHaveValue(initial.intro);
     initial.links.forEach((row, index) => {
@@ -50,8 +60,9 @@ describe('AMS-3 admin Me suivre form', () => {
     });
   });
 
-  it('names the page and its purpose in the header', () => {
+  it('names the page and its purpose in the header', async () => {
     renderPage();
+    await screen.findByTestId('admin-mesuivre-page');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
       'Page « Me suivre »',
     );
@@ -63,6 +74,7 @@ describe('AMS-3 admin Me suivre form', () => {
   it('saves in place — the state line appears and the page never navigates', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByTestId('admin-mesuivre-page');
     const before = window.location.href;
 
     expect(screen.queryByText('Enregistré')).toBeNull();
@@ -76,6 +88,7 @@ describe('AMS-3 admin Me suivre form', () => {
   it('drops the state line as soon as anything changes again', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByTestId('admin-mesuivre-page');
 
     await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
     expect(screen.getByText('Enregistré')).toBeInTheDocument();
@@ -92,6 +105,7 @@ describe('AMS-3 admin Me suivre form', () => {
   it('carries every edit through, "Enregistrer" being the only action', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByTestId('admin-mesuivre-page');
 
     const intro = screen.getByLabelText(INTRO_LABEL);
     await user.clear(intro);
@@ -106,28 +120,16 @@ describe('AMS-3 admin Me suivre form', () => {
   });
 
   it('renders without a single link and still offers to add one', async () => {
-    vi.resetModules();
-    vi.doMock('../mock/mesuivre', async () => {
-      const actual =
-        await vi.importActual<typeof import('../mock/mesuivre')>('../mock/mesuivre');
-      return {
-        ...actual,
-        meSuivre: { ...meSuivre, socials: [] },
-        mesuivreFormValues: () => ({ intro: meSuivre.intro, links: [] }),
-      };
-    });
+    // A page row with no links: reachable by removing them all, so the editor
+    // has to survive it. A different row rather than a stubbed module.
+    useTestDb(`
+      INSERT INTO page_mesuivre (id,eyebrow,title,intro,newsletter_eyebrow,newsletter_title,newsletter_copy,newsletter_placeholder,newsletter_cta)
+      VALUES (1,'Me suivre','On garde le contact','Choisissez votre endroit préféré.','La newsletter','Le courrier du mois','Le bilan complet.','votre@email.fr','S’abonner');
+    `);
+    expect(() => renderPage()).not.toThrow();
 
-    const { default: EmptyPage } = await import('../pages/AdminMeSuivre');
-    expect(() =>
-      render(
-        <MemoryRouter>
-          <EmptyPage />
-        </MemoryRouter>,
-      ),
-    ).not.toThrow();
-
+    expect(await screen.findByTestId('add-link')).toBeInTheDocument();
     expect(screen.queryByTestId('link-rows')).toBeNull();
-    expect(screen.getByTestId('add-link')).toBeInTheDocument();
   });
 
   it('asks nothing of the network and injects no raw HTML', () => {
