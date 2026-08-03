@@ -3,9 +3,12 @@ import PortraitField from "./PortraitField";
 import YearStatsFields from "./YearStatsFields";
 import { useAdminPageKicker } from "../../components/layout/adminPageMeta";
 import { useAPropos, type AProposContent } from "../../api/content";
-import { PageError, PageLoading } from "../../components/ui";
+import { saveApropos } from "../../api/mutations";
+import { useMutation } from "../../api/useMutation";
+import { EditorActions, PageError, PageLoading } from "../../components/ui";
 import {
   aproposFormValues,
+  aproposPayload,
   type AProposFormValues,
   type YearStatField,
 } from "../../content/apropos";
@@ -36,6 +39,11 @@ export default function AdminAProposPage() {
 function AProposForm({ content }: { content: AProposContent }) {
   const [values, setValues] = useState<AProposFormValues>(() => aproposFormValues(content));
   const [saved, setSaved] = useState(false);
+  // The portrait and its alt text live beside `values`: they belong to the row,
+  // not to the five fields `AProposFormValues` was drawn around.
+  const [portrait, setPortrait] = useState(content.portraitImage);
+  const [portraitLabel, setPortraitLabel] = useState(content.portraitLabel);
+  const save = useMutation(saveApropos);
 
   // On mobile the shell's top bar is the page header (design 7e): it shows
   // "À propos" over this line, so the page keeps its own title block for lg.
@@ -57,9 +65,12 @@ function AProposForm({ content }: { content: AProposContent }) {
     setSaved(false);
   }
 
-  // Mock save: no store, no navigation — the state line is the only feedback.
-  function submit() {
-    setSaved(true);
+  async function submit() {
+    const payload = {
+      ...aproposPayload(content, values, portrait),
+      portraitLabel: portraitLabel.trim() || content.portraitLabel,
+    };
+    if (await save.run(payload)) setSaved(true);
   }
 
   return (
@@ -70,19 +81,15 @@ function AProposForm({ content }: { content: AProposContent }) {
           <p className={styles.subtitle}>{SUBTITLE}</p>
         </div>
         <div className={styles.topbarActions}>
-          {saved && (
-            <span className={styles.saveState}>
-              <span className={styles.saveDot} aria-hidden="true" />
-              Enregistré
-            </span>
-          )}
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={submit}
-          >
-            Enregistrer
-          </button>
+          {/* Singleton row: nothing to publish, nothing to delete. */}
+          <EditorActions
+            pending={save.pending}
+            error={save.error}
+            saved={saved}
+            onSave={() => void submit()}
+            saveLabel="Enregistrer"
+            data-testid="apropos-actions"
+          />
         </div>
       </div>
 
@@ -90,7 +97,18 @@ function AProposForm({ content }: { content: AProposContent }) {
         {/* Portrait beside title + accroche at lg (6f); stacked, portrait
             centred, on the phone (7e). */}
         <div className={styles.identity}>
-          <PortraitField />
+          <PortraitField
+            value={portrait}
+            onChange={(key) => {
+              setPortrait(key);
+              setSaved(false);
+            }}
+            label={portraitLabel}
+            onLabelChange={(next) => {
+              setPortraitLabel(next);
+              setSaved(false);
+            }}
+          />
           <div className={styles.identityFields}>
             <div className={styles.field}>
               <label className={styles.label} htmlFor="apropos-title">

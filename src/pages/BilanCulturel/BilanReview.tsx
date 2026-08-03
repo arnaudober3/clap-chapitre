@@ -1,4 +1,5 @@
 import type { Article } from '../../../shared/content';
+import { coverStyle } from '../../api/mutations';
 import { MEDIUM_ACCENT, MEDIUM_LABEL } from '../../media';
 import styles from './BilanCulturel.module.css';
 
@@ -22,7 +23,7 @@ export default function BilanReview({ item }: { item: Article }) {
     <article className={styles.review}>
       <div
         className={styles.reviewCover}
-        style={{ background: item.cover }}
+        style={coverStyle(item.cover)}
       >
         <span className={styles.reviewCoverTitle}>{item.title}</span>
       </div>

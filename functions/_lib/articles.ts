@@ -10,12 +10,18 @@
 /**
  * The comment count, as a scalar subquery rather than a stored column.
  *
- * A counter kept alongside the rows it counts is a counter that drifts — and
- * with no write endpoints yet, nothing would ever be there to keep it in step.
+ * A counter kept alongside the rows it counts is a counter that drifts, and now
+ * that comments are written through an API there would be four places to keep it
+ * in step instead of none.
+ *
+ * Approved only, like the threads themselves: a card announcing "3 commentaires"
+ * over a thread showing one would read as a bug, and it would also leak the size
+ * of the moderation backlog to every visitor.
  */
 const COMMENT_COUNT = `(
   SELECT count(*) FROM comments c
    WHERE c.target_type = 'article' AND c.target_id = a.id
+     AND c.status = 'approved'
 )`;
 
 /** Everything an avis card or hero reads, minus the body-length fields. */

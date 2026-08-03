@@ -108,15 +108,20 @@ describe('AAP-2 admin À propos form', () => {
     expect(screen.queryByText('Enregistré')).toBeNull();
   });
 
-  it('offers the portrait control without requesting anything from the network', async () => {
+  it('offers a portrait upload and its alt text', async () => {
     renderPage();
     await screen.findByTestId('admin-apropos-page');
-    expect(screen.getByRole('button', { name: 'Changer le portrait' })).toBeInTheDocument();
-    for (const [path, code] of sources) {
-      expect(code, path).not.toMatch(/<img\b/);
-      expect(code, path).not.toMatch(/\burl\(/);
-      expect(code, path).not.toMatch(/\bfetch\(/);
-    }
+
+    // The control used to be a button with no onClick, over a CSS gradient —
+    // the portrait is a real file now, so the field has to accept one.
+    expect(screen.getByTestId('apropos-portrait-field')).toBeInTheDocument();
+    expect(screen.getByLabelText('Portrait de la page À propos')).toHaveAttribute(
+      'type',
+      'file',
+    );
+    // Alt text was decorative over a gradient. Over a photograph it is what a
+    // screen reader reads, so it is edited alongside.
+    expect(screen.getByLabelText('Texte alternatif')).toBeInTheDocument();
   });
 
   it('uses tokens only — no raw hex color literal anywhere in the page', () => {

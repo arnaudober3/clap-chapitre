@@ -21,9 +21,15 @@
  * production. Widen this as queries need more of the API.
  */
 export interface D1Result<T = Record<string, unknown>> {
+  /**
+   * Left open on purpose. The runtime fills in `changes`, `last_row_id`,
+   * `duration` and more depending on the statement, and pinning that shape here
+   * would be a promise across D1 versions we cannot keep. `changes()` in
+   * `_lib/write.ts` reads the one field the write paths need.
+   */
+  meta: Record<string, unknown>;
   results: T[];
   success: boolean;
-  meta: Record<string, unknown>;
 }
 
 export interface D1PreparedStatement {
@@ -41,6 +47,31 @@ export interface D1Database {
   exec(query: string): Promise<{ count: number; duration: number }>;
 }
 
+/**
+ * The slice of R2 the media routes use, declared structurally for the same
+ * reason D1 is. Covers and the portrait are real files now, and R2 is where
+ * they live: object storage with no egress fee, bound like a database rather
+ * than reached over the network.
+ *
+ * `get` returns null for a missing key rather than throwing — the 404 is the
+ * handler's to build.
+ */
+export interface R2Object {
+  body: ReadableStream;
+  httpMetadata?: { contentType?: string };
+  size: number;
+}
+
+export interface R2Bucket {
+  put(
+    key: string,
+    value: ArrayBuffer | ReadableStream,
+    options?: { httpMetadata?: { contentType?: string } },
+  ): Promise<unknown>;
+  get(key: string): Promise<R2Object | null>;
+  delete(key: string): Promise<void>;
+}
+
 export interface Env {
   ADMIN_USERNAME: string;
   /** Lowercase hex SHA-256 of the admin password, 64 characters. */
@@ -53,12 +84,20 @@ export interface Env {
    */
   LOGIN_THROTTLE_MS?: string;
   /**
+   * Salt for hashing caller IPs — the key behind one-like-per-person and the
+   * comment window. Separate from JWT_SECRET so rotating sessions does not also
+   * wipe every like; see `requireIpSalt`.
+   */
+  IP_SALT?: string;
+  /**
    * The D1 binding. Optional because it is genuinely absent in two places: the
    * unit suite, which has no database, and any deployment where the binding was
    * never configured. `requireDb` turns that absence into a 500 rather than
    * letting a handler discover it mid-query.
    */
   DB?: D1Database;
+  /** The R2 binding holding covers and the portrait. Optional for the same reasons. */
+  MEDIA?: R2Bucket;
 }
 
 /** The slice of the Pages Function context our handlers actually read. */

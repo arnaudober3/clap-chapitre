@@ -26,7 +26,8 @@ import type { D1Database, D1PreparedStatement, D1Result } from '../../functions/
 interface SqliteStatement {
   get(...values: never[]): unknown;
   all(...values: never[]): unknown[];
-  run(...values: never[]): unknown;
+  /** `changes` is what D1 reports as `meta.changes` — a DELETE that hit nothing is a 404. */
+  run(...values: never[]): { changes: number | bigint; lastInsertRowid: number | bigint };
 }
 interface SqliteDatabase {
   exec(sql: string): void;
@@ -67,8 +68,8 @@ function plain(row: unknown): Record<string, unknown> {
   return { ...(row as Record<string, unknown>) };
 }
 
-function result<T>(rows: unknown[]): D1Result<T> {
-  return { results: rows.map(plain) as T[], success: true, meta: {} };
+function result<T>(rows: unknown[], meta: Record<string, unknown> = {}): D1Result<T> {
+  return { results: rows.map(plain) as T[], success: true, meta };
 }
 
 /**
@@ -82,6 +83,9 @@ export function createTestDb(): D1Database & { close(): void; exec(sql: string):
   db.exec('PRAGMA foreign_keys = ON');
   db.exec(schema());
 
+  /** Serialises `batch()` — see the note there. */
+  let queue: Promise<void> = Promise.resolve();
+
   const prepare = (query: string): D1PreparedStatement => {
     const bind = (values: unknown[]): D1PreparedStatement => ({
       bind: (...next: unknown[]) => bind([...values, ...next]),
@@ -90,20 +94,64 @@ export function createTestDb(): D1Database & { close(): void; exec(sql: string):
         return row === undefined ? null : (plain(row) as T);
       },
       run: async <T,>() => {
-        db.prepare(query).run(...(values as never[]));
-        return result<T>([]);
+        const info = db.prepare(query).run(...(values as never[]));
+        return result<T>([], { changes: Number(info.changes) });
       },
-      all: async <T,>() => result<T>(db.prepare(query).all(...(values as never[]))),
+      // `all` covers reads and writes alike, because `batch` funnels everything
+      // through it — hence the `changes` here too, which is what a DELETE inside
+      // a batch reports back.
+      all: async <T,>() => {
+        const statement = db.prepare(query);
+        if (/^\s*(INSERT|UPDATE|DELETE|REPLACE)/i.test(query)) {
+          const info = statement.run(...(values as never[]));
+          return result<T>([], { changes: Number(info.changes) });
+        }
+        return result<T>(statement.all(...(values as never[])));
+      },
     });
     return bind([]);
   };
 
   return {
     prepare,
-    // D1 runs a batch in one implicit transaction. Sequential execution is a
-    // faithful enough stand-in here: nothing in the suite writes concurrently.
-    batch: async <T,>(statements: D1PreparedStatement[]) =>
-      Promise.all(statements.map((statement) => statement.all<T>())),
+    /**
+     * D1 runs a batch in one implicit transaction, and that is load-bearing now
+     * that the suite writes: a reorder deletes a selection before reinserting
+     * it, so a failure halfway through must leave the old selection intact
+     * rather than an empty one. Running the statements sequentially without a
+     * transaction — as this did while everything was read-only — would let such
+     * a test pass while hiding the bug.
+     *
+     * Queued, because SQLite has no nested transactions and a page routinely
+     * has two requests in flight at once: the bilan page asks for the month and
+     * the month list together, both of which batch. Without the queue the second
+     * `BEGIN` lands inside the first and throws, which surfaced as a page that
+     * simply failed to load. D1 serialises a batch the same way — the queue is
+     * fidelity, not a workaround.
+     */
+    batch: async <T,>(statements: D1PreparedStatement[]) => {
+      const run = queue.then(async () => {
+        db.exec('BEGIN');
+        try {
+          const results: D1Result<T>[] = [];
+          // Sequential, not `Promise.all`: the statements share one connection
+          // and one transaction, and several read what the previous just wrote.
+          for (const statement of statements) results.push(await statement.all<T>());
+          db.exec('COMMIT');
+          return results;
+        } catch (error) {
+          db.exec('ROLLBACK');
+          throw error;
+        }
+      });
+      // The chain must not break on a failed batch, or every later one inherits
+      // the rejection.
+      queue = run.then(
+        () => undefined,
+        () => undefined,
+      );
+      return run;
+    },
     exec: async (sql: string) => {
       db.exec(sql);
       return { count: 0, duration: 0 };

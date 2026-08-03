@@ -14,6 +14,7 @@ function item(id: string, medium: Medium): Highlight {
     id,
     medium,
     title: id,
+    excerpt: '',
     hook: '',
     body: '',
     relatedTitle: '',

@@ -1,4 +1,5 @@
 import styles from './ui.module.css';
+import { coverStyle } from '../../api/mutations';
 
 /**
  * A gradient poster tile. Renders a 2/3 aspect-ratio tile whose background is
@@ -24,7 +25,7 @@ export default function PosterThumb({
           ? `${styles.poster} ${className}`
           : styles.poster
       }
-      style={hasCover ? { background: cover } : undefined}
+      style={coverStyle(cover)}
       data-testid={testId ?? 'poster-thumb'}
       data-empty={hasCover ? undefined : 'true'}
       aria-hidden="true"

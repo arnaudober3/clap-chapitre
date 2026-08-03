@@ -14,9 +14,18 @@ to render its empty states, and the editor fills it herself. There is a
 demonstration set outside `migrations/` — `npm run db:example` — to see the site
 alive locally.
 
-**Reading only.** No endpoint writes. The admin forms are still inert: they load
-real content, let it be edited on screen, and persist nothing. Writing is the
-next piece of work, and the schema was designed for it (`migrations/0001_contenu.sql`).
+**The site writes too.** The four editors persist: avis and bilans can be
+created, saved, published, unpublished and deleted; the "À propos" and "Me
+suivre" pages are saved whole. Visitors can post comments — which land in a
+moderation queue and stay invisible until released from `/admin/commentaires` —
+and toggle a ♡, deduplicated per address. Covers and the portrait are real
+images in R2, uploaded from the forms.
+
+Three actions, not one, in every editor (`src/components/ui/EditorActions`):
+**Enregistrer** stores without touching the publication state, **Publier** /
+**Dépublier** changes only that, **Supprimer** asks first. A single button could
+not express the difference, and a draft going live because "Enregistrer" was the
+only control on screen is exactly the mistake this prevents.
 
 What is left of `src/mock/` is the newsletter, which is out of that scope and
 still runs on static data.
@@ -57,22 +66,37 @@ must be imported *first* — ES imports evaluate before the module body), points
 `fetch` at the real Functions via `src/test/api-server.ts`, and stores a signed
 token before each test so the whole suite runs signed in.
 
-**The API** — `functions/api/`, all reads, all GET.
+**The API** — `functions/api/`.
 
 ```
-GET /api/feed?medium=&limit=          the medium's newest avis (home)
-GET /api/articles?medium=&page=       the medium's archive, paginated
-GET /api/articles/:id                 the avis view: avis, related, prev/next, bilan, thread
-GET /api/bilans                       every published month + chips, counts, covers
-GET /api/bilans/:id                   one month ('AAAA-MM' or 'latest') + its avis and thread
-GET /api/pages/apropos                the "À propos" page
-GET /api/pages/me-suivre              the "Me suivre" page
+GET  /api/feed?medium=&limit=         the medium's newest avis (home)
+GET  /api/articles?medium=&page=      the medium's archive, paginated
+GET  /api/articles/:id                the avis view: avis, related, prev/next, bilan, thread
+GET  /api/bilans                      every published month + chips, counts, covers
+GET  /api/bilans/:id                  one month ('AAAA-MM' or 'latest') + its avis and thread
+GET  /api/pages/apropos               the "À propos" page
+GET  /api/pages/me-suivre             the "Me suivre" page
+GET  /api/media/:key                  an image, cached a year (see the R2 section)
+POST /api/comments                    deposits a comment in moderation → 201 { queued }
+POST /api/likes                       toggles a ♡ → 200 { likes, liked }
 
-GET /api/admin/articles?status=&medium=&search=&sort=&page=    listing + catalogue totals
-GET /api/admin/articles/:id                                    one avis, drafts included
-GET /api/admin/bilans?search=&sort=&page=                      listing + the month in progress
-GET /api/admin/bilans/:id                                      one month, or 'next'
-GET /api/admin/dashboard?period=                               the six cards, one request
+GET    /api/admin/articles?status=&medium=&search=&sort=&page=  listing + catalogue totals
+POST   /api/admin/articles                                      creates → 201 { id }
+GET    /api/admin/articles/:id                                  one avis, drafts included
+PUT    /api/admin/articles/:id                                  replaces it wholesale
+DELETE /api/admin/articles/:id                                  204
+GET    /api/admin/bilans?search=&sort=&page=                    listing + the month in progress
+POST   /api/admin/bilans                                        creates → 201 | 409
+GET    /api/admin/bilans/:id                                    one month, or 'next'
+PUT    /api/admin/bilans/:id                                    month + selection + chips + cards
+DELETE /api/admin/bilans/:id                                    204
+PUT    /api/admin/pages/apropos                                 upserts the page
+PUT    /api/admin/pages/me-suivre                               upserts the page
+GET    /api/admin/comments?status=&page=                        the moderation queue
+PUT    /api/admin/comments/:id                                  approves (or re-queues)
+DELETE /api/admin/comments/:id                                  204
+POST   /api/admin/uploads?kind=                                 raw image bytes → 201 { key }
+GET    /api/admin/dashboard?period=                             the six cards, one request
 ```
 
 Two rules run through all of them. **One page, one request**: the avis view
@@ -89,7 +113,51 @@ anonymous caller gets nothing rather than a filtered version.
 Query parameters are validated, not coerced: `?medium=flim` is a 400, never a
 silent fallback to "every medium". Sorts come from a frozen lookup table
 (`functions/_lib/sql.ts`) — an unknown sort is a 400, and no parameter is ever
-interpolated into SQL.
+interpolated into SQL. **Bodies are read the same way**, by `functions/_lib/body.ts`:
+a bad field is a 422 naming it, a body that is not a JSON object is a 400. The
+project shapes live in `_lib/inputs.ts`, so a POST and a PUT cannot drift into
+accepting slightly different things.
+
+**Writing** — the parts that are not obvious from the handlers:
+
+- **A PUT replaces, it does not patch.** The forms hold the whole avis on
+  screen, so an omitted optional is the editor clearing it. A partial payload
+  would make "cleared" and "not sent" the same request.
+- `publication()` in `_lib/write.ts` owns `CHECK ((status = 'published') =
+  (published_at IS NOT NULL))`. Publishing stamps a date, unpublishing clears
+  it, and re-saving a live avis keeps the original. Nothing else touches the pair.
+- `updated_at` has a DEFAULT but **no trigger** — every UPDATE sets it explicitly.
+- **Ordered tables are rewritten, never renumbered.** `bilan_avis` carries
+  `UNIQUE (bilan_id, position)`, `mesuivre_socials` a UNIQUE `position`: moving a
+  row into an occupied slot aborts the statement. `reorder()` deletes then
+  re-inserts, inside `batch()` — D1's only transaction.
+- Saving a bilan **also writes into `articles`**: its cards edit the avis inline.
+  It never touches their medium, cover or publication, so a month cannot
+  unpublish an avis as a side effect.
+- Anything a foreign key would reject is checked first (`hasMissingRelated`,
+  `mediaOf`), because a constraint abort is indistinguishable from "the
+  migrations were never applied" — one is a 422, the other a 503.
+- Deleting an avis or a bilan clears its `comments` and `likes` **by hand**:
+  both carry a polymorphic `target_id` with no foreign key to cascade through.
+
+**Public writes** — the only two routes an anonymous caller can write through,
+and the guards are layered cheapest-first: a honeypot field, a three-second
+minimum since the composer mounted (bounded at both ends — `Number(null)` is 0,
+which would otherwise read as "opened at the epoch"), then a sliding window in
+`rate_hits` keyed on a salted IP digest. The first two answer **201 anyway** and
+write nothing: telling a bot which check caught it tells it what to change.
+
+None of that is the real guard. A comment lands `pending` and is invisible until
+released — so every query reading `comments` filters `status = 'approved'`,
+including the card counts in `_lib/articles.ts`. Forgetting one is how the queue
+stops moderating anything.
+
+Likes are deduplicated per address and the displayed counter is **recomputed**
+from the `likes` table on every toggle, never incremented — a replayed request
+then cannot make it drift. `IP_SALT` is what makes the digest useless outside
+this deployment; it is deliberately not `JWT_SECRET`, whose rotation is meant to
+end sessions and should not also wipe every like. Missing salt is a 500, never
+an unthrottled write.
 
 **Admin auth**.
 
@@ -124,9 +192,14 @@ Secrets: `.dev.vars` locally (gitignored, see `.dev.vars.example`), Cloudflare
 Pages secrets in production — `wrangler pages secret put <KEY>`, repeated with
 `--env preview` or previews answer 500. Rotating `ADMIN_PASSWORD_HASH` changes
 the password without ending live sessions; rotating `JWT_SECRET` ends all of them
-at once. Known gap: no application-level rate limit (a stateless runtime cannot
-count), just a 250ms delay on failure — the real limit is a WAF rule on
-`/api/login`, configured in the dashboard.
+at once. `IP_SALT` is the third secret — see the public-write rules above.
+
+Known gap, and it is only about **sign-in**: no application-level rate limit
+there, just a 250ms delay on failure, because the runtime cannot count between
+requests and the login path has no database read to piggyback on. The real limit
+is a WAF rule on `/api/login`, configured in the dashboard. The *comment*
+endpoint does count, in `rate_hits` — D1 is not stateless — which is also what
+makes it testable.
 
 **The D1 database** (`DB` binding, `wrangler.toml`) holds the whole site.
 `migrations/0000_socle.sql` is the probe `GET /api/db-health` reads (200 wired and
@@ -162,12 +235,27 @@ shell as one argument, and a French apostrophe has to be doubled for SQL *and*
 protected from the shell. Use a `.sql` file and `--file` instead — see
 `examples/contenu-exemple.sql`, whose header spells out both traps.
 
-Remotely there is a **single** database, `clap-chapitre`, and preview deployments
-inherit the top-level binding — they read the same one production does. That is
-tolerable only while production is empty: **the day it holds real content,
-previews need their own** under `[[env.preview.d1_databases]]`, or a preview
-branch reads live content. Pages never applies migrations on deploy, so a
-schema change means running `npm run db:migrate:remote` by hand.
+**Images live in R2** (`MEDIA` binding, bucket `clap-chapitre-media`).
+`POST /api/admin/uploads` takes the raw bytes with their own `content-type` — no
+multipart — checks the type against a closed list (SVG is excluded: it is a
+script host) and the size against 5 MB, then stores the file under
+`<kind>-<sha256>.<ext>`. Keys are **content-addressed and flat**: flat because
+`vite/routeMatch.ts` matches segments and a `covers/` prefix would need a
+catch-all; content-addressed because it makes an object immutable, which is what
+lets `/api/media/:key` cache for a year. Replacing an image yields a new key and
+sweeps the old one up — unless another row still points at it, since two avis
+given the same file share one object. `getPlatformProxy()` simulates the bucket
+locally, so `npm run dev` needs no Cloudflare account; remotely it must exist
+first (`npx wrangler r2 bucket create clap-chapitre-media`).
+
+Remotely there is a **single** database, `clap-chapitre`, and a single bucket;
+preview deployments inherit the top-level bindings. **This is now a live
+problem, not a future one**: previews used to only read production, but every
+route above writes — a preview branch will create, edit and delete production
+content, and upload into the production bucket. Declaring
+`[[env.preview.d1_databases]]` and `[[env.preview.r2_buckets]]` is overdue.
+Pages never applies migrations on deploy, so a schema change means running
+`npm run db:migrate:remote` by hand.
 
 The Pages project is Git-connected: `main` deploys to production, every other
 branch to a preview. Checking a deployment is one request, because `db-health`
@@ -237,8 +325,8 @@ Cross-page reusable primitives live in `src/components/ui/` (barrel-exported fro
 
 - Test files are named by feature-area prefix + subtask number (e.g. `art*` =
   Article, `bc*` = Bilan culturel, `ap*` = À propos, `ms*` = Me suivre, `sc*` =
-  scaffold, `ar*` = archives, `al*` = auth/login, `db*` = database). Match the
-  existing prefix when adding tests.
+  scaffold, `ar*` = archives, `al*` = auth/login, `db*` = database, `wr*` =
+  writes). Match the existing prefix when adding tests.
 - **The suite runs real SQL.** `src/test/d1.ts` builds an in-memory SQLite
   database (`node:sqlite`, no dependency) with the project's own migrations
   applied, and satisfies the `D1Database` interface. A test calls `useTestDb(SEED)`
@@ -255,4 +343,9 @@ Cross-page reusable primitives live in `src/components/ui/` (barrel-exported fro
   fresh clone and CI need no secret.
 - TypeScript is strict with `noUnusedLocals`/`noUnusedParameters` — unused symbols
   fail the build.
-- Covers/portraits are CSS gradient strings, not image URLs — keep it network-free.
+- Covers/portraits are **R2 object keys**, and `''` means "no image yet". They
+  were CSS gradient strings while nothing could upload a file. Never paint one
+  by hand: `coverStyle()` in `src/api/mutations.ts` builds the background *and*
+  its framing, so a new tile cannot get `background-image` without
+  `background-size`. The empty string falls through to each tile's own neutral
+  placeholder.

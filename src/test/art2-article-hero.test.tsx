@@ -100,11 +100,34 @@ describe('ART-2 hero', () => {
       ),
     ).toBeInTheDocument();
 
-    // The cover is a CSS gradient, never an image.
+    // Covers were CSS gradients while nothing could upload a file. They are
+    // images now, served from R2 through /api/media — never a third-party URL.
     const cover = screen.getByTestId('article-cover');
-    expect(cover.getAttribute('style')).toContain('gradient');
-    expect(container.querySelector('img')).toBeNull();
-    expect(container.innerHTML).not.toContain('url(');
+    const withImage = { ...feedAvis, cover: `cover-${'a'.repeat(64)}.webp` };
+    expect(cover).toBeInTheDocument();
+
+    container.remove();
+    const painted = render(
+      <MemoryRouter>
+        <ArticleHero article={withImage} />
+      </MemoryRouter>,
+    );
+    const style = painted.getByTestId('article-cover').getAttribute('style') ?? '';
+    // Quoted or not is the serialiser's business; the path is ours.
+    expect(style).toContain(`/api/media/cover-${'a'.repeat(64)}.webp`);
+    expect(style).toContain('background-size: cover');
+  });
+
+  it('falls back to the neutral tile when there is no affiche yet', () => {
+    render(
+      <MemoryRouter>
+        <ArticleHero article={{ ...feedAvis, cover: '' }} />
+      </MemoryRouter>,
+    );
+    // No inline background at all — the stylesheet's own placeholder shows
+    // through, rather than a broken image.
+    const style = screen.getByTestId('article-cover').getAttribute('style') ?? '';
+    expect(style).not.toContain('url(');
   });
 
   it('degrades without genreMeta, hook or readingTime — no empty blocks, no dangling separator', () => {

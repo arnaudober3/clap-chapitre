@@ -6,7 +6,7 @@
  * check". A misconfigured deployment throws, the caller answers 500, and nobody
  * gets in. Failing loudly beats failing open.
  */
-import type { D1Database, Env } from '../types';
+import type { D1Database, Env, R2Bucket } from '../types';
 
 export interface AdminConfig {
   username: string;
@@ -71,4 +71,39 @@ export function requireDb(env: Partial<Env> | undefined): D1Database {
     throw new Error('Binding D1 manquant : DB.');
   }
   return db;
+}
+
+/**
+ * The R2 binding, same stance as `requireDb`. Absent in the unit suite and in
+ * any deployment that skipped `wrangler r2 bucket create`, and in both cases the
+ * honest answer is a 500 rather than an upload that silently goes nowhere.
+ */
+export function requireBucket(env: Partial<Env> | undefined): R2Bucket {
+  const bucket = env?.MEDIA;
+  if (!bucket || typeof bucket.put !== 'function') {
+    throw new Error('Binding R2 manquant : MEDIA.');
+  }
+  return bucket;
+}
+
+/**
+ * The salt used to hash caller IPs, deliberately *not* part of `AdminConfig`.
+ *
+ * Two reasons to keep it separate. A deployment can be missing it while the
+ * admin space works perfectly — folding it into `requireEnv` would turn a
+ * missing salt into a 500 on `/api/login`, which is a confusing way to learn
+ * about it. And it must not be `JWT_SECRET`: rotating that one ends every
+ * session on purpose, and it should not also wipe every like and unthrottle
+ * every visitor as a side effect.
+ *
+ * Same minimum length as `JWT_SECRET`. A short salt is a rainbow table away
+ * from being no salt, and the whole point is not to store addresses.
+ */
+export function requireIpSalt(env: Partial<Env> | undefined): string {
+  if (!env) throw new Error("Contexte d'exécution sans environnement.");
+  const salt = read(env, 'IP_SALT');
+  if (salt.length < 16) {
+    throw new Error('IP_SALT doit faire au moins 16 caractères.');
+  }
+  return salt;
 }

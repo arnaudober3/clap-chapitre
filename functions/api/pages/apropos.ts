@@ -55,6 +55,9 @@ export const onRequestGet: Handler = async ({ env }) => {
       name: String(row.name),
       intro: String(row.intro),
       portraitLabel: String(row.portrait_label),
+      // The R2 key, or '' while no portrait has been uploaded. The page renders
+      // its neutral placeholder on the empty string rather than a broken image.
+      portraitImage: String(row.portrait_image ?? ''),
       bio: paragraphs(row.bio),
       bioEmphasis: lines(row.bio_emphasis),
       quote: String(row.quote),

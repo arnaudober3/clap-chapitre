@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { coverStyle } from '../../api/mutations';
 import type { RelatedArticle } from '../../api/content';
 import { MEDIUM_ACCENT, MEDIUM_LABEL } from '../../media';
 import styles from './Article.module.css';
@@ -30,7 +31,7 @@ export default function RelatedGrid({ items }: { items: RelatedArticle[] }) {
           >
             <span
               className={styles.relatedThumb}
-              style={{ background: item.cover }}
+              style={coverStyle(item.cover)}
               aria-hidden="true"
             />
             <span className={styles.relatedBody}>

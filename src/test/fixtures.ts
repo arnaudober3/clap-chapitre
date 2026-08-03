@@ -21,7 +21,7 @@ export function anArticle(over: Partial<PublishedArticle> = {}): PublishedArticl
     title: 'Un dernier été',
     medium: 'film',
     excerpt: 'Un huis clos solaire où chaque silence pèse plus lourd que les mots.',
-    cover: 'linear-gradient(150deg,#c56a3f,#8f3f24)',
+    cover: '',
     date: '18 juillet 2026',
     author: 'Marie-Zoé',
     likes: 128,
@@ -46,7 +46,7 @@ export function aDraft(over: Partial<DraftArticle> = {}): DraftArticle {
     title: 'Contre-champs',
     medium: 'serie',
     excerpt: 'Notes en cours.',
-    cover: 'linear-gradient(150deg,#b98a5e,#6d4a2c)',
+    cover: '',
     date: '',
     author: 'Marie-Zoé',
     likes: 0,
@@ -82,7 +82,7 @@ export function aBilanSummary(over: Partial<BilanSummary> = {}): BilanSummary {
     ...aBilan(),
     avis: [],
     avisCount: 2,
-    covers: ['linear-gradient(150deg,#c56a3f,#8f3f24)'],
+    covers: [''],
     ...over,
   };
 }
@@ -119,6 +119,9 @@ export function anApropos(over: Partial<AProposContent> = {}): AProposContent {
     name: 'Marie-Zoé',
     intro: 'J’écris sur ce que je regarde.',
     portraitLabel: 'Portrait de Marie-Zoé',
+    // No portrait uploaded — which is what an empty database looks like, and
+    // what the page's neutral placeholder is for.
+    portraitImage: '',
     bio: [
       'Je tiens ce carnet depuis quatre ans.',
       'Chaque fin de mois, je rassemble ce qui a compté dans un bilan.',
@@ -204,14 +207,14 @@ export function aMeSuivre(over: Partial<MeSuivreContent> = {}): MeSuivreContent 
 export const SEED = `
 INSERT INTO articles (id,title,medium,excerpt,cover,author,status,published_at,likes,views,hook,for_those_who,genre_meta,reading_time,body,pull_quote)
 VALUES
- ('un-dernier-ete','Un dernier été','film','Un huis clos solaire où chaque silence pèse plus lourd que les mots.','linear-gradient(150deg,#c56a3f,#8f3f24)','Marie-Zoé','published','2026-07-18',128,2180,
+ ('un-dernier-ete','Un dernier été','film','Un huis clos solaire où chaque silence pèse plus lourd que les mots.','','Marie-Zoé','published','2026-07-18',128,2180,
   'Et si le dernier été n’était jamais vraiment le dernier ?','Pour ceux qui aiment les fins qui laissent la fenêtre entrouverte.','Comédie dramatique · 2 h 04 · 2026','4 min de lecture',
   'Il y a des films qui ressemblent à une maison.
 
 On en ressort avec du sable dans les poches.','Rien n’explose : tout se déplace d’un millimètre.'),
- ('l-annee-de-la-pluie','L’année de la pluie','livre','Une chronique d’amitié qui vieillit.','linear-gradient(150deg,#6f8fa8,#33506b)','Marie-Zoé','published','2026-07-04',74,1210,
+ ('l-annee-de-la-pluie','L’année de la pluie','livre','Une chronique d’amitié qui vieillit.','','Marie-Zoé','published','2026-07-04',74,1210,
   'Peut-on relire une amitié ?','Pour ceux qui gardent les lettres.','Roman · 264 pages · 2026','5 min de lecture','Le livre avance au rythme des averses.',NULL),
- ('contre-champs','Contre-champs','serie','Notes en cours.','linear-gradient(150deg,#b98a5e,#6d4a2c)','Marie-Zoé','draft',NULL,0,0,NULL,NULL,NULL,NULL,NULL,NULL);
+ ('contre-champs','Contre-champs','serie','Notes en cours.','','Marie-Zoé','draft',NULL,0,0,NULL,NULL,NULL,NULL,NULL,NULL);
 
 INSERT INTO article_related (article_id,related_id,note,position)
 VALUES ('un-dernier-ete','l-annee-de-la-pluie','Même façon de fouiller l’amitié qui vieillit.',1);

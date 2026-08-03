@@ -76,21 +76,79 @@ export function apiGet<T>(path: string, options: GetOptions = {}): Promise<T> {
 
   const promise = request<T>(path, options).finally(() => {
     inFlight.delete(path);
-  });
+  }) as Promise<T>;
   inFlight.set(path, promise);
   return promise;
 }
 
-async function request<T>(path: string, options: GetOptions): Promise<T> {
+/** The verbs the write endpoints answer. */
+export type WriteMethod = 'POST' | 'PUT' | 'DELETE';
+
+export interface SendOptions extends GetOptions {
+  /**
+   * Raw bytes with their own content type, for `/api/admin/uploads`. Mutually
+   * exclusive with a JSON body — the upload endpoint reads the file straight
+   * from the request rather than out of a multipart envelope.
+   */
+  raw?: Blob;
+}
+
+/**
+ * Write to `path` and parse the answer, or throw `ApiError`.
+ *
+ * Everything `apiGet` guarantees applies here — the 401 rule, the typed error,
+ * the server's own wording — with one deliberate exception: **no deduplication**.
+ * Two identical GETs can share an answer; two identical POSTs are two writes,
+ * and collapsing them would silently drop one.
+ *
+ * A 204 answers nothing, which is what every DELETE returns, so the parse is
+ * skipped rather than throwing on an empty body.
+ */
+export async function apiSend<T>(
+  path: string,
+  method: WriteMethod,
+  body?: unknown,
+  options: SendOptions = {},
+): Promise<T> {
+  return request<T>(path, options, { method, body });
+}
+
+/** POST a file's bytes. The server derives the key; the caller gets it back. */
+export function apiUpload<T>(path: string, file: Blob, options: GetOptions = {}): Promise<T> {
+  return request<T>(path, { ...options, raw: file }, { method: 'POST' });
+}
+
+interface Write {
+  method: WriteMethod;
+  body?: unknown;
+}
+
+async function request<T>(path: string, options: SendOptions, write?: Write): Promise<T> {
   const headers = new Headers();
   if (options.admin) {
     const token = getToken();
     if (token) headers.set('Authorization', `Bearer ${token}`);
   }
 
+  let payload: BodyInit | undefined;
+  if (options.raw) {
+    // The file's own type, which is what the endpoint validates against and
+    // stores as the object's metadata.
+    headers.set('content-type', options.raw.type || 'application/octet-stream');
+    payload = options.raw;
+  } else if (write?.body !== undefined) {
+    headers.set('content-type', 'application/json');
+    payload = JSON.stringify(write.body);
+  }
+
   let response: Response;
   try {
-    response = await fetch(path, { headers, signal: options.signal });
+    response = await fetch(path, {
+      method: write?.method ?? 'GET',
+      headers,
+      body: payload,
+      signal: options.signal,
+    });
   } catch (error) {
     // An abort is the caller changing its mind, not a failure to report: it is
     // rethrown untouched so `useApi` can tell the two apart.
@@ -106,11 +164,15 @@ async function request<T>(path: string, options: GetOptions): Promise<T> {
   }
 
   if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    const failure = (await response.json().catch(() => null)) as { error?: string } | null;
     // The wording comes from the server when it sent one, so there is a single
     // source of truth for it.
-    throw new ApiError(response.status, payload?.error ?? SERVER_ERROR);
+    throw new ApiError(response.status, failure?.error ?? SERVER_ERROR);
   }
+
+  // Every DELETE answers 204 with no body; parsing it would throw on the empty
+  // string. The caller's `T` is `void` in that case.
+  if (response.status === 204) return undefined as T;
 
   return (await response.json()) as T;
 }

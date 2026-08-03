@@ -27,7 +27,7 @@ INSERT INTO articles
 VALUES
   ('un-dernier-ete', 'Un dernier été', 'film',
    'Un huis clos solaire où chaque silence pèse plus lourd que les mots.',
-   'linear-gradient(150deg,#c56a3f,#8f3f24)',
+   '',
    'published', '2026-07-18', 128, 2180,
    'Et si le dernier été n''était jamais vraiment le dernier ?',
    'Pour ceux qui aiment les fins qui laissent la fenêtre entrouverte.',
@@ -40,7 +40,7 @@ On y entre par une porte ouverte, on en ressort avec du sable dans les poches.')
 
   ('l-annee-de-la-pluie', 'L''année de la pluie', 'livre',
    'Une chronique d''amitié qui vieillit, écrite à hauteur de flaque.',
-   'linear-gradient(150deg,#6f8fa8,#33506b)',
+   '',
    'published', '2026-07-04', 74, 1210,
    'Peut-on relire une amitié comme on relit un livre ?',
    'Pour ceux qui gardent les lettres qu''ils n''ont pas envoyées.',
@@ -55,7 +55,7 @@ C''est sa politesse, et c''est ce qui le rend inoubliable.'),
   -- est le seul endroit où il apparaît.
   ('contre-champs', 'Contre-champs', 'serie',
    'Notes en cours sur une série qui filme les coulisses de sa propre écriture.',
-   'linear-gradient(150deg,#b98a5e,#6d4a2c)',
+   '',
    'draft', NULL, 0, 0,
    NULL, NULL, NULL, NULL, NULL, NULL);
 

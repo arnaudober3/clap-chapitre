@@ -6,8 +6,10 @@ import { moveByOne, moveTo } from '../../reorder';
 import { useAdminPageKicker } from '../../components/layout/adminPageMeta';
 import { useAdminBilan, useNextBilanMonth } from '../../api/admin';
 import { apiGet } from '../../api/client';
+import { deleteBilan, saveBilan } from '../../api/mutations';
+import { useMutation } from '../../api/useMutation';
 import { toArticle } from '../../api/map';
-import { PageError, PageLoading } from '../../components/ui';
+import { EditorActions, PageError, PageLoading } from '../../components/ui';
 import { monthName } from '../../format';
 import type { Bilan, PublishedArticle, WireArticle } from '../../../shared/content';
 import styles from './AdminBilanForm.module.css';
@@ -18,6 +20,7 @@ function toHighlight(item: PublishedArticle): Highlight {
     id: item.id,
     medium: item.medium,
     title: item.title,
+    excerpt: item.excerpt,
     hook: item.hook ?? '',
     body: item.body ?? '',
     relatedTitle: item.relatedTo?.title ?? '',
@@ -51,6 +54,11 @@ function BilanForm({
   // The card being dragged, if any — it dims, and every card it flies over
   // trades places with it. Nothing is persisted: the order lives here only.
   const [dragging, setDragging] = useState<string>();
+  const [saved, setSaved] = useState(false);
+  const [invalid, setInvalid] = useState<string>();
+
+  const save = useMutation(saveBilan);
+  const remove = useMutation(deleteBilan);
 
   // A month that was never opened, and the month in progress, are both drafts;
   // only a month already online reads as published.
@@ -70,6 +78,8 @@ function BilanForm({
     setHighlights((previous) =>
       previous.map((item) => (item.id === id ? { ...item, ...patch } : item)),
     );
+    // Any edit invalidates the "Enregistré" line — it describes the last save.
+    setSaved(false);
   }
 
   /**
@@ -104,9 +114,57 @@ function BilanForm({
     setHighlights((previous) => [...previous, toHighlight(full)]);
   }
 
-  // Mock save: no store, no persistence — publishing lands back on the listing.
-  function submit() {
-    navigate('/admin/bilans');
+  /**
+   * The month, its selection in order, and the cards' inline edits — one request.
+   *
+   * The cards edit the *avis*, not the bilan, so `edits` carries them back to
+   * `articles`. Deliberately absent from it: medium, cover and publication.
+   * Saving a month must not be able to unpublish an avis as a side effect.
+   */
+  function payload(status: 'draft' | 'published') {
+    return {
+      id: month?.id ?? '',
+      monthLabel,
+      title: title.trim(),
+      mood: mood.trim() || undefined,
+      status,
+      avis: highlights.map((item) => item.id),
+      edits: highlights.map((item) => ({
+        id: item.id,
+        title: item.title.trim(),
+        excerpt: item.excerpt,
+        hook: item.hook.trim() || undefined,
+        forThoseWho: item.forThoseWho.trim() || undefined,
+        body: item.body.trim() || undefined,
+        relatedToTitle: item.relatedTitle.trim() || undefined,
+        relatedToNote: item.relatedNote.trim() || undefined,
+      })),
+    };
+  }
+
+  async function submit(status: 'draft' | 'published') {
+    if (!month?.id) {
+      setInvalid('Aucun mois à couvrir : créez d’abord un avis.');
+      return;
+    }
+    if (!title.trim()) {
+      setInvalid('Il manque le titre du bilan.');
+      return;
+    }
+    setInvalid(undefined);
+
+    const result = await save.run(bilan?.id, payload(status));
+    if (!result) return;
+
+    setSaved(true);
+    if (!editing) navigate(`/admin/bilans/${result.id}`, { replace: true });
+  }
+
+  async function destroy() {
+    if (!bilan) return;
+    if (await remove.run(bilan.id).then(() => true, () => false)) {
+      navigate('/admin/bilans');
+    }
   }
 
   return (
@@ -126,15 +184,26 @@ function BilanForm({
             <span className={styles.saveDot} aria-hidden="true" />
             {state}
           </span>
-          <button type="button" className={styles.primaryButton} onClick={submit}>
-            {bilan?.status === 'published' ? (
-              'Enregistrer'
-            ) : (
-              <>
-                Publier<span className={styles.publishLong}> le bilan</span>
-              </>
-            )}
-          </button>
+          {invalid && (
+            <span className={styles.saveState} role="alert">
+              {invalid}
+            </span>
+          )}
+          <EditorActions
+            status={bilan?.status}
+            pending={save.pending || remove.pending}
+            error={save.error ?? remove.error}
+            saved={saved}
+            onSave={() => void submit(bilan?.status ?? 'draft')}
+            onPublish={
+              editing
+                ? () => void submit(bilan.status === 'published' ? 'draft' : 'published')
+                : () => void submit('published')
+            }
+            onDelete={editing ? destroy : undefined}
+            deleteLabel="ce bilan"
+            data-testid="bilan-actions"
+          />
         </div>
       </div>
 
@@ -148,7 +217,10 @@ function BilanForm({
             id="bilan-title"
             className={styles.titleInput}
             value={title}
-            onChange={(event) => setTitle(event.target.value)}
+            onChange={(event) => {
+              setTitle(event.target.value);
+              setSaved(false);
+            }}
             placeholder="Titre du bilan"
           />
         </div>
@@ -161,7 +233,10 @@ function BilanForm({
             id="bilan-mood"
             className={styles.moodInput}
             value={mood}
-            onChange={(event) => setMood(event.target.value)}
+            onChange={(event) => {
+              setMood(event.target.value);
+              setSaved(false);
+            }}
             placeholder="Comment s’est passé le mois ?"
           />
         </div>

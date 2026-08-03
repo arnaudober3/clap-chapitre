@@ -12,6 +12,9 @@ export const adminPrimaryNav: AdminNavItem[] = [
   { label: 'Tableau de bord', to: '/admin' },
   { label: 'Articles', to: '/admin/articles', badge: 32 },
   { label: 'Bilans culturels', to: '/admin/bilans', badge: 14 },
+  // Comments arrive in moderation and are invisible until released. Without a
+  // destination here the queue would fill up with no way in.
+  { label: 'Commentaires', to: '/admin/commentaires' },
   { label: 'Newsletter', to: '/admin/newsletter' },
 ];
 
