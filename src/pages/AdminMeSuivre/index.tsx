@@ -3,9 +3,12 @@ import LinkRows from "./LinkRows";
 import { moveByOne, moveTo } from "../../reorder";
 import { useAdminPageKicker } from "../../components/layout/adminPageMeta";
 import { useMeSuivre, type MeSuivreContent } from "../../api/content";
-import { PageError, PageLoading } from "../../components/ui";
+import { saveMeSuivre } from "../../api/mutations";
+import { useMutation } from "../../api/useMutation";
+import { EditorActions, PageError, PageLoading } from "../../components/ui";
 import {
   mesuivreFormValues,
+  mesuivrePayload,
   type MeSuivreFormValues,
   type SocialLinkField,
 } from "../../content/mesuivre";
@@ -34,6 +37,7 @@ export default function AdminMeSuivrePage() {
 function MeSuivreForm({ content }: { content: MeSuivreContent }) {
   const [values, setValues] = useState<MeSuivreFormValues>(() => mesuivreFormValues(content));
   const [saved, setSaved] = useState(false);
+  const save = useMutation(saveMeSuivre);
   // Added rows need a key that no reorder or removal can reuse. A counter is
   // enough and stays deterministic — no Date, no Math.random anywhere here.
   const added = useRef(0);
@@ -85,12 +89,16 @@ function MeSuivreForm({ content }: { content: MeSuivreContent }) {
   function addLink() {
     added.current += 1;
     const id = `nouveau-${added.current}`;
-    patchLinks((links) => [...links, { id, name: "", url: "" }]);
+    // `id` is a React list key, not the stored one: the server derives
+    // `mesuivre_socials.key` from the name. See `mesuivrePayload`.
+    patchLinks((links) => [
+      ...links,
+      { id, name: "", url: "", handle: "", glyph: "", cta: "" },
+    ]);
   }
 
-  // Mock save: no store, no navigation — the state line is the only feedback.
-  function submit() {
-    setSaved(true);
+  async function submit() {
+    if (await save.run(mesuivrePayload(content, values))) setSaved(true);
   }
 
   return (
@@ -101,19 +109,16 @@ function MeSuivreForm({ content }: { content: MeSuivreContent }) {
           <p className={styles.subtitle}>{SUBTITLE}</p>
         </div>
         <div className={styles.topbarActions}>
-          {saved && (
-            <span className={styles.saveState}>
-              <span className={styles.saveDot} aria-hidden="true" />
-              Enregistré
-            </span>
-          )}
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={submit}
-          >
-            Enregistrer
-          </button>
+          {/* No publish or delete: the page is a singleton row that always
+              exists, so saving is the only act there is. */}
+          <EditorActions
+            pending={save.pending}
+            error={save.error}
+            saved={saved}
+            onSave={() => void submit()}
+            saveLabel="Enregistrer"
+            data-testid="mesuivre-actions"
+          />
         </div>
       </div>
 

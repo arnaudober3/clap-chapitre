@@ -2,7 +2,17 @@
 
 /** SHA-256 of `input`, lowercase hex. */
 export async function sha256Hex(input: string): Promise<string> {
-  const bytes = new TextEncoder().encode(input);
+  return sha256HexBytes(new TextEncoder().encode(input));
+}
+
+/**
+ * Same digest over raw bytes — what an uploaded image needs.
+ *
+ * Content-addressed keys fall out of this: two uploads of the same file land on
+ * the same object, and changing an image always produces a new key. That is what
+ * makes `/api/media/:key` safe to cache for a year.
+ */
+export async function sha256HexBytes(bytes: BufferSource): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(digest))
     .map((byte) => byte.toString(16).padStart(2, '0'))

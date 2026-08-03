@@ -80,10 +80,14 @@ describe('TB-5 dashboard actions', () => {
     expect(articlesLinks.some((l) => l.getAttribute('aria-current') === 'page')).toBe(true);
   });
 
-  it('publishing returns to the dashboard (mock)', async () => {
+  it('publishing an incomplete avis stays put and says what is missing', async () => {
     const user = userEvent.setup();
     renderApp('/admin/articles/nouveau');
+
+    // The form used to navigate away on any click, because it stored nothing.
+    // Now a save that cannot happen must keep the editor's work on screen.
     await user.click(await screen.findByRole('button', { name: 'Publier' }));
-    expect(await screen.findByTestId('admin-dashboard-page')).toBeInTheDocument();
+    expect(await screen.findByText('Il manque le titre.')).toBeInTheDocument();
+    expect(screen.getByTestId('admin-new-article-page')).toBeInTheDocument();
   });
 });

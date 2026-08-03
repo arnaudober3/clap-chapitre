@@ -168,3 +168,41 @@ export function useAdminDashboard(period: string | undefined): Query<DashboardDa
   const params = period ? `?period=${encodeURIComponent(period)}` : '';
   return useApi<DashboardData>(`/api/admin/dashboard${params}`, ADMIN);
 }
+
+/** One entry of the moderation queue. ISO dates, as everywhere on the wire. */
+export interface ModerationComment {
+  id: string;
+  targetType: 'article' | 'bilan';
+  targetId: string;
+  /** The avis' or month's title — the queue mixes every thread. */
+  targetTitle: string;
+  isReply: boolean;
+  author: string;
+  body: string;
+  date?: string;
+  createdAt?: string;
+  likes: number;
+  status: 'pending' | 'approved';
+}
+
+export interface ModerationList {
+  items: ModerationComment[];
+  total: number;
+  page: number;
+  perPage: number;
+  /** The whole backlog, unfiltered — the nav badge reads it. */
+  pending: number;
+}
+
+/**
+ * The moderation queue. Defaults to what is waiting, since that is the only
+ * reason to open the screen; `status: 'all'` shows everything.
+ */
+export function useAdminComments(
+  status: 'pending' | 'approved' | 'all' = 'pending',
+  page = 1,
+): Query<ModerationList> {
+  const params = new URLSearchParams({ page: String(page) });
+  if (status !== 'all') params.set('status', status);
+  return useApi<ModerationList>(`/api/admin/comments?${params}`, ADMIN);
+}

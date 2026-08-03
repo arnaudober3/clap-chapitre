@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useLike } from '../../api/useLike';
+import { CommentComposer } from '../../components/ui';
 import type { Comment } from '../../../shared/content';
 import styles from './Article.module.css';
 
@@ -12,9 +13,10 @@ function monogramOf(author: string): string {
   return author === 'Anonyme' ? '?' : author.charAt(0);
 }
 
-/** One entry: avatar, name (+ autrice pill), date, body and inert affordances. */
+/** One entry: avatar, name (+ autrice pill), date, body and its ♡. */
 function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
   const anonymous = entry.author === 'Anonyme';
+  const like = useLike('comment', entry.id, entry.likes);
   const avatarClass = [
     styles.commentAvatar,
     entry.isAuthor ? styles.commentAvatarAuthor : '',
@@ -45,9 +47,17 @@ function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
         {/* The autrice reply carries no affordances of its own, per design. */}
         {entry.isAuthor ? null : (
           <p className={styles.commentActions}>
-            <button type="button" className={styles.commentAction}>
-              ♡ {entry.likes}
+            <button
+              type="button"
+              className={styles.commentAction}
+              onClick={like.toggle}
+              disabled={like.pending}
+              aria-pressed={like.liked}
+            >
+              {like.liked ? '♥' : '♡'} {like.likes}
             </button>
+            {/* Still inert: a reply needs its own composer targeting this
+                entry, and the thread is one level deep — see DEV notes. */}
             <button type="button" className={styles.commentAction}>
               Répondre
             </button>
@@ -61,17 +71,22 @@ function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
 
 /**
  * The article comment section: the "Commentaires · n" heading (n counts nested
- * replies too), an inert composer and the thread, which arrives already nested
- * from `/api/articles/:id`.
+ * replies too), the composer and the thread, which arrives already nested from
+ * `/api/articles/:id` — approved entries only.
  *
  * The composer is one <form> in both layouts: a card on desktop (comment field,
- * name field, "Publier" pill) that becomes the sticky bottom bar of design 4b
- * at the mobile breakpoint, where the name field is dropped. Submitting calls
- * preventDefault — nothing navigates, persists or appears.
+ * name field, "Publier" pill) that becomes the sticky bottom bar of design 4b at
+ * the mobile breakpoint, where the name field is dropped. Submitting now writes,
+ * and the entry lands in moderation rather than in the thread — which is why the
+ * composer answers with a sentence saying so.
  */
-export default function CommentThread({ comments }: { comments: Comment[] }) {
-  const [comment, setComment] = useState('');
-  const [name, setName] = useState('');
+export default function CommentThread({
+  comments,
+  articleId,
+}: {
+  comments: Comment[];
+  articleId: string;
+}) {
   const count = countComments(comments);
 
   return (
@@ -82,31 +97,18 @@ export default function CommentThread({ comments }: { comments: Comment[] }) {
     >
       <h2 className={styles.commentsHeading}>Commentaires · {count}</h2>
 
-      <form
-        className={styles.composer}
-        onSubmit={(event) => event.preventDefault()}
-      >
-        <textarea
-          className={styles.composerField}
-          placeholder="Votre commentaire…"
-          aria-label="Votre commentaire"
-          value={comment}
-          onChange={(event) => setComment(event.target.value)}
-        />
-        <div className={styles.composerRow}>
-          <input
-            type="text"
-            className={styles.composerName}
-            placeholder="Nom — ou rester anonyme"
-            aria-label="Nom — ou rester anonyme"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-          <button type="submit" className={styles.composerButton}>
-            Publier
-          </button>
-        </div>
-      </form>
+      <CommentComposer
+        targetType="article"
+        targetId={articleId}
+        classes={{
+          form: styles.composer,
+          field: styles.composerField,
+          row: styles.composerRow,
+          name: styles.composerName,
+          button: styles.composerButton,
+          notice: styles.composerNotice,
+        }}
+      />
 
       <div className={styles.thread} data-anim="stagger">
         {comments.map((entry) => (

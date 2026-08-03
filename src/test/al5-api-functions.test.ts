@@ -161,7 +161,18 @@ describe('AL-5 POST /api/verify', () => {
 
   it('refuses a tampered signature', async () => {
     const token = await issueToken();
-    const tampered = `${token.slice(0, -1)}${token.endsWith('A') ? 'B' : 'A'}`;
+    const [header, payload, signature] = token.split('.');
+
+    // Altered in the *middle* of the signature, not at its end. A 256-bit HMAC
+    // is 43 base64url characters — 258 bits — so the last character's two low
+    // bits are discarded on decode: flipping 'A' to 'B' there yields the very
+    // same signature bytes, and the token stays valid. That made this test pass
+    // or fail depending on the character the signature happened to end on.
+    const cut = Math.floor(signature.length / 2);
+    const swapped = signature[cut] === 'A' ? 'B' : 'A';
+    const tampered = `${header}.${payload}.${signature.slice(0, cut)}${swapped}${signature.slice(cut + 1)}`;
+    expect(tampered).not.toBe(token);
+
     const response = await verifyPost({ request: bearer(tampered), env: TEST_ENV });
     expect(response.status).toBe(401);
   });

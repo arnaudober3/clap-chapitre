@@ -1,5 +1,6 @@
 /**
- * GET /api/admin/articles → 200 { items, total, page, perPage, catalogue }
+ * GET  /api/admin/articles → 200 { items, total, page, perPage, catalogue }
+ * POST /api/admin/articles → 201 { id }
  *
  * The back-office avis listing: every avis, drafts included, with the filters
  * and sorts the toolbar offers. Behind the admin JWT — this is the endpoint that
@@ -15,8 +16,20 @@
  * is already online, and sorting by date would otherwise bury it.
  */
 import { requireAdmin } from '../../../_lib/admin';
+import { hasMissingRelated, insertArticle } from '../../../_lib/article-write';
+import { BodyError, MalformedBody, readJson } from '../../../_lib/body';
 import { requireDb } from '../../../_lib/env';
-import { dbUnavailable, badRequest, getOnly, json, misconfigured } from '../../../_lib/http';
+import {
+  badRequest,
+  created,
+  dbUnavailable,
+  json,
+  misconfigured,
+  route,
+  unprocessable,
+} from '../../../_lib/http';
+import { readArticleInput } from '../../../_lib/inputs';
+import { now, publication, uniqueId } from '../../../_lib/write';
 import {
   QueryError,
   readArticleSort,
@@ -121,4 +134,43 @@ export const onRequestGet: Handler = async ({ request, env }) => {
   }
 };
 
-export const onRequest = getOnly(onRequestGet);
+/**
+ * Creates an avis and answers its id — which the client needs, because the id is
+ * derived from the title here rather than chosen by the form.
+ *
+ * `status` comes from the payload, so "Enregistrer le brouillon" and "Publier"
+ * are the same request with one field different. `publication()` keeps the
+ * schema's published ⇔ dated invariant true either way.
+ */
+export const onRequestPost: Handler = async ({ request, env }) => {
+  const check = await requireAdmin(request, env);
+  if (!check.ok) return check.response;
+
+  let db: D1Database;
+  try {
+    db = requireDb(env);
+  } catch {
+    return misconfigured();
+  }
+
+  let input: ReturnType<typeof readArticleInput>;
+  try {
+    input = readArticleInput(await readJson(request));
+  } catch (error) {
+    if (error instanceof BodyError) return unprocessable(error.field);
+    if (error instanceof MalformedBody) return badRequest('corps');
+    throw error;
+  }
+
+  try {
+    const id = await uniqueId(db, input.title);
+    if (await hasMissingRelated(db, id, input)) return unprocessable('related');
+
+    await db.batch(insertArticle(db, id, input, publication(input.status), now()));
+    return created({ id });
+  } catch {
+    return dbUnavailable();
+  }
+};
+
+export const onRequest = route({ GET: onRequestGet, POST: onRequestPost });

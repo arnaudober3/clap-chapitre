@@ -90,9 +90,12 @@ export const onRequestGet: Handler = async ({ env, params }) => {
         .bind(id),
       db
         .prepare(
+          // `status = 'approved'` is what makes the moderation queue mean
+          // something: a comment sits in 'pending' until the editor releases it,
+          // and this is the filter that keeps it off the page until then.
           `SELECT id, author, is_author, body, comment_date, likes, parent_id
              FROM comments
-            WHERE target_type = 'article' AND target_id = ?
+            WHERE target_type = 'article' AND target_id = ? AND status = 'approved'
             ORDER BY position, comment_date, id`,
         )
         .bind(id),

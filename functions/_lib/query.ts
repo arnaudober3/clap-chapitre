@@ -20,7 +20,8 @@ export class QueryError extends Error {
   }
 }
 
-const MEDIA: readonly Medium[] = ['film', 'serie', 'livre', 'doc'];
+/** Exported since the write paths validate the same four values from a body. */
+export const MEDIA: readonly Medium[] = ['film', 'serie', 'livre', 'doc'];
 const STATUSES = ['published', 'draft'] as const;
 
 export type StatusFilter = (typeof STATUSES)[number];

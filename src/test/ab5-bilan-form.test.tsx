@@ -104,13 +104,37 @@ describe('AB-5 bilan form — creation', () => {
     expect(screen.getByLabelText('L’humeur du mois')).toHaveValue('Un mois lumineux.');
   });
 
-  it('publishes back to the listing (mock — nothing is stored)', async () => {
+  it('refuses to save an untitled month, and says so', async () => {
     const user = userEvent.setup();
     renderAt('/admin/bilans/nouveau');
     await screen.findByTestId('admin-bilan-form-page');
 
-    await user.click(screen.getByRole('button', { name: 'Publier le bilan' }));
-    expect(screen.getByTestId('admin-bilans-page')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Publier' }));
+    expect(await screen.findByText('Il manque le titre du bilan.')).toBeInTheDocument();
+  });
+
+  it('creates the month it was offered, at its AAAA-MM id', async () => {
+    const user = userEvent.setup();
+    // The file's own seed, which puts a draft month at 2026-07 — so the month
+    // on offer for a new bilan is the one after it.
+    const db = useTestDb(DRAFT);
+    renderAt('/admin/bilans/nouveau');
+    await screen.findByTestId('admin-bilan-form-page');
+
+    await user.type(screen.getByLabelText(/Titre du bilan/), 'Le mois des départs');
+    await user.click(screen.getByRole('button', { name: 'Publier' }));
+
+    // The month is never typed: it is the one after the newest on file, which
+    // SEED puts at 2026-07.
+    const row = await db
+      .prepare("SELECT title, year, month, status FROM bilans WHERE id = '2026-08'")
+      .first();
+    expect(row).toEqual({
+      title: 'Le mois des départs',
+      year: 2026,
+      month: 8,
+      status: 'published',
+    });
   });
 });
 

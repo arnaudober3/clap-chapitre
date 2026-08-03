@@ -36,12 +36,20 @@ const ROUTES: ReadonlyArray<RoutePattern<string>> = [
   { pattern: '/api/bilans/:id', target: '/functions/api/bilans/[id].ts' },
   { pattern: '/api/pages/apropos', target: '/functions/api/pages/apropos.ts' },
   { pattern: '/api/pages/me-suivre', target: '/functions/api/pages/me-suivre.ts' },
+  { pattern: '/api/comments', target: '/functions/api/comments.ts' },
+  { pattern: '/api/likes', target: '/functions/api/likes.ts' },
+  { pattern: '/api/media/:key', target: '/functions/api/media/[key].ts' },
 
   { pattern: '/api/admin/dashboard', target: '/functions/api/admin/dashboard.ts' },
+  { pattern: '/api/admin/uploads', target: '/functions/api/admin/uploads.ts' },
   { pattern: '/api/admin/articles', target: '/functions/api/admin/articles/index.ts' },
   { pattern: '/api/admin/articles/:id', target: '/functions/api/admin/articles/[id].ts' },
   { pattern: '/api/admin/bilans', target: '/functions/api/admin/bilans/index.ts' },
   { pattern: '/api/admin/bilans/:id', target: '/functions/api/admin/bilans/[id].ts' },
+  { pattern: '/api/admin/comments', target: '/functions/api/admin/comments/index.ts' },
+  { pattern: '/api/admin/comments/:id', target: '/functions/api/admin/comments/[id].ts' },
+  { pattern: '/api/admin/pages/apropos', target: '/functions/api/admin/pages/apropos.ts' },
+  { pattern: '/api/admin/pages/me-suivre', target: '/functions/api/admin/pages/me-suivre.ts' },
 ];
 
 type Handler = (context: {
@@ -52,7 +60,12 @@ type Handler = (context: {
   params: Record<string, string>;
 }) => Promise<Response>;
 
-type Method = 'onRequest' | 'onRequestGet' | 'onRequestPost';
+type Method =
+  | 'onRequest'
+  | 'onRequestGet'
+  | 'onRequestPost'
+  | 'onRequestPut'
+  | 'onRequestDelete';
 type FunctionModule = Partial<Record<Method, Handler>>;
 
 /**
@@ -177,7 +190,7 @@ function titleCase(method: string): string {
  * useful to advertise — fall back to GET rather than invent a list.
  */
 function allowedMethods(module: FunctionModule): string[] {
-  const methods = (['onRequestGet', 'onRequestPost'] as const)
+  const methods = (['onRequestGet', 'onRequestPost', 'onRequestPut', 'onRequestDelete'] as const)
     .filter((name) => module[name])
     .map((name) => name.replace('onRequest', '').toUpperCase());
   return methods.length ? methods : ['GET'];

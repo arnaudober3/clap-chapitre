@@ -62,7 +62,7 @@ export default function LinkRow({
   onDragEnd,
   onMove,
 }: LinkRowProps) {
-  const { name, url } = field;
+  const { name, url, handle, glyph, cta } = field;
   const tint = TINT[name.trim().toLowerCase()] ?? NEUTRAL_TINT;
   const label = name.trim() || 'sans nom';
   // Held only while the pointer is down on the handle — see the note above.
@@ -114,7 +114,7 @@ export default function LinkRow({
       </button>
 
       <span className={styles.chip} style={tint} aria-hidden="true">
-        {linkMark(name)}
+        {glyph.trim() || linkMark(name)}
       </span>
 
       <div className={styles.rowBody}>
@@ -132,6 +132,33 @@ export default function LinkRow({
           aria-label={`Adresse du lien ${position}`}
           placeholder="exemple.fr/mon-profil"
         />
+        {/* The three columns the public page renders and the form never edited.
+            They are NOT NULL, so a link created here without them would show up
+            incomplete on /me-suivre. */}
+        <div className={styles.rowExtras}>
+          <input
+            className={styles.extraInput}
+            value={handle}
+            onChange={(event) => onChange({ handle: event.target.value })}
+            aria-label={`Pseudo du lien ${position}`}
+            placeholder="@pseudo"
+          />
+          <input
+            className={styles.extraInput}
+            value={glyph}
+            onChange={(event) => onChange({ glyph: event.target.value })}
+            aria-label={`Sigle du lien ${position}`}
+            placeholder="Ab"
+            maxLength={4}
+          />
+          <input
+            className={styles.extraInput}
+            value={cta}
+            onChange={(event) => onChange({ cta: event.target.value })}
+            aria-label={`Libellé du bouton ${position}`}
+            placeholder="Suivre"
+          />
+        </div>
       </div>
 
       <button

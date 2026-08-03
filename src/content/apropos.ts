@@ -22,8 +22,10 @@ export interface AProposContent {
   name: string;
   /** Serif --muted standfirst under the H1. */
   intro: string;
-  /** Caption for the portrait placeholder (no image file). */
+  /** Alt text for the portrait — a real caption now that there is a real image. */
   portraitLabel: string;
+  /** R2 key of the portrait, or '' while none has been uploaded. */
+  portraitImage: string;
   /** Bio paragraphs, in order. */
   bio: string[];
   /** Substrings inside `bio` rendered semi-bold. */
@@ -80,4 +82,71 @@ export function aproposFormValues(content: AProposContent): AProposFormValues {
     quote: unquote(content.quote),
     stats: content.stats.map((stat) => ({ label: stat.label, value: String(stat.value) })),
   };
+}
+
+/**
+ * The way back: edited values → what `PUT /api/admin/pages/apropos` stores.
+ *
+ * It takes the loaded content as well, and has to: the form edits five things,
+ * the row has fourteen columns. The eyebrow, the emphasis terms and the follow
+ * card are not on screen, so they are carried through unchanged rather than
+ * being blanked by a save.
+ *
+ * The three derivations are each the exact inverse of one above — split the
+ * title back into greeting and name, the bio back into paragraphs, and put the
+ * guillemets back on the quote.
+ */
+export function aproposPayload(
+  content: AProposContent,
+  values: AProposFormValues,
+  portraitImage: string = content.portraitImage,
+) {
+  return {
+    eyebrow: content.eyebrow,
+    ...splitTitle(content, values.title),
+    intro: values.intro,
+    portraitLabel: content.portraitLabel,
+    portraitImage,
+    bio: values.bio.trim(),
+    bioEmphasis: content.bioEmphasis.join('\n'),
+    quote: requote(values.quote),
+    statsTitle: content.statsTitle,
+    followTitle: content.follow.title,
+    followCopy: content.follow.copy,
+    followCta: content.follow.cta,
+    followTo: content.follow.to,
+    stats: values.stats
+      // A row emptied by the editor is a removal, not a stat named nothing —
+      // and `label` is NOT NULL, so sending it would be refused as a 422.
+      .filter((stat) => stat.label.trim() !== '')
+      .map((stat) => ({ label: stat.label.trim(), value: Number(stat.value) || 0 })),
+  };
+}
+
+/**
+ * 'Bonjour, moi c’est Marie-Zoé' → greeting + name.
+ *
+ * The greeting is preserved whenever the editor left it alone, which is the
+ * common case — the two are one field on screen precisely because only the name
+ * ever changes. Otherwise the last word becomes the name: it is what the H1
+ * italicises, and a wrong guess is visible and fixable, where dropping the split
+ * would silently lose the styling.
+ */
+function splitTitle(content: AProposContent, title: string): { greeting: string; name: string } {
+  const trimmed = title.trim();
+  const prefix = `${content.greeting} `;
+  if (trimmed.startsWith(prefix)) {
+    return { greeting: content.greeting, name: trimmed.slice(prefix.length).trim() };
+  }
+
+  const cut = trimmed.lastIndexOf(' ');
+  if (cut === -1) return { greeting: content.greeting, name: trimmed };
+  return { greeting: trimmed.slice(0, cut), name: trimmed.slice(cut + 1) };
+}
+
+/** The inverse of `unquote` — the stored form carries its guillemets. */
+function requote(quote: string): string {
+  const trimmed = quote.trim();
+  if (!trimmed) return '';
+  return trimmed.startsWith('«') ? trimmed : `« ${trimmed} »`;
 }

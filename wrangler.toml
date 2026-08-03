@@ -25,3 +25,19 @@ binding = "DB"
 database_name = "clap-chapitre"
 database_id = "cf7da22f-dfcb-4b6a-a8b2-8dbf5c55ea50"
 migrations_dir = "migrations"
+
+# Covers and the portrait. They were CSS gradients while nothing could upload a
+# file; now that the admin writes, they are real images, and R2 is where they
+# live — object storage with no egress fee, bound like the database rather than
+# reached over the network.
+#
+# Locally, `getPlatformProxy()` simulates it in .wrangler/state, so `npm run dev`
+# needs no Cloudflare account. Remotely the bucket has to exist first:
+#
+#     npx wrangler r2 bucket create clap-chapitre-media
+#
+# Same preview caveat as the database above, and it bites harder here: a preview
+# branch uploading an image writes it into the production bucket.
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "clap-chapitre-media"

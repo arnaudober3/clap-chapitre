@@ -18,16 +18,25 @@ import { onRequest as bilansRoute } from '../../functions/api/bilans/index';
 import { onRequest as bilanRoute } from '../../functions/api/bilans/[id]';
 import { onRequest as aproposRoute } from '../../functions/api/pages/apropos';
 import { onRequest as meSuivreRoute } from '../../functions/api/pages/me-suivre';
+import { onRequest as commentsRoute } from '../../functions/api/comments';
+import { onRequest as likesRoute } from '../../functions/api/likes';
+import { onRequest as mediaRoute } from '../../functions/api/media/[key]';
 import { onRequest as adminDashboardRoute } from '../../functions/api/admin/dashboard';
+import { onRequest as adminUploadsRoute } from '../../functions/api/admin/uploads';
 import { onRequest as adminArticlesRoute } from '../../functions/api/admin/articles/index';
 import { onRequest as adminArticleRoute } from '../../functions/api/admin/articles/[id]';
 import { onRequest as adminBilansRoute } from '../../functions/api/admin/bilans/index';
 import { onRequest as adminBilanRoute } from '../../functions/api/admin/bilans/[id]';
+import { onRequest as adminCommentsRoute } from '../../functions/api/admin/comments/index';
+import { onRequest as adminCommentRoute } from '../../functions/api/admin/comments/[id]';
+import { onRequest as adminAproposRoute } from '../../functions/api/admin/pages/apropos';
+import { onRequest as adminMeSuivreRoute } from '../../functions/api/admin/pages/me-suivre';
 import { sha256Hex } from '../../functions/_lib/crypto';
 import { signToken, TOKEN_TTL_MS } from '../../functions/_lib/jwt';
 import type { D1Database, Env, Handler } from '../../functions/types';
 import { matchRoute, type RoutePattern } from '../../vite/routeMatch';
 import { createTestDb } from './d1';
+import { createTestBucket, type TestBucket } from './r2';
 import { TEST_JWT_SECRET, TEST_PASSWORD, TEST_USERNAME } from './credentials';
 
 export const TEST_ENV: Env = {
@@ -37,6 +46,10 @@ export const TEST_ENV: Env = {
   // Without this, every wrong-password assertion would wait 250ms and crowd
   // the default timeout of `findByRole('alert')`.
   LOGIN_THROTTLE_MS: '0',
+  // The public write endpoints refuse to run without it, so it is part of the
+  // baseline env rather than something each test remembers to add. The `DB` and
+  // `MEDIA` bindings stay out — see below.
+  IP_SALT: 'sel-de-test-pour-les-ip',
 };
 
 /**
@@ -60,10 +73,23 @@ export function useTestDb(sql?: string): D1Database {
   return database;
 }
 
-/** Drop the database. Called from the global `afterEach`. */
+/**
+ * The R2 bucket the stub serves from, on the same terms as the database: absent
+ * until a test asks for one, so `requireBucket` stays provably fail-closed.
+ */
+let bucket: TestBucket | undefined;
+
+/** Start a fresh bucket for the current test. Returns it, for asserting on keys. */
+export function useTestBucket(): TestBucket {
+  bucket = createTestBucket();
+  return bucket;
+}
+
+/** Drop the database and the bucket. Called from the global `afterEach`. */
 export function resetTestDb(): void {
   database?.close();
   database = undefined;
+  bucket = undefined;
 }
 
 /**
@@ -81,12 +107,20 @@ const ROUTES: ReadonlyArray<RoutePattern<Handler>> = [
   { pattern: '/api/bilans/:id', target: bilanRoute },
   { pattern: '/api/pages/apropos', target: aproposRoute },
   { pattern: '/api/pages/me-suivre', target: meSuivreRoute },
+  { pattern: '/api/comments', target: commentsRoute },
+  { pattern: '/api/likes', target: likesRoute },
+  { pattern: '/api/media/:key', target: mediaRoute },
 
   { pattern: '/api/admin/dashboard', target: adminDashboardRoute },
+  { pattern: '/api/admin/uploads', target: adminUploadsRoute },
   { pattern: '/api/admin/articles', target: adminArticlesRoute },
   { pattern: '/api/admin/articles/:id', target: adminArticleRoute },
   { pattern: '/api/admin/bilans', target: adminBilansRoute },
   { pattern: '/api/admin/bilans/:id', target: adminBilanRoute },
+  { pattern: '/api/admin/comments', target: adminCommentsRoute },
+  { pattern: '/api/admin/comments/:id', target: adminCommentRoute },
+  { pattern: '/api/admin/pages/apropos', target: adminAproposRoute },
+  { pattern: '/api/admin/pages/me-suivre', target: adminMeSuivreRoute },
 ];
 
 /**
@@ -111,8 +145,13 @@ export function installApiStub(): void {
       request,
       // A test that never called `useTestDb` gets an env without `DB`, and the
       // content endpoints answer 500 — which is the honest outcome, and the same
-      // one a deployment with no binding would give.
-      env: database ? { ...TEST_ENV, DB: database } : TEST_ENV,
+      // one a deployment with no binding would give. `MEDIA` follows the same
+      // rule, so the upload route's 500 is provable too.
+      env: {
+        ...TEST_ENV,
+        ...(database ? { DB: database } : {}),
+        ...(bucket ? { MEDIA: bucket } : {}),
+      },
       params: route.params,
     });
   };

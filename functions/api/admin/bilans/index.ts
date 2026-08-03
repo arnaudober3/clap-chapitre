@@ -1,5 +1,6 @@
 /**
- * GET /api/admin/bilans → 200 { items, total, page, perPage, draft, catalogue }
+ * GET  /api/admin/bilans → 200 { items, total, page, perPage, draft, catalogue }
+ * POST /api/admin/bilans → 201 { id } | 409
  *
  * The back-office bilans listing. `items` holds only published months: the month
  * in progress gets its own card above the table, so it is returned separately as
@@ -13,8 +14,21 @@
  * Behind the admin JWT.
  */
 import { requireAdmin } from '../../../_lib/admin';
+import { cardEdits, insertBilan, mediaOf, selection } from '../../../_lib/bilan-write';
+import { BodyError, MalformedBody, readJson } from '../../../_lib/body';
 import { requireDb } from '../../../_lib/env';
-import { dbUnavailable, badRequest, getOnly, json, misconfigured } from '../../../_lib/http';
+import {
+  badRequest,
+  conflict,
+  created,
+  dbUnavailable,
+  json,
+  misconfigured,
+  route,
+  unprocessable,
+} from '../../../_lib/http';
+import { readBilanInput } from '../../../_lib/inputs';
+import { now, publication } from '../../../_lib/write';
 import { QueryError, readBilanSort, readPage, readPerPage, readSearch } from '../../../_lib/query';
 import { bilanOrderBy, folded, likeTerm } from '../../../_lib/sql';
 import { groupCounts, rowToBilan, type Row } from '../../../_lib/rows';
@@ -111,4 +125,50 @@ export const onRequestGet: Handler = async ({ request, env }) => {
   }
 };
 
-export const onRequest = getOnly(onRequestGet);
+/**
+ * Creates a month. Unlike an avis, the id is not derived — it *is* the month,
+ * 'AAAA-MM', and it comes from the form. So a second bilan for the same month is
+ * a 409 rather than a silently suffixed id: two "juillet 2026" would be a
+ * mistake, not a legitimate pair.
+ */
+export const onRequestPost: Handler = async ({ request, env }) => {
+  const check = await requireAdmin(request, env);
+  if (!check.ok) return check.response;
+
+  let db: D1Database;
+  try {
+    db = requireDb(env);
+  } catch {
+    return misconfigured();
+  }
+
+  let input: ReturnType<typeof readBilanInput>;
+  try {
+    input = readBilanInput(await readJson(request));
+  } catch (error) {
+    if (error instanceof BodyError) return unprocessable(error.field);
+    if (error instanceof MalformedBody) return badRequest('corps');
+    throw error;
+  }
+
+  try {
+    const clash = await db.prepare('SELECT 1 AS taken FROM bilans WHERE id = ?').bind(input.id).first();
+    if (clash) return conflict('Un bilan existe déjà pour ce mois.');
+
+    const media = await mediaOf(db, input.avis);
+    if (media.size !== input.avis.length) return unprocessable('avis');
+
+    const stamp = now();
+    await db.batch([
+      insertBilan(db, input, publication(input.status), stamp),
+      ...selection(db, input.id, input.avis, media),
+      ...cardEdits(db, input.edits, stamp),
+    ]);
+
+    return created({ id: input.id });
+  } catch {
+    return dbUnavailable();
+  }
+};
+
+export const onRequest = route({ GET: onRequestGet, POST: onRequestPost });

@@ -66,9 +66,11 @@ export const onRequestGet: Handler = async ({ env, params }) => {
       db.prepare(`SELECT bilan_id, medium, count FROM bilan_counts WHERE bilan_id = ?`).bind(monthId),
       db
         .prepare(
+          // See the same filter on /api/articles/:id — pending comments are
+          // invisible until moderated.
           `SELECT id, author, is_author, body, comment_date, likes, parent_id
              FROM comments
-            WHERE target_type = 'bilan' AND target_id = ?
+            WHERE target_type = 'bilan' AND target_id = ? AND status = 'approved'
             ORDER BY position, comment_date, id`,
         )
         .bind(monthId),

@@ -79,7 +79,7 @@ export default function ArticlePage() {
         <ForThoseWho article={article} />
         <SocialBar article={article} />
         <PrevNext prev={prev} next={next} />
-        <CommentThread comments={comments} />
+        <CommentThread comments={comments} articleId={article.id} />
       </div>
     </article>
   );

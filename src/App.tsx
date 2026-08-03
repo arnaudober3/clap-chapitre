@@ -19,6 +19,7 @@ import AdminBilanFormPage from "./pages/AdminBilanForm";
 import AdminNewsletterPage from "./pages/AdminNewsletter";
 import AdminAProposPage from "./pages/AdminAPropos";
 import AdminMeSuivrePage from "./pages/AdminMeSuivre";
+import AdminCommentsPage from "./pages/AdminComments";
 import AdminNotFoundPage from "./pages/AdminNotFound";
 import NotFoundPage from "./pages/NotFound";
 
@@ -82,6 +83,7 @@ export default function App() {
           <Route path="bilans" element={<AdminBilansPage />} />
           <Route path="bilans/nouveau" element={<AdminBilanFormPage />} />
           <Route path="bilans/:id" element={<AdminBilanFormPage />} />
+          <Route path="commentaires" element={<AdminCommentsPage />} />
           <Route path="newsletter" element={<AdminNewsletterPage />} />
           <Route path="a-propos" element={<AdminAProposPage />} />
           <Route path="me-suivre" element={<AdminMeSuivrePage />} />

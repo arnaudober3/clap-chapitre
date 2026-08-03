@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { coverStyle } from '../../api/mutations';
 import { Link } from 'react-router-dom';
 import type { Article, Medium } from '../../../shared/content';
 import type { BilanCrumb } from '../../api/content';
@@ -74,14 +75,14 @@ export default function ArticleHero({
       <div className={styles.heroMain}>
         {/* `.band` is a real painted band on mobile and `display: contents` on
             desktop, so cover / headline become grid items of `.heroMain`. */}
-        <div className={styles.band} style={{ background: article.cover }}>
+        <div className={styles.band} style={coverStyle(article.cover)}>
           <Link className={styles.backLink} to={backHref}>
             ‹ {backLabel}
           </Link>
 
           <div
             className={styles.cover}
-            style={{ background: article.cover }}
+            style={coverStyle(article.cover)}
             data-testid="article-cover"
           >
             <span className={styles.coverEyebrow}>Affiche</span>
