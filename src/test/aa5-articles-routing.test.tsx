@@ -1,8 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
+import { SEED } from './fixtures';
+import { useTestDb } from './api-server';
+
+// The pages these routes render read the API, so the suite needs content.
+beforeEach(() => {
+  useTestDb(SEED);
+});
 
 function renderAt(path: string) {
   return render(
@@ -20,23 +27,29 @@ function articlesIsCurrent() {
 }
 
 describe('AA-5 admin articles routing', () => {
-  it('renders the listing at /admin/articles inside the admin shell', () => {
+  it('renders the listing at /admin/articles inside the admin shell', async () => {
     renderAt('/admin/articles');
-    expect(screen.getByTestId('admin-articles-page')).toBeInTheDocument();
+    expect(await screen.findByTestId('admin-articles-page')).toBeInTheDocument();
     expect(screen.queryByTestId('admin-not-found-page')).toBeNull();
     expect(articlesIsCurrent()).toBe(true);
   });
 
-  it('renders the creation form at /admin/articles/nouveau, not the :id route', () => {
+  it('renders the creation form at /admin/articles/nouveau, not the :id route', async () => {
     renderAt('/admin/articles/nouveau');
-    expect(screen.getByTestId('admin-new-article-page')).toBeInTheDocument();
+    expect(await screen.findByTestId('admin-new-article-page')).toBeInTheDocument();
     expect(screen.getByLabelText('Titre')).toHaveValue('');
     expect(articlesIsCurrent()).toBe(true);
   });
 
-  it('renders the editor at /admin/articles/:id', () => {
+  it('renders the editor at /admin/articles/:id', async () => {
+    // An avis the shared seed does not carry — the route resolves whatever id it
+    // is given, so the test brings its own.
+    useTestDb(`${SEED}
+      INSERT INTO articles (id,title,medium,excerpt,cover,author,status,published_at,likes,views)
+      VALUES ('les-nuits-blanches','Les nuits blanches','serie','Un excerpt.','grad','Marie-Zoé','published','2026-05-02',0,0);
+    `);
     renderAt('/admin/articles/les-nuits-blanches');
-    expect(screen.getByTestId('admin-new-article-page')).toBeInTheDocument();
+    expect(await screen.findByTestId('admin-new-article-page')).toBeInTheDocument();
     expect(screen.getByLabelText('Titre')).toHaveValue('Les nuits blanches');
     expect(articlesIsCurrent()).toBe(true);
   });
@@ -45,17 +58,17 @@ describe('AA-5 admin articles routing', () => {
     const user = userEvent.setup();
     renderAt('/admin/articles');
 
-    await user.click(screen.getByRole('link', { name: 'Un dernier été' }));
-    expect(screen.getByTestId('admin-new-article-page')).toBeInTheDocument();
+    await user.click(await screen.findByRole('link', { name: 'Un dernier été' }));
+    expect(await screen.findByTestId('admin-new-article-page')).toBeInTheDocument();
     expect(screen.getByLabelText('Titre')).toHaveValue('Un dernier été');
 
     await user.click(screen.getByRole('link', { name: 'Articles' }));
-    expect(screen.getByTestId('admin-articles-page')).toBeInTheDocument();
+    expect(await screen.findByTestId('admin-articles-page')).toBeInTheDocument();
   });
 
-  it('keeps unknown /admin/articles/** ids inside the admin shell', () => {
+  it('keeps unknown /admin/articles/** ids inside the admin shell', async () => {
     renderAt('/admin/articles/zzz');
-    expect(screen.getByTestId('admin-articles-page')).toBeInTheDocument();
+    expect(await screen.findByTestId('admin-articles-page')).toBeInTheDocument();
     expect(screen.queryByTestId('not-found-page')).toBeNull();
   });
 });

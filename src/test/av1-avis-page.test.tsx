@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import AvisArchivesPage from '../pages/AvisArchives';
-import { feed } from '../mock/home';
+import { SEED } from './fixtures';
+import { useTestDb } from './api-server';
 
 /** Render the archive at a given path, with the /archives/:medium route wired. */
 function renderAt(path: string) {
@@ -15,17 +16,19 @@ function renderAt(path: string) {
   );
 }
 
-const filmCount = feed.filter((i) => i.medium === 'film').length;
-const serieCount = feed.filter((i) => i.medium === 'serie').length;
-
 describe('AV-1 AvisArchivesPage', () => {
-  it('renders the H1 and only the current medium’s avis, each linking to /article', () => {
+  beforeEach(() => {
+    useTestDb(SEED);
+  });
+
+  it('renders the H1 and only the current medium’s avis, each linking to /article', async () => {
     renderAt('/archives/films');
     expect(
       screen.getByRole('heading', { level: 1, name: 'Tous les avis' }),
     ).toBeInTheDocument();
-    const grid = screen.getByTestId('avis-grid');
-    expect(within(grid).getAllByTestId('review-card')).toHaveLength(filmCount);
+    const grid = await screen.findByTestId('avis-grid');
+    // The seed holds one published film.
+    expect(within(grid).getAllByTestId('review-card')).toHaveLength(1);
     for (const card of within(grid).getAllByTestId('review-card')) {
       expect(card.getAttribute('href')).toMatch(/^\/article\//);
     }
@@ -48,14 +51,14 @@ describe('AV-1 AvisArchivesPage', () => {
     expect(series).not.toHaveAttribute('aria-current');
   });
 
-  it('filters by the medium in the URL', () => {
-    renderAt('/archives/series');
-    expect(serieCount).toBeGreaterThan(0);
-    const grid = screen.getByTestId('avis-grid');
-    expect(within(grid).getAllByTestId('review-card')).toHaveLength(serieCount);
+  it('filters by the medium in the URL', async () => {
+    renderAt('/archives/livres');
+    const grid = await screen.findByTestId('avis-grid');
+    expect(within(grid).getAllByTestId('review-card')).toHaveLength(1);
+    expect(within(grid).getByRole('link', { name: /L’année de la pluie/ })).toBeInTheDocument();
     // The active tab reflects the route.
     expect(
-      within(screen.getByRole('navigation')).getByRole('link', { name: 'Séries' }),
+      within(screen.getByRole('navigation')).getByRole('link', { name: 'Livres' }),
     ).toHaveAttribute('aria-current', 'page');
   });
 
@@ -70,28 +73,13 @@ describe('AV-1 AvisArchivesPage', () => {
 });
 
 describe('AV-1 AvisArchivesPage empty state', () => {
-  afterEach(() => {
-    vi.doUnmock('../mock/home');
-    vi.resetModules();
-  });
-
   it('renders the Salon empty state when the medium has no avis', async () => {
-    vi.resetModules();
-    vi.doMock('../mock/home', () => ({
-      feed: [],
-      latestFor: () => undefined,
-      recentFor: () => [],
-    }));
-    const { default: EmptyAvis } = await import('../pages/AvisArchives');
-    render(
-      <MemoryRouter initialEntries={['/archives/films']}>
-        <Routes>
-          <Route path="/archives/:medium" element={<EmptyAvis />} />
-        </Routes>
-      </MemoryRouter>,
-    );
+    // A medium with no rows, which no longer needs a stubbed module to produce:
+    // the seed simply holds no doc.
+    useTestDb(SEED);
+    renderAt('/archives/docs');
     expect(
-      screen.getByText('Aucun avis pour ce média pour l’instant.'),
+      await screen.findByText('Aucun avis pour ce média pour l’instant.'),
     ).toBeInTheDocument();
     expect(screen.queryByTestId('avis-grid')).not.toBeInTheDocument();
   });

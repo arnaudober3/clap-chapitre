@@ -1,4 +1,4 @@
-import type { NewsletterFeature as NewsletterFeatureContent } from '../../mock/mesuivre';
+import type { NewsletterFeature as NewsletterFeatureContent } from '../../content/mesuivre';
 import { NewsletterBlock } from '../../components/ui';
 
 /**

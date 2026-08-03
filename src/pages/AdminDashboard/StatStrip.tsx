@@ -1,4 +1,4 @@
-import { kpis } from '../../mock/dashboard';
+import type { KpiStat } from '../../content/dashboard';
 import { frNumber } from '../../format';
 import styles from './AdminDashboard.module.css';
 
@@ -7,10 +7,10 @@ import styles from './AdminDashboard.module.css';
  * Commentaires / Partages), each an uppercase label, a serif value and a green
  * delta. Collapses to a 2×2 grid on mobile (design 6h).
  */
-export default function StatStrip({ period }: { period?: string }) {
+export default function StatStrip({ stats }: { stats: KpiStat[] }) {
   return (
     <div className={styles.statStrip}>
-      {kpis(period).map((stat) => {
+      {stats.map((stat) => {
         const down = stat.deltaPct < 0;
         return (
           <div key={stat.key} className={styles.statCell}>

@@ -1,13 +1,20 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import AdminMeSuivrePage from '../pages/AdminMeSuivre';
 import { moveTo, moveByOne } from '../reorder';
-import { mesuivreFormValues } from '../mock/mesuivre';
+import { mesuivreFormValues } from '../content/mesuivre';
+import { aMeSuivre, SEED } from './fixtures';
+import { useTestDb } from './api-server';
 
-const initial = mesuivreFormValues();
+const initial = mesuivreFormValues(aMeSuivre());
 const NAMES = initial.links.map((row) => row.name);
+
+/** The editor fetches its content, so every test starts from a seeded database. */
+beforeEach(() => {
+  useTestDb(SEED);
+});
 
 function renderPage() {
   return render(
@@ -71,8 +78,9 @@ describe('AMS-2 shared reorder helpers, on links', () => {
 });
 
 describe('AMS-2 links list', () => {
-  it('renders one row per link of the public page', () => {
+  it('renders one row per link of the public page', async () => {
     renderPage();
+    await screen.findByTestId('add-link');
     expect(screen.getAllByTestId('link-row')).toHaveLength(initial.links.length);
     expect(names()).toEqual(NAMES);
     initial.links.forEach((row, index) => {
@@ -83,6 +91,7 @@ describe('AMS-2 links list', () => {
   it('removes the row whose ✕ was clicked, not the one at that index later', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByTestId('add-link');
 
     await user.click(screen.getByRole('button', { name: 'Supprimer « Babelio »' }));
     expect(names()).toEqual(['Threads', 'Letterboxd', 'LinkedIn']);
@@ -94,6 +103,7 @@ describe('AMS-2 links list', () => {
   it('appends an empty row on "Ajouter un lien" and lets it be named', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByTestId('add-link');
     const count = initial.links.length;
 
     await user.click(screen.getByTestId('add-link'));
@@ -119,6 +129,7 @@ describe('AMS-2 links list', () => {
   it('keeps added rows distinct from one another when some are removed', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByTestId('add-link');
 
     await user.click(screen.getByTestId('add-link'));
     await user.type(screen.getByLabelText('Nom du lien 5'), 'Mastodon');
@@ -129,8 +140,9 @@ describe('AMS-2 links list', () => {
     expect(names()).toEqual([...NAMES, 'Bluesky']);
   });
 
-  it('reorders live while the pointer travels, before any drop', () => {
+  it('reorders live while the pointer travels, before any drop', async () => {
     renderPage();
+    await screen.findByTestId('add-link');
 
     dragStart(screen.getAllByTestId('link-row')[0]);
     // Merely flying over the third row is enough — no drop involved.
@@ -142,8 +154,9 @@ describe('AMS-2 links list', () => {
     expect(names()).toEqual(['Threads', 'Letterboxd', 'Babelio', 'LinkedIn']);
   });
 
-  it('dims the travelling row, and stops once the drag ends', () => {
+  it('dims the travelling row, and stops once the drag ends', async () => {
     renderPage();
+    await screen.findByTestId('add-link');
     const dimmed = () =>
       screen.getAllByTestId('link-row').filter((row) => row.className.includes('Dragging'));
 
@@ -156,8 +169,9 @@ describe('AMS-2 links list', () => {
     expect(dimmed()).toHaveLength(0);
   });
 
-  it('ignores hovering when no drag started', () => {
+  it('ignores hovering when no drag started', async () => {
     renderPage();
+    await screen.findByTestId('add-link');
     fireEvent.dragOver(screen.getAllByTestId('link-row')[1]);
     expect(names()).toEqual(NAMES);
   });
@@ -165,6 +179,7 @@ describe('AMS-2 links list', () => {
   it('reorders from the keyboard, which is the handle’s other half', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByTestId('add-link');
 
     handleOf(screen.getAllByTestId('link-row')[1]).focus();
     await user.keyboard('{ArrowUp}');
@@ -182,8 +197,9 @@ describe('AMS-2 links list', () => {
     expect(names()).toEqual(NAMES);
   });
 
-  it('names every control after the link it acts on, and its rank', () => {
+  it('names every control after the link it acts on, and its rank', async () => {
     renderPage();
+    await screen.findByTestId('add-link');
     expect(
       screen.getByRole('button', { name: 'Déplacer « Threads » — 1 sur 4' }),
     ).toBeInTheDocument();

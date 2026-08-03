@@ -1,14 +1,18 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { meSuivre, mesuivreFormValues, linkMark } from '../mock/mesuivre';
+import { mesuivreFormValues, linkMark } from '../content/mesuivre';
+import { aMeSuivre } from './fixtures';
+
+const meSuivre = aMeSuivre();
+const formValues = () => mesuivreFormValues(meSuivre);
 
 const root = resolve(__dirname, '../..');
-const source = readFileSync(resolve(root, 'src/mock/mesuivre.ts'), 'utf8');
+const source = readFileSync(resolve(root, 'src/content/mesuivre.ts'), 'utf8');
 
 describe('AMS-1 admin Me suivre form values', () => {
   it('carries the standfirst and one row per social of the public page', () => {
-    const { intro, links } = mesuivreFormValues();
+    const { intro, links } = formValues();
     expect(intro).toBe(meSuivre.intro);
     expect(links.map((row) => row.name)).toEqual(
       meSuivre.socials.map((social) => social.name),
@@ -20,7 +24,7 @@ describe('AMS-1 admin Me suivre form values', () => {
   });
 
   it('prints the URLs the way design 6g does — no scheme, no www., no trailing slash', () => {
-    const { links } = mesuivreFormValues();
+    const { links } = formValues();
     for (const row of links) {
       expect(row.url).not.toMatch(/^https?:\/\//);
       expect(row.url).not.toMatch(/^www\./);
@@ -56,8 +60,8 @@ describe('AMS-1 admin Me suivre form values', () => {
   // The editor edits this object in place through its state, so it must never
   // be a window onto the mock the public page renders.
   it('returns a fresh, detached object on every call', () => {
-    const first = mesuivreFormValues();
-    const second = mesuivreFormValues();
+    const first = formValues();
+    const second = formValues();
     expect(first).toEqual(second);
     expect(first).not.toBe(second);
     expect(first.links).not.toBe(second.links);
@@ -66,9 +70,9 @@ describe('AMS-1 admin Me suivre form values', () => {
     first.intro = 'modifié';
     first.links[0].url = 'exemple.fr';
     first.links.pop();
-    expect(mesuivreFormValues().intro).toBe(second.intro);
-    expect(mesuivreFormValues().links[0].url).toBe(second.links[0].url);
-    expect(mesuivreFormValues().links).toHaveLength(second.links.length);
+    expect(formValues().intro).toBe(second.intro);
+    expect(formValues().links[0].url).toBe(second.links[0].url);
+    expect(formValues().links).toHaveLength(second.links.length);
   });
 
   it('stays a pure data module: no React, no network, no Date/random', () => {

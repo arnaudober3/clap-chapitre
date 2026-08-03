@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
-import type { Article, Medium } from '../../mock/types';
-import type { MonthlyBilan } from '../../mock/bilans';
+import type { Article, Medium } from '../../../shared/content';
+import type { BilanCrumb } from '../../api/content';
 import {
   MEDIA,
   MEDIUM_ACCENT,
@@ -33,7 +33,7 @@ export default function ArticleHero({
   bilan,
 }: {
   article: Article;
-  bilan?: MonthlyBilan;
+  bilan?: BilanCrumb;
 }) {
   const archiveHref = `/archives/${MEDIUM_TO_SEGMENT[article.medium]}`;
   // The mobile back link targets the same place as the second desktop crumb —

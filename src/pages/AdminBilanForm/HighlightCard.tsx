@@ -1,6 +1,6 @@
 import { useState, type DragEvent, type KeyboardEvent } from 'react';
 import { MEDIUM_ACCENT, MEDIUM_CHIP_LABEL } from '../../media';
-import type { Medium } from '../../mock/types';
+import type { Medium } from '../../../shared/content';
 import styles from './AdminBilanForm.module.css';
 
 /** One editable coup de cœur — the fields design 6d exposes for an avis. */

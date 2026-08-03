@@ -9,6 +9,8 @@ export { default as AdminSelect } from './AdminSelect';
 export { default as Pagination } from './Pagination';
 export { default as NotFoundPanel } from './NotFoundPanel';
 export { default as ShareMenu } from './ShareMenu';
+export { PageLoading, PageError } from './LoadState';
+export type { PageErrorProps } from './LoadState';
 export type {
   NewsletterBlockProps,
   NewsletterBlockVariant,

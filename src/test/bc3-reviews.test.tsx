@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import BilanReview from '../pages/BilanCulturel/BilanReview';
 import MediumSections from '../pages/BilanCulturel/MediumSections';
-import type { PublishedArticle } from '../mock/types';
-import type { MonthlyBilan } from '../mock/bilans';
+import type { PublishedArticle } from '../../shared/content';
+import type { MonthlyBilan } from '../../shared/content';
 
 const full: PublishedArticle = {
   id: 'r-full',

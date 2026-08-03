@@ -65,6 +65,13 @@ export interface Env {
 export interface FunctionContext {
   request: Request;
   env: Env;
+  /**
+   * The dynamic segments of a `[id].ts` route. Pages fills this in; a route with
+   * no bracket in its filename never sees it, hence the optional. A `[[rest]]`
+   * catch-all would hand over an array — none of our routes use one, but the
+   * type says so rather than lying by omission.
+   */
+  params?: Record<string, string | string[]>;
 }
 
 export type Handler = (context: FunctionContext) => Promise<Response>;

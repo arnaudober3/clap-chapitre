@@ -15,22 +15,45 @@ import { join } from 'node:path';
 import type { Plugin, ViteDevServer } from 'vite';
 import type { PlatformProxy } from 'wrangler';
 import { readFunctionsEnv } from './devVars';
+import { matchRoute, type RoutePattern } from './routeMatch';
 
-/** URL path → module the dev server loads. Mirrors Pages' file routing. */
-const ROUTES: Record<string, string> = {
-  '/api/login': '/functions/api/login.ts',
-  '/api/verify': '/functions/api/verify.ts',
-  '/api/db-health': '/functions/api/db-health.ts',
-};
+/**
+ * URL pattern → module the dev server loads. Mirrors Pages' file routing, which
+ * this project reproduces by hand: **a Function that is not listed here is
+ * answered by the SPA fallback with index.html**, which looks like a broken
+ * endpoint rather than a missing line. Ordered, first match wins — a static
+ * segment must be declared before the dynamic route it would otherwise fall into.
+ */
+const ROUTES: ReadonlyArray<RoutePattern<string>> = [
+  { pattern: '/api/login', target: '/functions/api/login.ts' },
+  { pattern: '/api/verify', target: '/functions/api/verify.ts' },
+  { pattern: '/api/db-health', target: '/functions/api/db-health.ts' },
+
+  { pattern: '/api/feed', target: '/functions/api/feed.ts' },
+  { pattern: '/api/articles', target: '/functions/api/articles/index.ts' },
+  { pattern: '/api/articles/:id', target: '/functions/api/articles/[id].ts' },
+  { pattern: '/api/bilans', target: '/functions/api/bilans/index.ts' },
+  { pattern: '/api/bilans/:id', target: '/functions/api/bilans/[id].ts' },
+  { pattern: '/api/pages/apropos', target: '/functions/api/pages/apropos.ts' },
+  { pattern: '/api/pages/me-suivre', target: '/functions/api/pages/me-suivre.ts' },
+
+  { pattern: '/api/admin/dashboard', target: '/functions/api/admin/dashboard.ts' },
+  { pattern: '/api/admin/articles', target: '/functions/api/admin/articles/index.ts' },
+  { pattern: '/api/admin/articles/:id', target: '/functions/api/admin/articles/[id].ts' },
+  { pattern: '/api/admin/bilans', target: '/functions/api/admin/bilans/index.ts' },
+  { pattern: '/api/admin/bilans/:id', target: '/functions/api/admin/bilans/[id].ts' },
+];
 
 type Handler = (context: {
   request: Request;
   // Not `Record<string, string>` any more: D1 hands over an object, not a value
   // that can come out of a dotenv file.
   env: Record<string, unknown>;
+  params: Record<string, string>;
 }) => Promise<Response>;
 
-type FunctionModule = Partial<Record<'onRequest' | 'onRequestPost', Handler>>;
+type Method = 'onRequest' | 'onRequestGet' | 'onRequestPost';
+type FunctionModule = Partial<Record<Method, Handler>>;
 
 /**
  * The Cloudflare bindings declared in `wrangler.toml`, backed by Miniflare.
@@ -95,8 +118,8 @@ export function devApiPlugin(): Plugin {
       // answer /api/login with index.html.
       server.middlewares.use(async (req, res, next) => {
         const pathname = (req.url ?? '/').split('?')[0];
-        const modulePath = ROUTES[pathname];
-        if (!modulePath) {
+        const route = matchRoute(pathname, ROUTES);
+        if (!route) {
           next();
           return;
         }
@@ -107,22 +130,26 @@ export function devApiPlugin(): Plugin {
           // the proxy only ever contributes what a file cannot hold.
           const { env: cfEnv } = await bindings(root);
           const env = { ...cfEnv, ...readFunctionsEnv(root) };
-          const module = (await server.ssrLoadModule(modulePath)) as FunctionModule;
+          const module = (await server.ssrLoadModule(route.target)) as FunctionModule;
 
-          // Same resolution order Pages applies.
-          const handler =
-            req.method === 'POST'
-              ? (module.onRequestPost ?? module.onRequest)
-              : module.onRequest;
+          // Same resolution order Pages applies: the method-specific export
+          // first, the catch-all second.
+          const specific = `onRequest${titleCase(req.method ?? 'GET')}` as Method;
+          const handler = module[specific] ?? module.onRequest;
 
           if (!handler) {
             res.statusCode = 405;
-            res.setHeader('allow', 'POST');
+            // Derived, never hardcoded: a GET-only Function answering
+            // `allow: POST` would send the caller after the wrong fix.
+            res.setHeader('allow', allowedMethods(module).join(', '));
             res.end();
             return;
           }
 
-          await writeNodeResponse(res, await handler({ request: await toWebRequest(req), env }));
+          await writeNodeResponse(
+            res,
+            await handler({ request: await toWebRequest(req), env, params: route.params }),
+          );
         } catch (error) {
           // Almost always a missing or malformed .dev.vars. Log the real reason
           // for the developer, mirror the production 500 for the client.
@@ -137,6 +164,23 @@ export function devApiPlugin(): Plugin {
       });
     },
   };
+}
+
+/** 'get' → 'Get', so a method name becomes its export suffix. */
+function titleCase(method: string): string {
+  return method.charAt(0).toUpperCase() + method.slice(1).toLowerCase();
+}
+
+/**
+ * The methods a module actually handles, for the `allow` header of a 405. A
+ * module exporting only `onRequest` takes everything, and there is nothing
+ * useful to advertise — fall back to GET rather than invent a list.
+ */
+function allowedMethods(module: FunctionModule): string[] {
+  const methods = (['onRequestGet', 'onRequestPost'] as const)
+    .filter((name) => module[name])
+    .map((name) => name.replace('onRequest', '').toUpperCase());
+  return methods.length ? methods : ['GET'];
 }
 
 /** Node's IncomingMessage → the Request a Pages Function expects. */

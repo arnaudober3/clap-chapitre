@@ -60,6 +60,55 @@ export function ofMonth(monthLabel: string): string {
 }
 
 /**
+ * Long French date from a sortable ISO day ("2026-07-18" → "18 juillet 2026").
+ *
+ * The counterpart of `shortDate`, for the places that read as prose rather than
+ * as a table: an avis header, a comment. Same manual parsing, for the same
+ * reason — `new Date('2026-07-18')` is UTC midnight, which is the day before in
+ * any negative offset.
+ *
+ * An absent or malformed value renders as the empty string, not as a dash: a
+ * draft has no publication date, and the layout expects nothing there, not a
+ * placeholder.
+ */
+export function longDate(iso?: string): string {
+  const parts = iso?.split('-');
+  if (!parts || parts.length !== 3) return '';
+  const [year, month, day] = parts.map(Number);
+  if (!year || !month || !day) return '';
+  return new Date(year, month - 1, day)
+    .toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    .replace(NBSP, ' ');
+}
+
+/**
+ * How long ago something was edited, as the drafts listing says it
+ * ("Modifié il y a 2 jours").
+ *
+ * `now` is a parameter rather than a call to `Date.now()` inside: a test that
+ * cannot pin the clock can only assert that *something* was rendered, and this
+ * string is the whole content of a column.
+ *
+ * Days are counted on calendar days, not on 24-hour blocks — something edited at
+ * 23:00 reads "hier" at 07:00 the next morning, which is what a reader means.
+ */
+export function editedLabel(iso?: string, now: number = Date.now()): string {
+  if (!iso) return '';
+  const edited = new Date(iso.replace(' ', 'T') + (iso.includes('Z') ? '' : 'Z'));
+  if (Number.isNaN(edited.getTime())) return '';
+
+  const startOfDay = (time: number) => {
+    const date = new Date(time);
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  };
+  const days = Math.round((startOfDay(now) - startOfDay(edited.getTime())) / 86_400_000);
+
+  if (days <= 0) return "Modifié aujourd'hui";
+  if (days === 1) return 'Modifié hier';
+  return `Modifié il y a ${days} jours`;
+}
+
+/**
  * Short French date from a sortable ISO day ("2026-07-12" → "12 juil. 2026").
  * The parts are parsed by hand and rebuilt as a local date so the result never
  * shifts a day depending on the runner's timezone. An absent/malformed value

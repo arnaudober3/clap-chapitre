@@ -1,4 +1,4 @@
-import { leaderboardRanked, type LeaderboardKind } from '../../mock/dashboard';
+import type { LeaderboardKind, RankedEntry } from '../../content/dashboard';
 import { MEDIUM_ACCENT } from '../../media';
 import { frNumber } from '../../format';
 import styles from './AdminDashboard.module.css';
@@ -14,8 +14,7 @@ const KIND_ACCENT: Record<LeaderboardKind, string> = {
  * title + view count + a proportional colored bar. On mobile the bars hide and
  * the list caps to three rows, becoming "Publications récentes" (design 6h).
  */
-export default function Leaderboard() {
-  const entries = leaderboardRanked();
+export default function Leaderboard({ entries }: { entries: RankedEntry[] }) {
 
   return (
     <section className={styles.card}>

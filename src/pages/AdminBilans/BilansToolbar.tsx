@@ -3,7 +3,7 @@ import {
   bilanSortOptions,
   type BilanQuery,
   type BilanSortId,
-} from '../../mock/adminBilans';
+} from '../../content/query';
 import styles from './AdminBilans.module.css';
 
 /**

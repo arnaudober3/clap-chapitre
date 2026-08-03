@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import type { MonthlyBilan } from '../../mock/bilans';
+import type { MonthlyBilan } from '../../../shared/content';
 import styles from './BilanCulturel.module.css';
 
 /** Below this width the switcher is a single non-scrolling line; at/above it, pills wrap. */

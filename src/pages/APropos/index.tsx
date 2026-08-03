@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { apropos } from '../../mock/apropos';
+import { useAPropos, type AProposContent } from '../../api/content';
+import { PageError, PageLoading } from '../../components/ui';
 import Hero from './Hero';
 import YearStats from './YearStats';
 import FollowCard from './FollowCard';
@@ -62,6 +63,30 @@ export function emphasize(text: string, terms: string[]): ReactNode[] {
  * the columns collapse to one below the md breakpoint.
  */
 export default function AProposPage() {
+  const { data, status, reload } = useAPropos();
+
+  if (status === 'loading' || status === 'idle') {
+    return (
+      <div className={styles.page} data-testid="a-propos-page">
+        <PageLoading />
+      </div>
+    );
+  }
+
+  // A 404 is the row never having been written — an empty database, not a
+  // failure — so it reads as an error the editor can act on either way.
+  if (!data) {
+    return (
+      <div className={styles.page} data-testid="a-propos-page">
+        <PageError onRetry={reload} />
+      </div>
+    );
+  }
+
+  return <AProposContentView content={data} />;
+}
+
+function AProposContentView({ content }: { content: AProposContent }) {
   const {
     eyebrow,
     greeting,
@@ -74,7 +99,7 @@ export default function AProposPage() {
     statsTitle,
     stats,
     follow,
-  } = apropos;
+  } = content;
 
   return (
     <div className={styles.page} data-testid="a-propos-page">

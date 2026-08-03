@@ -1,4 +1,4 @@
-import type { SocialLink } from '../../mock/mesuivre';
+import type { SocialLink } from '../../content/mesuivre';
 import styles from './MeSuivre.module.css';
 
 /**

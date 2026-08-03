@@ -4,8 +4,12 @@ import HighlightCard, { type Highlight, type HighlightPatch } from './HighlightC
 import AddHighlightPicker from './AddHighlightPicker';
 import { moveByOne, moveTo } from '../../reorder';
 import { useAdminPageKicker } from '../../components/layout/adminPageMeta';
-import { adminBilanById, nextBilanMonth } from '../../mock/adminBilans';
-import type { Bilan, PublishedArticle } from '../../mock/types';
+import { useAdminBilan, useNextBilanMonth } from '../../api/admin';
+import { apiGet } from '../../api/client';
+import { toArticle } from '../../api/map';
+import { PageError, PageLoading } from '../../components/ui';
+import { monthName } from '../../format';
+import type { Bilan, PublishedArticle, WireArticle } from '../../../shared/content';
 import styles from './AdminBilanForm.module.css';
 
 /** Flatten an avis into the flat field set the editor manipulates. */
@@ -28,7 +32,14 @@ function toHighlight(item: PublishedArticle): Highlight {
  * is persisted in this prototype: the fields are local state and the primary
  * action simply navigates away.
  */
-function BilanForm({ bilan }: { bilan?: Bilan }) {
+function BilanForm({
+  bilan,
+  nextMonth,
+}: {
+  bilan?: Bilan;
+  /** The month a new bilan would cover. Absent when the catalogue is empty. */
+  nextMonth?: { id: string; year: number; month: number };
+}) {
   const navigate = useNavigate();
   const editing = bilan !== undefined;
 
@@ -49,9 +60,11 @@ function BilanForm({ bilan }: { bilan?: Bilan }) {
   useAdminPageKicker(state);
 
   // The month is never typed: an existing bilan carries its own, and a new one
-  // covers the first month the catalogue has no bilan for.
-  const month = bilan ?? nextBilanMonth();
-  const monthSuffix = `· ${month.monthLabel.toLowerCase()} ${month.year}`;
+  // covers the month after the newest on file. An empty catalogue has neither,
+  // and the header simply drops the suffix rather than inventing a date.
+  const month = bilan ?? nextMonth;
+  const monthLabel = bilan ? bilan.monthLabel : month ? monthName(month.month) : '';
+  const monthSuffix = month ? `· ${monthLabel.toLowerCase()} ${month.year}` : '';
 
   function patchHighlight(id: string, patch: HighlightPatch) {
     setHighlights((previous) =>
@@ -72,8 +85,23 @@ function BilanForm({ bilan }: { bilan?: Bilan }) {
   }
 
   /** A coup de cœur is an existing avis, pre-filled and then editable here. */
-  function addHighlight(avis: PublishedArticle) {
-    setHighlights((previous) => [...previous, toHighlight(avis)]);
+  async function addHighlight(avis: PublishedArticle) {
+    // The picker lists avis without their text — a hundred bodies to render a
+    // hundred titles would be the wrong trade. The card needs the whole avis, so
+    // it is fetched for the one that was actually picked. On failure the card is
+    // still added, with the fields the picker did carry.
+    let full = avis;
+    try {
+      const payload = await apiGet<{ article: WireArticle }>(
+        `/api/admin/articles/${encodeURIComponent(avis.id)}`,
+        { admin: true },
+      );
+      const article = toArticle(payload.article);
+      if (article.status === 'published') full = article;
+    } catch {
+      /* keep the summary */
+    }
+    setHighlights((previous) => [...previous, toHighlight(full)]);
   }
 
   // Mock save: no store, no persistence — publishing lands back on the listing.
@@ -163,8 +191,8 @@ function BilanForm({ bilan }: { bilan?: Bilan }) {
         {/* A coup de cœur highlights an existing avis, so the button opens a
             picker rather than adding a blank card. */}
         <AddHighlightPicker
-          monthId={month.id}
-          monthLabel={month.monthLabel}
+          monthId={month?.id ?? ''}
+          monthLabel={monthLabel}
           taken={highlights.map((item) => item.id)}
           onPick={addHighlight}
         />
@@ -185,14 +213,27 @@ function BilanForm({ bilan }: { bilan?: Bilan }) {
 
 /**
  * Route entry: resolves `:id` against the bilan catalogue.
- * `/admin/bilans/nouveau` has no id and renders an empty editor; an unknown id
- * falls back to the listing. The `key` remounts the form when navigating
- * straight from one month to another so its local field state restarts.
+ * `/admin/bilans/nouveau` has no id and renders an empty editor, which still
+ * needs one thing from the server — the month it would cover. An unknown id
+ * falls back to the listing.
+ *
+ * The editor is mounted only once its month has arrived, so its fields stay
+ * plain `useState` initialisers. The `key` restarts them when navigating
+ * straight from one month to another.
  */
 export default function AdminBilanFormPage() {
   const { id } = useParams();
-  if (!id) return <BilanForm />;
-  const bilan = adminBilanById(id);
-  if (!bilan) return <Navigate to="/admin/bilans" replace />;
+  const next = useNextBilanMonth();
+  const { data: bilan, status, notFound, reload } = useAdminBilan(id);
+
+  if (!id) {
+    if (next.status === 'loading' || next.status === 'idle') return <PageLoading />;
+    if (next.status === 'error') return <PageError onRetry={next.reload} />;
+    return <BilanForm nextMonth={next.data} />;
+  }
+
+  if (status === 'loading' || status === 'idle') return <PageLoading />;
+  if (notFound) return <Navigate to="/admin/bilans" replace />;
+  if (!bilan) return <PageError onRetry={reload} />;
   return <BilanForm key={bilan.id} bilan={bilan} />;
 }

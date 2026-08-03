@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { Article, Medium } from '../../mock/types';
+import type { Article, Medium } from '../../../shared/content';
 import { MEDIUM_TO_SEGMENT, DEFAULT_SEGMENT } from '../../media';
 import { ReviewCard } from '../../components/ui';
 import styles from './Home.module.css';

@@ -3,7 +3,9 @@ import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import Hero from '../pages/APropos/Hero';
-import { apropos } from '../mock/apropos';
+import { anApropos } from './fixtures';
+
+const apropos = anApropos();
 
 const root = resolve(__dirname, '../..');
 

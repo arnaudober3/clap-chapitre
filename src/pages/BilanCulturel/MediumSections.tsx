@@ -1,4 +1,4 @@
-import type { MonthlyBilan } from '../../mock/bilans';
+import type { MonthlyBilan } from '../../../shared/content';
 import { MEDIA } from '../../media';
 import BilanReview from './BilanReview';
 import styles from './BilanCulturel.module.css';

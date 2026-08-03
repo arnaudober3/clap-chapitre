@@ -1,27 +1,27 @@
 import { Link } from 'react-router-dom';
-import type { PublishedArticle } from '../../mock/types';
-import { relatedArticles } from '../../mock/articles';
+import type { RelatedArticle } from '../../api/content';
 import { MEDIUM_ACCENT, MEDIUM_LABEL } from '../../media';
 import styles from './Article.module.css';
 
 /**
- * The "À rapprocher de" block: up to two neighbouring avis resolved from
- * `article.related`, each a card linking to `/article/<id>` with a gradient
- * thumb (never an image element), the medium label in that medium's accent, the serif
- * title and the editorial note.
+ * The "À rapprocher de" block: up to two neighbouring avis, each a card linking
+ * to `/article/<id>` with a gradient thumb (never an image element), the medium
+ * label in that medium's accent, the serif title and the editorial note.
  *
- * Two columns on desktop, stacked full-width rows on mobile. When nothing
- * resolves, the whole block — eyebrow included — is omitted.
+ * Two columns on desktop, stacked full-width rows on mobile. When the avis has
+ * no neighbours, the whole block — eyebrow included — is omitted.
+ *
+ * The links arrive resolved from `/api/articles/:id`, which drops unknown ids
+ * and caps the list at two, so this component only lays them out.
  */
-export default function RelatedGrid({ article }: { article: PublishedArticle }) {
-  const related = relatedArticles(article);
-  if (related.length === 0) return null;
+export default function RelatedGrid({ items }: { items: RelatedArticle[] }) {
+  if (items.length === 0) return null;
 
   return (
     <section className={styles.related} data-testid="article-related">
       <p className={styles.relatedEyebrow}>À rapprocher de</p>
       <div className={styles.relatedGrid}>
-        {related.map((item) => (
+        {items.map((item) => (
           <Link
             key={item.id}
             to={`/article/${item.id}`}

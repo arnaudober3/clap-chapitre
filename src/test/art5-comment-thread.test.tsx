@@ -3,13 +3,25 @@ import { resolve } from 'node:path';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import CommentThread from '../pages/Article/CommentThread';
-import { thread } from '../pages/Article/thread';
+import { aComment } from './fixtures';
+
+/**
+ * The design 4a thread: Camille answered by the autrice, plus an anonymous
+ * entry. It used to be a module of its own under src/pages/; the comments now
+ * come from the API, so the shape lives with the other fixtures.
+ */
+const thread = [
+  aComment(),
+  aComment({
+    id: 'c-article-2',
+    author: 'Anonyme',
+    body: 'Merci pour cet avis.',
+    likes: 3,
+    reply: undefined,
+  }),
+];
 
 const root = resolve(__dirname, '../..');
-const threadSource = readFileSync(
-  resolve(root, 'src/pages/Article/thread.ts'),
-  'utf8',
-);
 const componentSource = readFileSync(
   resolve(root, 'src/pages/Article/CommentThread.tsx'),
   'utf8',
@@ -25,7 +37,7 @@ const total = thread.reduce(
   0,
 );
 
-describe('ART-5 thread mock', () => {
+describe('ART-5 thread fixture', () => {
   it('is the three-entry design thread: Camille + an undated autrice reply + Anonyme', () => {
     expect(total).toBe(3);
     expect(thread[0].author).toBe('Camille');
@@ -38,7 +50,7 @@ describe('ART-5 thread mock', () => {
 
 describe('ART-5 CommentThread', () => {
   it('renders the heading with the nested-inclusive count and every entry in order', () => {
-    render(<CommentThread />);
+    render(<CommentThread comments={thread} />);
     expect(
       screen.getByRole('heading', { name: `Commentaires · ${total}` }),
     ).toBeInTheDocument();
@@ -57,7 +69,7 @@ describe('ART-5 CommentThread', () => {
   });
 
   it('nests the autrice reply, badged, with no date and no affordances of its own', () => {
-    render(<CommentThread />);
+    render(<CommentThread comments={thread} />);
     const reply = screen.getByTestId('comment-reply');
     expect(reply).toHaveTextContent('Marie-Zoé');
     expect(within(reply).getByText('autrice')).toBeInTheDocument();
@@ -68,7 +80,7 @@ describe('ART-5 CommentThread', () => {
   });
 
   it('keeps every ♡ / Répondre affordance an inert button', () => {
-    const { container } = render(<CommentThread />);
+    const { container } = render(<CommentThread comments={thread} />);
     const replyButtons = screen.getAllByRole('button', { name: 'Répondre' });
     expect(replyButtons).toHaveLength(2);
     const likeButtons = screen.getAllByRole('button', { name: /♡/ });
@@ -85,7 +97,7 @@ describe('ART-5 CommentThread', () => {
   it('has an inert composer: submitting prevents default and adds no comment', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const before = window.location.href;
-    render(<CommentThread />);
+    render(<CommentThread comments={thread} />);
 
     const publier = screen.getByRole('button', { name: 'Publier' });
     expect(publier.tagName).toBe('BUTTON');
@@ -141,13 +153,18 @@ describe('ART-5 responsive composer', () => {
 
 describe('ART-5 boundaries', () => {
   it('uses no raw Salon hex colour literal', () => {
-    expect(threadSource).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(componentSource).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 
-  it('is page-local: it never imports the Bilan culturel thread or component', () => {
+  it('stays page-local: it never reaches into the Bilan culturel thread', () => {
     expect(componentSource).not.toContain('BilanCulturel');
-    expect(threadSource).not.toContain('BilanCulturel');
+  });
+
+  it('renders whatever thread it is handed, holding none of its own', () => {
+    // The entries come from /api/articles/:id now; the component keeping a
+    // module-level thread is exactly what this guards against.
+    expect(componentSource).not.toMatch(/^const thread/m);
+    expect(componentSource).toContain('comments');
   });
 });

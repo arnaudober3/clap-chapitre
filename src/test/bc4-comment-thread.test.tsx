@@ -2,14 +2,23 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import CommentThread from '../pages/BilanCulturel/CommentThread';
-import { thread, likes } from '../pages/BilanCulturel/thread';
-import { latestBilan } from '../mock/bilans';
+import { aBilan, aComment } from './fixtures';
+
+/**
+ * The design's bilan thread. It used to be a module under src/pages/; the
+ * comments come from /api/bilans/:id now, so the shape lives with the fixtures.
+ */
+const thread = [
+  aComment({ id: 'c-bilan-1', author: 'Camille', body: 'Ce bilan m’a donné envie de tout rattraper.' }),
+  aComment({ id: 'c-bilan-2', author: 'Léa', body: 'Merci !', likes: 4, reply: undefined }),
+];
+const latestBilan = () => aBilan();
 
 /** The thread holds the share menu, which reads the router location. */
 function renderThread() {
   return render(
     <MemoryRouter initialEntries={['/bilan-culturel']}>
-      <CommentThread bilan={latestBilan()} />
+      <CommentThread bilan={latestBilan()} comments={thread} />
     </MemoryRouter>,
   );
 }
@@ -20,14 +29,16 @@ const expectedCount = thread.reduce(
   0,
 );
 
-describe('BC-4 thread mock', () => {
+describe('BC-4 thread fixture', () => {
   it('has an author entry (Marie-Zoé, isAuthor) and a nested reply, plus a like count', () => {
     const authorReply = thread
       .map((e) => e.reply)
       .find((r) => r?.isAuthor);
     expect(authorReply).toBeTruthy();
     expect(authorReply!.author).toBe('Marie-Zoé');
-    expect(typeof likes).toBe('number');
+    // The whole-bilan like count is the bilan's own column now, not a constant
+    // sitting beside the thread.
+    expect(typeof latestBilan().likes).toBe('number');
   });
 });
 

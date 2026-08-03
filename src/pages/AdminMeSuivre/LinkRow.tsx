@@ -1,5 +1,5 @@
 import { useState, type DragEvent, type KeyboardEvent } from 'react';
-import { linkMark, type SocialLinkField } from '../../mock/mesuivre';
+import { linkMark, type SocialLinkField } from '../../content/mesuivre';
 import styles from './AdminMeSuivre.module.css';
 
 /**

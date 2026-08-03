@@ -1,38 +1,39 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import ArticlesToolbar from './ArticlesToolbar';
 import ArticleRow from './ArticleRow';
 import { Pagination } from '../../components/ui';
 import { useAdminPageKicker } from '../../components/layout/adminPageMeta';
-import {
-  adminArticleCounts,
-  filterAdminArticles,
-  DEFAULT_QUERY,
-  PAGE_SIZE,
-  type ArticleQuery,
-} from '../../mock/adminArticles';
+import { useAdminArticles } from '../../api/admin';
+import { DEFAULT_QUERY, type ArticleQuery } from '../../content/query';
+import { PageError, PageLoading } from '../../components/ui';
 import styles from './AdminArticles.module.css';
 
 /**
  * Admin "Articles" listing (design 8a desktop → 8b mobile): the whole avis
- * catalogue with status/medium/search filters, sorting and pagination. All data
- * is static mock content from src/mock/adminArticles.ts — filtering happens in
- * pure selectors, this page only owns the query.
+ * catalogue with status/medium/search filters, sorting and pagination.
+ *
+ * The filtering, sorting and paging all happen in SQL now: this page owns the
+ * query object and the page number, and `/api/admin/articles` answers with the
+ * rows plus two counts. They are not the same count — `total` matches the
+ * filter and drives the pager, `catalogue` is the whole shelf and drives the
+ * subtitle, which must not move while the editor types in the search box.
  */
 export default function AdminArticlesPage() {
   const [query, setQuery] = useState<ArticleQuery>(DEFAULT_QUERY);
   const [page, setPage] = useState(1);
-  const counts = adminArticleCounts();
+  const { data, status, reload } = useAdminArticles(query, page);
+
+  const counts = data?.catalogue ?? { total: 0, drafts: 0 };
   const subtitle = `${counts.total} avis · ${counts.drafts} brouillon${counts.drafts > 1 ? 's' : ''}`;
   // On mobile the shell's top bar carries this line instead (design 8b).
   useAdminPageKicker(subtitle);
 
-  const matching = useMemo(() => filterAdminArticles(query), [query]);
-  const pageCount = Math.max(1, Math.ceil(matching.length / PAGE_SIZE));
-  // A filter change can shrink the list under the current page; clamp instead of
-  // rendering an empty page.
+  const rows = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const perPage = data?.perPage ?? 1;
+  const pageCount = Math.max(1, Math.ceil(total / perPage));
   const currentPage = Math.min(page, pageCount);
-  const rows = matching.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   function updateQuery(patch: Partial<ArticleQuery>) {
     setQuery((previous) => ({ ...previous, ...patch }));
@@ -56,7 +57,10 @@ export default function AdminArticlesPage() {
 
       <ArticlesToolbar query={query} draftCount={counts.drafts} onChange={updateQuery} />
 
-      {rows.length === 0 ? (
+      {status === 'loading' && <PageLoading />}
+      {status === 'error' && <PageError onRetry={reload} />}
+
+      {status === 'ready' && (rows.length === 0 ? (
         <p className={styles.empty}>Aucun article ne correspond à cette recherche.</p>
       ) : (
         <>
@@ -79,12 +83,12 @@ export default function AdminArticlesPage() {
             page={currentPage}
             pageCount={pageCount}
             shown={rows.length}
-            total={matching.length}
+            total={total}
             noun="article"
             onPageChange={setPage}
           />
         </>
-      )}
+      ))}
 
       <Link to="/admin/articles/nouveau" className={styles.fab} aria-label="Nouvel article">
         +

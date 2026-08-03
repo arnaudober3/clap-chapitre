@@ -2,39 +2,21 @@
  * POST /api/verify — Authorization: Bearer <token> → 200 { username } | 401
  *
  * The authority on whether a session is real. The client decodes tokens for a
- * first-render guess (`src/auth/token.ts`); only this endpoint checks a
+ * first-render guess (`src/auth/token.ts`); only a server-side check looks at a
  * signature.
+ *
+ * The checking itself lives in `_lib/admin.ts`, shared with every `/api/admin/**`
+ * route: this endpoint and those routes must agree on what a valid session is,
+ * and the only way to guarantee that is for them to run the same code.
  */
-import { requireEnv, type AdminConfig } from '../_lib/env';
-import { json, misconfigured, postOnly } from '../_lib/http';
-import { verifyToken } from '../_lib/jwt';
+import { requireAdmin } from '../_lib/admin';
+import { json, postOnly } from '../_lib/http';
 import type { Handler } from '../types';
 
-const BEARER = /^Bearer\s+(\S+)$/i;
-
 export const onRequestPost: Handler = async ({ request, env }) => {
-  let config: AdminConfig;
-  try {
-    config = requireEnv(env);
-  } catch {
-    return misconfigured();
-  }
-
-  const authorization = (request.headers.get('authorization') ?? '').trim();
-  const match = BEARER.exec(authorization);
-  if (!match) return json({ error: 'Session invalide.' }, 401);
-
-  // Covers a bad signature, an unexpected `alg`, and expiry alike: the client
-  // only ever redirects to the login page, so one message is enough.
-  const claims = await verifyToken(match[1], config.jwtSecret);
-  if (!claims) return json({ error: 'Session invalide.' }, 401);
-
-  // Rotating ADMIN_USERNAME invalidates sessions issued for the previous one.
-  if (claims.sub !== config.username) {
-    return json({ error: 'Session invalide.' }, 401);
-  }
-
-  return json({ username: claims.sub });
+  const check = await requireAdmin(request, env);
+  if (!check.ok) return check.response;
+  return json({ username: check.username });
 };
 
 export const onRequest = postOnly(onRequestPost);

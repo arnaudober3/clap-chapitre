@@ -1,7 +1,22 @@
 /**
- * Shared mock content types for the Clap et chapitre prototype.
- * Pure type declarations — no runtime code. French mock data (author
- * Marie-Zoé) is authored by later subtasks against these shapes.
+ * The content vocabulary of Clap et chapitre — the one place both sides agree on.
+ *
+ * Pure type declarations, no runtime code: `src/` reads them to render, and the
+ * Pages Functions in `functions/` read them to shape what they return, so a
+ * column that stops matching a field is a compile error rather than a silent
+ * `undefined` in a hero.
+ *
+ * It lives outside `functions/_lib/` on purpose. That directory is deliberately
+ * not shared with `src/` — code that touches JWT_SECRET should not be one import
+ * away from client code — and this file is the opposite kind of thing: a
+ * vocabulary with no secrets and no runtime, erased at compile time. Neither
+ * tsconfig needs to list it: both pull it in transitively, the way
+ * `tsconfig.json` already covers `functions/` through `src/test/api-server.ts`.
+ *
+ * Dates come in two flavours and never mix: a sortable ISO day ('2026-07-12') is
+ * what the database stores and the wire carries; the French display string
+ * ('12 juillet 2026') is built by `src/format.ts` at render time and is never
+ * persisted.
  */
 
 /** The four media the site reviews. */
@@ -109,13 +124,81 @@ export interface PublishedBilan extends BaseBilan {
 /** Any bilan. Narrow on `status` to reach the state-specific fields. */
 export type Bilan = DraftBilan | PublishedBilan;
 
-/** A comment on an article / bilan thread. */
+/**
+ * A published bilan, seen from a page that only ever renders live months. The
+ * alias is frozen by contract DEV-19-05 — the Bilan components take it by name.
+ */
+export type MonthlyBilan = PublishedBilan;
+
+/* -------------------------------------------------------------------------- *
+ * The wire forms
+ *
+ * What the API carries, as opposed to what a component renders. They differ in
+ * exactly one way: the types above hold French display strings ('18 juillet
+ * 2026', 'Modifié il y a 2 jours'), the wire holds the ISO values those strings
+ * are built from, and `src/api/map.ts` builds them on arrival.
+ *
+ * The split exists so the French formatting lives in one module, `src/format.ts`,
+ * instead of being half in the client and half in a SQL SELECT. It also means a
+ * stored date can never disagree with its own display copy, because there is no
+ * display copy to store.
+ * -------------------------------------------------------------------------- */
+
+/** A live avis on the wire: same fields, ISO date, no rendered `date`. */
+export type WirePublishedArticle = Omit<PublishedArticle, 'date'>;
+
+/** A draft on the wire: the ISO edit time, not the "Modifié il y a…" line. */
+export type WireDraftArticle = Omit<DraftArticle, 'date' | 'updatedLabel'> & {
+  /** ISO timestamp of the last edit. */
+  updatedAt: string;
+};
+
+export type WireArticle = WireDraftArticle | WirePublishedArticle;
+
+export type WirePublishedBilan = Omit<PublishedBilan, 'avis'> & {
+  avis: WirePublishedArticle[];
+};
+
+export type WireDraftBilan = Omit<DraftBilan, 'avis' | 'updatedLabel'> & {
+  avis: WirePublishedArticle[];
+  updatedAt: string;
+};
+
+export type WireBilan = WireDraftBilan | WirePublishedBilan;
+
+/**
+ * A comment on the wire. `date` is optional here and required after mapping:
+ * an entry with no date is a real case — the author's replies wear a badge
+ * instead — and `undefined` says that better than `''` does before rendering.
+ */
+export interface WireComment {
+  id: string;
+  author: string;
+  body: string;
+  isAuthor?: boolean;
+  likes: number;
+  /** ISO day, absent when the entry shows no date. */
+  date?: string;
+  reply?: WireComment;
+}
+
+/**
+ * A comment on an article or bilan thread, with at most one nested reply.
+ *
+ * The single level of nesting is structural, not a limit we happened to stop at:
+ * a reply carries no `reply` of its own in any design, and the thread renders it
+ * as an indented answer rather than as a branch.
+ */
 export interface Comment {
   id: string;
   author: string;
-  /** Display date, e.g. "13 juin 2026". */
+  /** Display date, e.g. "13 juin 2026". Empty when the entry shows no date. */
   date: string;
   body: string;
   /** True when the comment is from the site author (Marie-Zoé). */
   isAuthor?: boolean;
+  /** ♡ like count on this entry. */
+  likes: number;
+  /** The single nested reply, when there is one. */
+  reply?: Comment;
 }

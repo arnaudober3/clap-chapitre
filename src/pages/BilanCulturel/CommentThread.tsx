@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { ShareMenu } from '../../components/ui';
-import type { MonthlyBilan } from '../../mock/bilans';
-import { thread, likes, type ThreadEntry } from './thread';
+import type { MonthlyBilan } from '../../../shared/content';
+import type { Comment } from '../../../shared/content';
 import styles from './BilanCulturel.module.css';
 
 /** Total comment count: top-level entries plus any nested replies. */
-function countComments(entries: ThreadEntry[]): number {
+function countComments(entries: Comment[]): number {
   return entries.reduce(
     (total, entry) => total + 1 + (entry.reply ? 1 : 0),
     0,
@@ -13,7 +13,7 @@ function countComments(entries: ThreadEntry[]): number {
 }
 
 /** A single thread entry: avatar, name (+ author badge), date, body, affordances. */
-function Entry({ entry, nested }: { entry: ThreadEntry; nested?: boolean }) {
+function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
   return (
     <div className={nested ? styles.commentReply : styles.comment}>
       <div className={styles.commentAvatar} aria-hidden="true">
@@ -53,16 +53,22 @@ function Entry({ entry, nested }: { entry: ThreadEntry; nested?: boolean }) {
  * page passes `bilan` down. Everything else is inert: the composer form calls
  * preventDefault; no control navigates, reloads, mutates, or throws.
  */
-export default function CommentThread({ bilan }: { bilan: MonthlyBilan }) {
+export default function CommentThread({
+  bilan,
+  comments,
+}: {
+  bilan: MonthlyBilan;
+  comments: Comment[];
+}) {
   const [comment, setComment] = useState('');
   const [name, setName] = useState('');
-  const count = countComments(thread);
+  const count = countComments(comments);
 
   return (
     <section className={styles.social}>
       <div className={styles.socialBar}>
         <button type="button" className={styles.likeButton}>
-          ♡ J’aime · {likes}
+          ♡ J’aime · {bilan.likes}
         </button>
         <span className={styles.socialCount}>{count} commentaires</span>
         <ShareMenu
@@ -103,7 +109,7 @@ export default function CommentThread({ bilan }: { bilan: MonthlyBilan }) {
       </form>
 
       <div className={styles.thread}>
-        {thread.map((entry) => (
+        {comments.map((entry) => (
           <Entry key={entry.id} entry={entry} />
         ))}
       </div>

@@ -470,3 +470,32 @@
     padding: 13px 24px;
   }
 }
+
+/* Load states — the line a page shows while its content is in flight, and the
+   panel it shows when the request failed. Same box for both so the page does
+   not jump when one replaces the other. */
+.loadState {
+  padding: 48px 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.loadRetry {
+  margin-top: 12px;
+  padding: 8px 18px;
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  background: var(--surface);
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.loadRetry:hover {
+  background: var(--surface-alt);
+}

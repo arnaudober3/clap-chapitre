@@ -1,4 +1,4 @@
-import type { Medium } from './mock/types';
+import type { Medium } from '../shared/content';
 
 /**
  * The four media, each with its URL segment (matching the home routes
