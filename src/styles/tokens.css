@@ -56,8 +56,9 @@
   --social-linkedin: #1f5079;
 
   /* Chip tints — admin "Me suivre" editor (design 6g/7f). Pastel plate + accent
-     mark, one pair per network. Unlike --social-*, these sit on a light card and
-     DO get overridden in dark. The light marks coincide with the --medium-*
+     mark, one pair per network. These sit on a light card, so all of them get
+     overridden in dark — where --social-* only flips the one hue that drowns in
+     the night background (Threads). The light marks coincide with the --medium-*
      accents: same Salon accent family, different axis — kept separate so the two
      can drift. */
   --chip-threads-bg: #f6e4dc;
@@ -159,6 +160,13 @@
   --medium-serie: #6fa0b0;
   --medium-docs: #b884a6;
   --medium-film: #e0714a;
+
+  /* Social swatches — only Threads changes sides. Its near-black plate (#221a14)
+     sat a hair away from --bg, and the glyph, painted in var(--bg), vanished
+     with it. In dark it inverts to cream, like the brand itself does and like
+     the component's --ink fallback. The other three are saturated mid-tones:
+     they hold on the night background, so they stay put. */
+  --social-threads: #f2e8d8;
 
   /* Chip tints — plates desaturated down to --surface-inset's range, marks
      brightened like the medium accents above. */
