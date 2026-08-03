@@ -12,6 +12,9 @@ import type { Medium } from '../../shared/content';
 /** What a leaderboard row can be: one of the four media, or a bilan. */
 export type LeaderboardKind = Medium | 'bilan';
 
+/** What an unfinished draft is a draft of. */
+export type DraftKind = 'article' | 'bilan';
+
 export interface KpiStat {
   key: string;
   label: string;
@@ -50,8 +53,19 @@ export interface TrendPoint {
 export interface Draft {
   id: string;
   title: string;
+  /** Which editor the row opens — the label says 'Brouillon' either way. */
+  kind: DraftKind;
   /** What the row says on the right: 'Brouillon'. */
   kindLabel: string;
+}
+
+/**
+ * Where a dashboard row opens. The palmarès and the drafts list both mix avis
+ * and bilans, and both have their own `kind` vocabulary — they agree on 'bilan',
+ * which is the only thing this rule needs to read.
+ */
+export function adminEditPath(kind: LeaderboardKind | DraftKind, id: string): string {
+  return kind === 'bilan' ? `/admin/bilans/${id}` : `/admin/articles/${id}`;
 }
 
 /** 'bilan' → 'Bilan'; a medium takes the admin chip label ('doc' → 'Docs'). */

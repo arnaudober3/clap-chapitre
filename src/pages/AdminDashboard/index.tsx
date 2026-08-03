@@ -43,11 +43,12 @@ export default function AdminDashboardPage() {
     );
   }
 
-  // "Brouillon" is what the row says whatever it is a draft of; the kind itself
-  // is carried for a future link, not for this label.
+  // "Brouillon" is what the row says whatever it is a draft of; the kind is not
+  // for the label, it is what decides which editor the row opens.
   const drafts: Draft[] = data.drafts.map((draft) => ({
     id: draft.id,
     title: draft.title,
+    kind: draft.kind,
     kindLabel: 'Brouillon',
   }));
 

@@ -160,7 +160,7 @@ export interface DashboardData {
   trend: TrendPoint[];
   trendPeak: TrendPoint;
   /** Unfinished avis and bilans. `kind` says which; the card labels them alike. */
-  drafts: Array<Pick<Draft, 'id' | 'title'> & { kind: string }>;
+  drafts: Array<Pick<Draft, 'id' | 'title' | 'kind'>>;
 }
 
 /** The whole tableau de bord: six cards, one request. */
