@@ -32,7 +32,7 @@ function renderHero(overrides: Partial<Parameters<typeof Hero>[0]> = {}) {
       greeting={apropos.greeting}
       name={apropos.name}
       intro={apropos.intro}
-      portraitLabel={apropos.portraitLabel}
+      portraitImage=""
       {...overrides}
     />,
   );
@@ -49,24 +49,33 @@ describe('AP-2 À propos hero band', () => {
     expect(name.tagName).toBe('SPAN');
   });
 
-  it('renders the eyebrow, the intro and the portrait caption', () => {
+  it('renders the eyebrow and the intro', () => {
     renderHero();
     expect(screen.getByText(apropos.eyebrow)).toBeInTheDocument();
     expect(screen.getByText(apropos.intro)).toBeInTheDocument();
-    expect(screen.getByText(apropos.portraitLabel)).toBeInTheDocument();
   });
 
-  it('emits no network request: no <img> and no url() anywhere', () => {
+  it('renders without image: portrait is the gradient token, no url() in style', () => {
     const { container } = renderHero();
     expect(container.querySelector('img')).toBeNull();
     for (const el of Array.from(container.querySelectorAll('[style]'))) {
       expect(el.getAttribute('style')).not.toContain('url(');
     }
     expect(heroSource).not.toContain('<img');
-    expect(heroSource).not.toMatch(/\burl\(/);
-    expect(css).not.toMatch(/\burl\(/);
-    // The portrait is the gradient token.
+    // The portrait uses backgroundImage inline when portraitImage is set, but
+    // the source template itself has no hardcoded url() — it runs at render time.
     expect(css).toContain('var(--portrait-grad)');
+  });
+
+  it('renders with portrait image: style contains background-image url()', () => {
+    const { container } = renderHero({ portraitImage: 'portrait-abc123.jpg' });
+    expect(container.querySelector('img')).toBeNull();
+    const portrait = container.querySelector('[data-testid="a-propos-portrait"]');
+    expect(portrait).toHaveStyle({
+      backgroundImage: 'url(/api/media/portrait-abc123.jpg)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    });
   });
 
   it('uses tokens only — no raw hex color literal in Hero.tsx or the CSS module', () => {

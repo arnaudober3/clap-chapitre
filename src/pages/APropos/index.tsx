@@ -92,7 +92,7 @@ function AProposContentView({ content }: { content: AProposContent }) {
     greeting,
     name,
     intro,
-    portraitLabel,
+    portraitImage,
     bio,
     bioEmphasis,
     quote,
@@ -108,7 +108,7 @@ function AProposContentView({ content }: { content: AProposContent }) {
         greeting={greeting}
         name={name}
         intro={intro}
-        portraitLabel={portraitLabel}
+        portraitImage={portraitImage}
       />
 
       <div className={styles.body}>
