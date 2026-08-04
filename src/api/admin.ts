@@ -201,8 +201,10 @@ export interface ModerationList {
 export function useAdminComments(
   status: 'pending' | 'approved' | 'all' = 'pending',
   page = 1,
+  perPage?: number,
 ): Query<ModerationList> {
   const params = new URLSearchParams({ page: String(page) });
   if (status !== 'all') params.set('status', status);
+  if (perPage !== undefined) params.set('perPage', String(perPage));
   return useApi<ModerationList>(`/api/admin/comments?${params}`, ADMIN);
 }
