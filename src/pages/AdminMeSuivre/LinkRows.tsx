@@ -13,6 +13,8 @@ export interface LinkRowsProps {
   onRemove: (id: string) => void;
   onMove: (id: string, delta: -1 | 1) => void;
   onAdd: () => void;
+  /** Validation errors keyed by link id. */
+  errors?: Map<string, string>;
 }
 
 /**
@@ -30,6 +32,7 @@ export default function LinkRows({
   onRemove,
   onMove,
   onAdd,
+  errors = new Map(),
 }: LinkRowsProps) {
   return (
     <div className={styles.linksField}>
@@ -57,6 +60,7 @@ export default function LinkRows({
               onChange={(next) => onChange(field.id, next)}
               onRemove={() => onRemove(field.id)}
               onMove={(delta) => onMove(field.id, delta)}
+              error={errors.get(field.id)}
             />
           ))}
         </ul>
