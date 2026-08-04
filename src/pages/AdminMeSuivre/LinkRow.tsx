@@ -34,6 +34,8 @@ export interface LinkRowProps {
   onDragOver: () => void;
   onDragEnd: () => void;
   onMove: (delta: -1 | 1) => void;
+  /** Validation error message, if any. */
+  error?: string;
 }
 
 /**
@@ -61,6 +63,7 @@ export default function LinkRow({
   onDragOver,
   onDragEnd,
   onMove,
+  error,
 }: LinkRowProps) {
   const { name, url, handle, glyph, cta } = field;
   const tint = TINT[name.trim().toLowerCase()] ?? NEUTRAL_TINT;
@@ -124,6 +127,8 @@ export default function LinkRow({
           onChange={(event) => onChange({ name: event.target.value })}
           aria-label={`Nom du lien ${position}`}
           placeholder="Nom du réseau"
+          aria-invalid={!!error}
+          aria-describedby={error ? `link-error-${field.id}` : undefined}
         />
         <input
           className={styles.urlInput}
@@ -131,7 +136,18 @@ export default function LinkRow({
           onChange={(event) => onChange({ url: event.target.value })}
           aria-label={`Adresse du lien ${position}`}
           placeholder="exemple.fr/mon-profil"
+          aria-invalid={!!error}
+          aria-describedby={error ? `link-error-${field.id}` : undefined}
         />
+        {error && (
+          <p
+            id={`link-error-${field.id}`}
+            role="alert"
+            className={styles.linkError}
+          >
+            {error}
+          </p>
+        )}
         {/* The three columns the public page renders and the form never edited.
             They are NOT NULL, so a link created here without them would show up
             incomplete on /me-suivre. */}

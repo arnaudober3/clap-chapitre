@@ -146,4 +146,100 @@ describe('AMS-3 admin Me suivre form', () => {
       expect(code, path).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     }
   });
+
+  it('blocks submit if a named link has no URL, showing an error on the line', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByTestId('admin-mesuivre-page');
+
+    // Fixture has 4 links; adding one makes it the 5th.
+    await user.click(screen.getByTestId('add-link'));
+    const nameInput = screen.getByLabelText('Nom du lien 5');
+    const urlInput = screen.getByLabelText('Adresse du lien 5');
+
+    await user.type(nameInput, 'GitHub');
+    // Leave URL empty and try to save.
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    // The error should appear on the line, tied to both fields via aria-invalid.
+    expect(
+      screen.getByText('Une adresse est nécessaire pour enregistrer ce lien.'),
+    ).toBeInTheDocument();
+    expect(nameInput).toHaveAttribute('aria-invalid', 'true');
+    expect(urlInput).toHaveAttribute('aria-invalid', 'true');
+    // No "Enregistré" message (the network was never called).
+    expect(screen.queryByText('Enregistré')).toBeNull();
+  });
+
+  it('blocks submit if a link has a URL but no name', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByTestId('admin-mesuivre-page');
+
+    await user.click(screen.getByTestId('add-link'));
+    const nameInput = screen.getByLabelText('Nom du lien 5');
+    const urlInput = screen.getByLabelText('Adresse du lien 5');
+
+    // Type only a URL, leave name empty.
+    await user.type(urlInput, 'github.com/mariezoe');
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    expect(
+      screen.getByText('Un nom est nécessaire pour enregistrer ce lien.'),
+    ).toBeInTheDocument();
+    expect(nameInput).toHaveAttribute('aria-invalid', 'true');
+    expect(urlInput).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.queryByText('Enregistré')).toBeNull();
+  });
+
+  it('clears the error as soon as either field changes', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByTestId('admin-mesuivre-page');
+
+    // Fixture has 4 links; adding one makes it the 5th.
+    await user.click(screen.getByTestId('add-link'));
+    const nameInput = screen.getByLabelText('Nom du lien 5');
+    const urlInput = screen.getByLabelText('Adresse du lien 5');
+
+    await user.type(nameInput, 'GitHub');
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    expect(
+      screen.getByText('Une adresse est nécessaire pour enregistrer ce lien.'),
+    ).toBeInTheDocument();
+
+    // Typing in either field should clear the error.
+    await user.type(urlInput, 'github.com/mariezoe');
+
+    expect(
+      screen.queryByText('Une adresse est nécessaire pour enregistrer ce lien.'),
+    ).toBeNull();
+    expect(nameInput).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('persists a newly added link with full details', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByTestId('admin-mesuivre-page');
+
+    // Fixture has 4 links; adding one makes it the 5th.
+    await user.click(screen.getByTestId('add-link'));
+    const newNameInput = screen.getByLabelText('Nom du lien 5');
+    const newUrlInput = screen.getByLabelText('Adresse du lien 5');
+    const newHandleInput = screen.getByLabelText('Pseudo du lien 5');
+
+    await user.type(newNameInput, 'GitHub');
+    await user.type(newUrlInput, 'github.com/mariezoe');
+    await user.type(newHandleInput, '@mariezoe');
+
+    // Save should succeed this time.
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    expect(await screen.findByText('Enregistré')).toBeInTheDocument();
+
+    // Verify the new link is still showing on screen (state was persisted).
+    expect(screen.getByLabelText('Nom du lien 5')).toHaveValue('GitHub');
+    expect(screen.getByLabelText('Adresse du lien 5')).toHaveValue('github.com/mariezoe');
+    expect(screen.getByLabelText('Pseudo du lien 5')).toHaveValue('@mariezoe');
+  });
 });

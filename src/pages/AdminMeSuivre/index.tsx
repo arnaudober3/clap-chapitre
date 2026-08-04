@@ -44,6 +44,8 @@ function MeSuivreForm({ content }: { content: MeSuivreContent }) {
   // The row being dragged, if any — it dims, and every row it flies over trades
   // places with it. Nothing is persisted: the order lives here only.
   const [dragging, setDragging] = useState<string>();
+  // Validation errors per link: a non-empty row with missing required fields.
+  const [linkErrors, setLinkErrors] = useState<Map<string, string>>(new Map());
 
   // On mobile the shell's top bar is the page header (design 7f): it shows
   // "Me suivre" over this line, so the page keeps its own title block for lg.
@@ -69,6 +71,12 @@ function MeSuivreForm({ content }: { content: MeSuivreContent }) {
     patchLinks((links) =>
       links.map((row) => (row.id === id ? { ...row, ...next } : row)),
     );
+    // Clear any validation error on this link when it changes.
+    setLinkErrors((prev) => {
+      const updated = new Map(prev);
+      updated.delete(id);
+      return updated;
+    });
   }
 
   function removeLink(id: string) {
@@ -98,6 +106,27 @@ function MeSuivreForm({ content }: { content: MeSuivreContent }) {
   }
 
   async function submit() {
+    // Validate required fields: a non-empty row must have both name and URL.
+    const errors = new Map<string, string>();
+    for (const link of values.links) {
+      const hasName = link.name.trim() !== '';
+      const hasUrl = link.url.trim() !== '';
+      const isEmpty = !hasName && !hasUrl;
+
+      if (isEmpty) continue; // Unnamed, unlinked row — will be filtered on send.
+
+      if (!hasName) {
+        errors.set(link.id, 'Un nom est nécessaire pour enregistrer ce lien.');
+      } else if (!hasUrl) {
+        errors.set(link.id, 'Une adresse est nécessaire pour enregistrer ce lien.');
+      }
+    }
+
+    if (errors.size > 0) {
+      setLinkErrors(errors);
+      return;
+    }
+
     if (await save.run(mesuivrePayload(content, values))) setSaved(true);
   }
 
@@ -146,6 +175,7 @@ function MeSuivreForm({ content }: { content: MeSuivreContent }) {
           onRemove={removeLink}
           onMove={moveLink}
           onAdd={addLink}
+          errors={linkErrors}
         />
       </div>
     </section>

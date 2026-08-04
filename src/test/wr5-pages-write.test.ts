@@ -200,4 +200,54 @@ describe('WR-5 Me suivre', () => {
       .first<{ total: number }>();
     expect(row?.total).toBe(0);
   });
+
+  it('refuses a link with a name but no URL', async () => {
+    const response = await put(adminMeSuivreRoute, {
+      ...MESUIVRE,
+      socials: [
+        ...MESUIVRE.socials,
+        { name: 'GitHub', handle: '@mariezoe', glyph: 'Gh', url: '', cta: 'Suivre' },
+      ],
+    });
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ error: 'Champ invalide : url.' });
+  });
+
+  it('refuses a link with a URL but no name', async () => {
+    const response = await put(adminMeSuivreRoute, {
+      ...MESUIVRE,
+      socials: [
+        ...MESUIVRE.socials,
+        { name: '', handle: '@mariezoe', glyph: 'Gh', url: 'https://github.com/mariezoe', cta: 'Suivre' },
+      ],
+    });
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ error: 'Champ invalide : name.' });
+  });
+
+  it('adds a new link with a full name and URL', async () => {
+    const response = await put(adminMeSuivreRoute, {
+      ...MESUIVRE,
+      socials: [
+        ...MESUIVRE.socials,
+        { name: 'GitHub', handle: '@mariezoe', glyph: 'Gh', url: 'https://github.com/mariezoe', cta: 'Suivre' },
+      ],
+    });
+    expect(response.status).toBe(200);
+
+    const payload = await (
+      await meSuivreRoute({
+        request: new Request('http://localhost/api/pages/me-suivre'),
+        env: env(),
+      })
+    ).json();
+    expect(payload.socials).toHaveLength(3);
+    expect(payload.socials[2]).toMatchObject({
+      name: 'GitHub',
+      handle: '@mariezoe',
+      glyph: 'Gh',
+      url: 'https://github.com/mariezoe',
+      cta: 'Suivre',
+    });
+  });
 });

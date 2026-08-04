@@ -245,6 +245,12 @@
     outline: none;
 }
 
+.linkError {
+    font-size: 11px;
+    color: var(--negative);
+    margin: 4px 0 0;
+}
+
 /* Pseudo · sigle · libellé du bouton. Secondary to the name and URL above, and
    set on one line so the row stays a row. */
 .rowExtras {
