@@ -1,3 +1,4 @@
+import { useLike } from '../../api/useLike';
 import { ShareMenu } from '../../components/ui';
 import type { Article } from '../../../shared/content';
 import styles from './Article.module.css';
@@ -8,10 +9,12 @@ import styles from './Article.module.css';
  * Mobile (4b): the compact row — "♡ n", the comment count and "Partager";
  * "Enregistrer" is hidden by CSS at the mobile breakpoint.
  *
- * "Partager" is the one live control: it opens the share menu. The others are
- * real <button>s that do nothing — no state, no navigation, no persistence.
+ * "Partager" opens the share menu. "Enregistrer" is inert. The like pill now
+ * calls POST /api/likes to toggle the visitor's ♡, deduped per address.
  */
 export default function SocialBar({ article }: { article: Article }) {
+  const like = useLike('article', article.id, article.likes);
+
   return (
     <div className={styles.social} data-testid="article-social">
       {/* `.likeWord` is dropped at the mobile breakpoint, so the accessible
@@ -19,10 +22,13 @@ export default function SocialBar({ article }: { article: Article }) {
       <button
         type="button"
         className={styles.likePill}
-        aria-label={`J’aime · ${article.likes}`}
+        aria-label={`J'aime · ${like.likes}`}
+        aria-pressed={like.liked}
+        disabled={like.pending}
+        onClick={like.toggle}
       >
-        <span aria-hidden="true">♡</span>
-        <span className={styles.likeWord}>J’aime ·</span> {article.likes}
+        <span aria-hidden="true">{like.liked ? '♥' : '♡'}</span>
+        <span className={styles.likeWord}>J'aime ·</span> {like.likes}
       </button>
 
       <span className={styles.commentCount}>
