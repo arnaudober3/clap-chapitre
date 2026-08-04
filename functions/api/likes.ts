@@ -23,10 +23,9 @@ import { requireDb, requireIpSalt } from '../_lib/env';
 import {
   badRequest,
   dbUnavailable,
-  getOnly,
   json,
   misconfigured,
-  postOnly,
+  route,
   unprocessable,
 } from '../_lib/http';
 import type { D1Database, Handler } from '../types';
@@ -148,9 +147,4 @@ export const onRequestGet: Handler = async ({ request, env }) => {
   }
 };
 
-export const onRequest: Handler = async (context) => {
-  const { request } = context;
-  if (request.method === 'GET') return onRequestGet(context);
-  if (request.method === 'POST') return onRequestPost(context);
-  return new Response('Method not allowed', { status: 405 });
-};
+export const onRequest = route({ GET: onRequestGet, POST: onRequestPost });
