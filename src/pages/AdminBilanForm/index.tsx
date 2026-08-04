@@ -55,6 +55,7 @@ function BilanForm({
   // trades places with it. Nothing is persisted: the order lives here only.
   const [dragging, setDragging] = useState<string>();
   const [saved, setSaved] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(bilan?.status);
   const [invalid, setInvalid] = useState<string>();
 
   const save = useMutation(saveBilan);
@@ -62,7 +63,7 @@ function BilanForm({
 
   // A month that was never opened, and the month in progress, are both drafts;
   // only a month already online reads as published.
-  const state = bilan?.status === 'published' ? 'Publié' : 'Brouillon';
+  const state = currentStatus === 'published' ? 'Publié' : 'Brouillon';
   // The mobile top bar of the shell doubles as the page header (design 7c),
   // where the publication state is the only line that fits.
   useAdminPageKicker(state);
@@ -157,6 +158,7 @@ function BilanForm({
     if (!result) return;
 
     setSaved(true);
+    setCurrentStatus(status);
     if (!editing) navigate(`/admin/bilans/${result.id}`, { replace: true });
   }
 
@@ -190,14 +192,14 @@ function BilanForm({
             </span>
           )}
           <EditorActions
-            status={bilan?.status}
+            status={currentStatus}
             pending={save.pending || remove.pending}
             error={save.error ?? remove.error}
             saved={saved}
-            onSave={() => void submit(bilan?.status ?? 'draft')}
+            onSave={() => void submit(currentStatus ?? 'draft')}
             onPublish={
               editing
-                ? () => void submit(bilan.status === 'published' ? 'draft' : 'published')
+                ? () => void submit(currentStatus === 'published' ? 'draft' : 'published')
                 : () => void submit('published')
             }
             onDelete={editing ? destroy : undefined}
