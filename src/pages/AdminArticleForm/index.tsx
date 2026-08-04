@@ -47,6 +47,7 @@ function ArticleForm({ article }: { article?: Article }) {
   const [cover, setCover] = useState(article?.cover ?? '');
   const [excerpt, setExcerpt] = useState(article?.excerpt ?? '');
   const [saved, setSaved] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(article?.status);
   const [invalid, setInvalid] = useState<string>();
 
   const save = useMutation(saveArticle);
@@ -101,6 +102,7 @@ function ArticleForm({ article }: { article?: Article }) {
     if (!result) return;
 
     setSaved(true);
+    setCurrentStatus(status);
     // A new avis has no id in the URL yet; land on its own editor rather than
     // leaving the form thinking it is still creating.
     if (!editing) navigate(`/admin/articles/${result.id}`, { replace: true });
@@ -132,14 +134,14 @@ function ArticleForm({ article }: { article?: Article }) {
             </span>
           )}
           <EditorActions
-            status={article?.status}
+            status={currentStatus}
             pending={save.pending || remove.pending}
             error={save.error ?? remove.error}
             saved={saved}
-            onSave={() => void submit(article?.status ?? 'draft')}
+            onSave={() => void submit(currentStatus ?? 'draft')}
             onPublish={
               editing
-                ? () => void submit(article.status === 'published' ? 'draft' : 'published')
+                ? () => void submit(currentStatus === 'published' ? 'draft' : 'published')
                 : () => void submit('published')
             }
             onDelete={editing ? destroy : undefined}
