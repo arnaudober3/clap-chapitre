@@ -1,11 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import SocialBar from '../pages/Article/SocialBar';
 import PrevNext from '../pages/Article/PrevNext';
 import { anArticle } from './fixtures';
+import { useTestDb } from './api-server';
+import { SEED } from './fixtures';
 
 const root = resolve(__dirname, '../..');
 const socialSource = readFileSync(
@@ -22,7 +24,7 @@ const css = readFileSync(
 );
 
 const avis = anArticle();
-const other = anArticle({ id: 'l-annee-de-la-pluie', title: 'L’année de la pluie', medium: 'livre' });
+const other = anArticle({ id: 'l-annee-de-la-pluie', title: "L'annee de la pluie", medium: 'livre' });
 const third = anArticle({ id: 'les-nuits-blanches', title: 'Les nuits blanches', medium: 'serie' });
 
 /** SocialBar holds the share menu, which reads the router location. */
@@ -34,16 +36,19 @@ function renderSocialBar() {
   );
 }
 
+beforeEach(() => {
+  useTestDb(SEED);
+});
+
 describe('ART-4 SocialBar', () => {
-  it('renders the like pill and Enregistrer as inert buttons, plus a Partager trigger', () => {
+  it('renders the like pill, Enregistrer, and Partager buttons', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const before = window.location.href;
-    const { container } = renderSocialBar();
+    renderSocialBar();
 
-    const like = screen.getByRole('button', { name: /J’aime/ });
+    const like = screen.getByRole('button', { name: /J'aime/ });
     expect(like).toHaveTextContent(String(avis.likes));
     const save = screen.getByRole('button', { name: 'Enregistrer' });
-    // "Partager" is the one live control here — ART-8 covers the menu it opens.
     expect(screen.getByRole('button', { name: 'Partager' }).tagName).toBe('BUTTON');
 
     // The compact mobile row shows the comment count.
@@ -51,15 +56,51 @@ describe('ART-4 SocialBar', () => {
       screen.getByTestId('article-social'),
     ).toHaveTextContent(String(avis.comments));
 
-    const markup = container.innerHTML;
-    for (const control of [like, save]) {
-      expect(control.tagName).toBe('BUTTON');
-      expect(() => fireEvent.click(control)).not.toThrow();
-    }
-    expect(container.innerHTML).toBe(markup);
+    expect(like.tagName).toBe('BUTTON');
+    expect(save.tagName).toBe('BUTTON');
     expect(window.location.href).toBe(before);
     expect(errorSpy).not.toHaveBeenCalled();
     errorSpy.mockRestore();
+  });
+
+  it('toggles the like pill on click and updates aria-pressed', async () => {
+    renderSocialBar();
+    const like = screen.getByRole('button', { name: /J'aime/ });
+
+    expect(like).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(like);
+
+    // After the API call resolves, the liked state should change to true.
+    await waitFor(() => {
+      expect(like).toHaveAttribute('aria-pressed', 'true');
+    });
+    // The heart icon should be filled (♥ instead of ♡).
+    expect(like.textContent).toContain('♥');
+
+    fireEvent.click(like);
+
+    // Clicking again should unlike it.
+    await waitFor(() => {
+      expect(like).toHaveAttribute('aria-pressed', 'false');
+    });
+    // The heart icon should be empty again.
+    expect(like.textContent).toContain('♡');
+    expect(like.textContent).not.toContain('♥');
+  });
+
+  it('disables the like pill while the request is pending', async () => {
+    renderSocialBar();
+    const like = screen.getByRole('button', { name: /J'aime/ });
+
+    expect(like).not.toHaveAttribute('disabled');
+    fireEvent.click(like);
+
+    expect(like).toHaveAttribute('disabled');
+
+    await waitFor(() => {
+      expect(like).not.toHaveAttribute('disabled');
+    });
   });
 });
 
@@ -126,7 +167,7 @@ describe('ART-4 responsive rules', () => {
     }
   });
 
-  it('shows "J’aime ·" only on desktop and the comment count only on mobile', () => {
+  it('shows "J\'aime ·" only on desktop and the comment count only on mobile', () => {
     expect(ruleOf(mobileCss, 'likeWord')).toMatch(/display:\s*none/);
     expect(ruleOf(desktopCss, 'likeWord')).toMatch(/display:\s*inline/);
     expect(ruleOf(mobileCss, 'commentCount')).not.toMatch(/display:\s*none/);
@@ -137,9 +178,9 @@ describe('ART-4 responsive rules', () => {
 describe('ART-4 accessible names', () => {
   it('names the like button and the comment count independently of the hidden text', () => {
     renderSocialBar();
-    // The visible "J’aime ·" is dropped on mobile — the label carries it.
+    // The visible "J'aime ·" is dropped on mobile — the label carries it.
     expect(
-      screen.getByRole('button', { name: `J’aime · ${avis.likes}` }),
+      screen.getByRole('button', { name: `J'aime · ${avis.likes}` }),
     ).toBeInTheDocument();
     expect(
       screen.getByTestId('article-social'),

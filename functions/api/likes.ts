@@ -1,4 +1,9 @@
 /**
+ * GET /api/likes?targetType=X&targetId=Y → 200 { liked }
+ *
+ * Checks whether this caller has liked a target (avis, bilan or comment),
+ * without modifying the state. Answers true if a row exists for this IP hash.
+ *
  * POST /api/likes → 200 { likes, liked }
  *
  * Toggles a ♡ on an avis, a bilan or a comment, and answers the new count plus
@@ -18,6 +23,7 @@ import { requireDb, requireIpSalt } from '../_lib/env';
 import {
   badRequest,
   dbUnavailable,
+  getOnly,
   json,
   misconfigured,
   postOnly,
@@ -108,4 +114,43 @@ export const onRequestPost: Handler = async ({ request, env }) => {
   }
 };
 
-export const onRequest = postOnly(onRequestPost);
+export const onRequestGet: Handler = async ({ request, env }) => {
+  let db: D1Database;
+  let salt: string;
+  try {
+    db = requireDb(env);
+    salt = requireIpSalt(env);
+  } catch {
+    return misconfigured();
+  }
+
+  const url = new URL(request.url);
+  const targetType = url.searchParams.get('targetType');
+  const targetId = url.searchParams.get('targetId');
+
+  if (!targetType || !TARGETS.includes(targetType as Target)) {
+    return badRequest('targetType');
+  }
+  if (!targetId) {
+    return badRequest('targetId');
+  }
+
+  try {
+    const hash = await ipHash(request, salt);
+    const existing = await db
+      .prepare('SELECT 1 AS liked FROM likes WHERE target_type = ? AND target_id = ? AND ip_hash = ?')
+      .bind(targetType, targetId, hash)
+      .first();
+
+    return json({ liked: !!existing });
+  } catch {
+    return dbUnavailable();
+  }
+};
+
+export const onRequest: Handler = async (context) => {
+  const { request } = context;
+  if (request.method === 'GET') return onRequestGet(context);
+  if (request.method === 'POST') return onRequestPost(context);
+  return new Response('Method not allowed', { status: 405 });
+};
