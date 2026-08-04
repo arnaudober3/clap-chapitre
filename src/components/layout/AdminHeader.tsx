@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Link,
   useLocation,
@@ -14,6 +14,7 @@ import {
 import { ThemeToggle } from "../ui";
 import { useAuth } from "../../auth/AuthContext";
 import { useAdminKicker } from "./adminPageMeta";
+import { useAdminComments } from "../../api/admin";
 import styles from "./AdminLayout.module.css";
 
 /** True when `pathname` is the item's route (exact for /admin, prefix otherwise). */
@@ -82,12 +83,18 @@ function AdminNavLink({
 }
 
 /** Publications + Pages du site groups, shared by rail and drawer. */
-function NavGroups({ onNavigate }: { onNavigate?: () => void }) {
+function NavGroups({
+  primaryNav,
+  onNavigate,
+}: {
+  primaryNav: AdminNavItem[];
+  onNavigate?: () => void;
+}) {
   return (
     <>
       <div className={styles.navSectionLabel}>Publications</div>
       <nav className={styles.navGroup} aria-label="Publications">
-        {adminPrimaryNav.map((item) => (
+        {primaryNav.map((item) => (
           <AdminNavLink key={item.to} item={item} onNavigate={onNavigate} />
         ))}
       </nav>
@@ -142,6 +149,17 @@ export default function AdminHeader() {
   const closeDrawer = () => setDrawerOpen(false);
   const { pathname } = useLocation();
   const pageKicker = useAdminKicker();
+  const { data: moderation } = useAdminComments('pending', 1, 1);
+
+  const primaryNav = useMemo(
+    () =>
+      adminPrimaryNav.map((item) =>
+        item.to === '/admin/commentaires' && moderation?.pending
+          ? { ...item, badge: moderation.pending }
+          : item,
+      ),
+    [moderation?.pending],
+  );
 
   // Mobile top-bar title = the active section's label (defaults to dashboard).
   const activeItem =
@@ -155,7 +173,7 @@ export default function AdminHeader() {
           <BrandMark label="Clap et chapitre" />
         </div>
         <div className={styles.railDivider} />
-        <NavGroups />
+        <NavGroups primaryNav={primaryNav} />
         <RailFoot />
       </aside>
 
@@ -204,7 +222,7 @@ export default function AdminHeader() {
               ✕
             </button>
           </div>
-          <NavGroups onNavigate={closeDrawer} />
+          <NavGroups primaryNav={primaryNav} onNavigate={closeDrawer} />
           <RailFoot onNavigate={closeDrawer} />
         </div>
       </div>
