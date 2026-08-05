@@ -278,6 +278,12 @@
   color: var(--ink);
 }
 
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 26px 0;
+}
+
 /* ---- À rapprocher de (AT-3) ---- */
 .related {
   display: flex;
