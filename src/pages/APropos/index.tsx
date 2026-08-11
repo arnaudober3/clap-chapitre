@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { useAPropos, type AProposContent } from '../../api/content';
 import { PageError, PageLoading } from '../../components/ui';
+import { Seo } from '../../seo/Seo';
+import { APROPOS_FALLBACK_DESCRIPTION } from '../../seo/staticCopy';
 import Hero from './Hero';
 import YearStats from './YearStats';
 import FollowCard from './FollowCard';
@@ -68,6 +70,7 @@ export default function AProposPage() {
   if (status === 'loading' || status === 'idle') {
     return (
       <div className={styles.page} data-testid="a-propos-page">
+        <Seo title="À propos" description={APROPOS_FALLBACK_DESCRIPTION} path="/a-propos" />
         <PageLoading />
       </div>
     );
@@ -78,6 +81,7 @@ export default function AProposPage() {
   if (!data) {
     return (
       <div className={styles.page} data-testid="a-propos-page">
+        <Seo title="À propos" description={APROPOS_FALLBACK_DESCRIPTION} path="/a-propos" />
         <PageError onRetry={reload} />
       </div>
     );
@@ -103,6 +107,7 @@ function AProposContentView({ content }: { content: AProposContent }) {
 
   return (
     <div className={styles.page} data-testid="a-propos-page" data-anim="stagger">
+      <Seo title="À propos" description={intro || APROPOS_FALLBACK_DESCRIPTION} path="/a-propos" />
       <Hero
         eyebrow={eyebrow}
         greeting={greeting}

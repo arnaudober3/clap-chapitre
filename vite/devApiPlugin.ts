@@ -28,6 +28,8 @@ const ROUTES: ReadonlyArray<RoutePattern<string>> = [
   { pattern: '/api/login', target: '/functions/api/login.ts' },
   { pattern: '/api/verify', target: '/functions/api/verify.ts' },
   { pattern: '/api/db-health', target: '/functions/api/db-health.ts' },
+  { pattern: '/robots.txt', target: '/functions/robots.txt.ts' },
+  { pattern: '/sitemap.xml', target: '/functions/sitemap.xml.ts' },
 
   { pattern: '/api/feed', target: '/functions/api/feed.ts' },
   { pattern: '/api/articles', target: '/functions/api/articles/index.ts' },

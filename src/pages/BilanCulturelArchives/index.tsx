@@ -2,6 +2,9 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useBilanList, type BilanSummary } from '../../api/content';
 import { PageError, PageLoading, SectionHeader } from '../../components/ui';
+import { Seo } from '../../seo/Seo';
+import { BILAN_ARCHIVES_SEO } from '../../seo/staticCopy';
+import { breadcrumbSchema } from '../../seo/schema';
 import YearSection from './YearSection';
 import styles from './BilanCulturelArchives.module.css';
 
@@ -44,6 +47,18 @@ export default function BilanCulturelArchivesPage() {
   const header = (
     <SectionHeader eyebrow="Bilan culturel" heading="Tous les bilans" headingLevel={1} />
   );
+  const seo = (
+    <Seo
+      title={BILAN_ARCHIVES_SEO.title}
+      description={BILAN_ARCHIVES_SEO.description}
+      path="/bilan-culturel/archives"
+      jsonLd={breadcrumbSchema([
+        { name: 'Accueil', path: '/films' },
+        { name: 'Bilan culturel', path: '/bilan-culturel' },
+        { name: 'Archives', path: '/bilan-culturel/archives' },
+      ])}
+    />
+  );
 
   if (status === 'loading' || status === 'idle') {
     return (
@@ -52,6 +67,7 @@ export default function BilanCulturelArchivesPage() {
         data-testid="bilan-culturel-archives-page"
         data-anim="stagger"
       >
+        {seo}
         {header}
         <PageLoading />
       </section>
@@ -65,6 +81,7 @@ export default function BilanCulturelArchivesPage() {
         data-testid="bilan-culturel-archives-page"
         data-anim="stagger"
       >
+        {seo}
         {header}
         <PageError onRetry={reload} />
       </section>
@@ -78,6 +95,7 @@ export default function BilanCulturelArchivesPage() {
         data-testid="bilan-culturel-archives-page"
         data-anim="stagger"
       >
+        {seo}
         {header}
         <p className={styles.empty}>Aucun bilan archivé pour l’instant.</p>
       </section>
@@ -90,6 +108,7 @@ export default function BilanCulturelArchivesPage() {
         data-testid="bilan-culturel-archives-page"
         data-anim="stagger"
       >
+      {seo}
       <Link to={`/bilan-culturel?mois=${months[0].id}`} className={styles.backLink}>
         ‹ Revenir au dernier bilan
       </Link>
