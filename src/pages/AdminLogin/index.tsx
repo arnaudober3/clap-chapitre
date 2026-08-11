@@ -2,6 +2,8 @@ import { useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import useReveal from '../../anim/useReveal';
+import { Seo } from '../../seo/Seo';
+import { ADMIN_LOGIN_TITLE } from '../../seo/staticCopy';
 import styles from './AdminLogin.module.css';
 
 /**
@@ -63,6 +65,7 @@ export default function AdminLoginPage() {
       data-anim="stagger"
       ref={pageRef}
     >
+      <Seo title={ADMIN_LOGIN_TITLE} path="/admin/login" noindex />
       <section className={styles.card}>
         <p className={styles.eyebrow}>Espace admin</p>
         <h1 className={styles.title}>

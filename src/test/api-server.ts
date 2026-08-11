@@ -11,6 +11,8 @@
  */
 import { onRequest as loginRoute } from '../../functions/api/login';
 import { onRequest as verifyRoute } from '../../functions/api/verify';
+import { onRequest as robotsRoute } from '../../functions/robots.txt';
+import { onRequest as sitemapRoute } from '../../functions/sitemap.xml';
 import { onRequest as feedRoute } from '../../functions/api/feed';
 import { onRequest as articlesRoute } from '../../functions/api/articles/index';
 import { onRequest as articleRoute } from '../../functions/api/articles/[id]';
@@ -99,6 +101,8 @@ export function resetTestDb(): void {
 const ROUTES: ReadonlyArray<RoutePattern<Handler>> = [
   { pattern: '/api/login', target: loginRoute },
   { pattern: '/api/verify', target: verifyRoute },
+  { pattern: '/robots.txt', target: robotsRoute },
+  { pattern: '/sitemap.xml', target: sitemapRoute },
 
   { pattern: '/api/feed', target: feedRoute },
   { pattern: '/api/articles', target: articlesRoute },

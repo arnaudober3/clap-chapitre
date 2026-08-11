@@ -1,8 +1,11 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import type { Medium } from '../../../shared/content';
 import { useArticleList } from '../../api/content';
-import { MEDIA, SEGMENT_TO_MEDIUM, DEFAULT_SEGMENT } from '../../media';
+import { MEDIA, SEGMENT_TO_MEDIUM, MEDIUM_TO_SEGMENT, DEFAULT_SEGMENT } from '../../media';
 import { PageError, PageLoading, SectionHeader, ReviewCard } from '../../components/ui';
+import { Seo } from '../../seo/Seo';
+import { ARCHIVE_SEO } from '../../seo/staticCopy';
+import { breadcrumbSchema } from '../../seo/schema';
 import styles from './AvisArchives.module.css';
 
 /**
@@ -35,6 +38,12 @@ export default function AvisArchivesPage() {
 function MediumArchive({ medium }: { medium: Medium }) {
   const { data, status, reload } = useArticleList(medium, 1, PER_PAGE);
   const items = data?.items ?? [];
+  const seo = ARCHIVE_SEO[medium];
+  const path = `/archives/${MEDIUM_TO_SEGMENT[medium]}`;
+  const jsonLd = breadcrumbSchema([
+    { name: 'Accueil', path: '/films' },
+    { name: seo.title, path },
+  ]);
 
   return (
     <section
@@ -43,6 +52,7 @@ function MediumArchive({ medium }: { medium: Medium }) {
       data-medium={medium}
       data-anim="stagger"
     >
+      <Seo title={seo.title} description={seo.description} path={path} jsonLd={jsonLd} />
       <SectionHeader
         eyebrow="Avis récents"
         heading="Tous les avis"

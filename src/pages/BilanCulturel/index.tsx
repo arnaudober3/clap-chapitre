@@ -1,6 +1,10 @@
 import { useSearchParams } from 'react-router-dom';
 import { useBilanList, useBilanView } from '../../api/content';
+import { mediaUrl } from '../../api/mutations';
 import { PageError, PageLoading } from '../../components/ui';
+import { Seo } from '../../seo/Seo';
+import { SITE_URL } from '../../seo/constants';
+import { breadcrumbSchema } from '../../seo/schema';
 import MonthSwitcher from './MonthSwitcher';
 import MediumSections from './MediumSections';
 import CommentThread from './CommentThread';
@@ -34,6 +38,7 @@ export default function BilanCulturelPage() {
   if (active.status === 'loading' || active.status === 'idle') {
     return (
       <section className={styles.page} data-testid="bilan-culturel-page" data-anim="stagger">
+        <Seo title="Bilan culturel" path="/bilan-culturel" />
         <PageLoading />
       </section>
     );
@@ -42,6 +47,11 @@ export default function BilanCulturelPage() {
   if (!active.data) {
     return (
       <section className={styles.page} data-testid="bilan-culturel-page" data-anim="stagger">
+        <Seo
+          title="Bilan culturel"
+          description="Le bilan culturel mensuel de Marie-Zoé sur Clap et chapitre."
+          path="/bilan-culturel"
+        />
         <p className={styles.eyebrow}>Bilan culturel</p>
         {active.status === 'error' && !active.notFound ? (
           <PageError onRetry={active.reload} />
@@ -53,9 +63,26 @@ export default function BilanCulturelPage() {
   }
 
   const { bilan, comments } = active.data;
+  const cover = bilan.avis.find((item) => item.cover)?.cover;
+  const image = cover ? `${SITE_URL}${mediaUrl(cover)}` : undefined;
+  const monthTitle = `${bilan.monthLabel} ${bilan.year}`;
+  const description =
+    bilan.mood ?? `Le bilan culturel de ${monthTitle} par Marie-Zoé sur Clap et chapitre.`;
+  const jsonLd = breadcrumbSchema([
+    { name: 'Accueil', path: '/films' },
+    { name: 'Bilan culturel', path: '/bilan-culturel' },
+    { name: monthTitle, path: `/bilan-culturel?mois=${bilan.id}` },
+  ]);
 
   return (
     <section className={styles.page} data-testid="bilan-culturel-page" data-anim="stagger">
+      <Seo
+        title={`Bilan culturel — ${monthTitle}`}
+        description={description}
+        path={`/bilan-culturel?mois=${bilan.id}`}
+        image={image}
+        jsonLd={jsonLd}
+      />
       <MonthSwitcher active={bilan} months={months.data ?? [bilan]} />
       <MediumSections bilan={bilan} />
       <CommentThread bilan={bilan} comments={comments} />

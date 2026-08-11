@@ -3,6 +3,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
 import useReveal from '../../anim/useReveal';
 import { AdminPageMetaProvider } from './adminPageMeta';
+import { Seo } from '../../seo/Seo';
+import { ADMIN_TITLE } from '../../seo/staticCopy';
 import styles from './AdminLayout.module.css';
 
 /**
@@ -23,6 +25,7 @@ export default function AdminLayout() {
 
   return (
     <AdminPageMetaProvider>
+      <Seo title={ADMIN_TITLE} path={pathname} noindex />
       <div className={styles.shell}>
         <AdminHeader />
         <div className={styles.content}>

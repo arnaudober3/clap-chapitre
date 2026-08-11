@@ -2,6 +2,8 @@ import { useLocation } from 'react-router-dom';
 import type { Medium } from '../../../shared/content';
 import { useFeed } from '../../api/content';
 import { PageError, PageLoading } from '../../components/ui';
+import { Seo } from '../../seo/Seo';
+import { MEDIUM_SEO } from '../../seo/staticCopy';
 import Hero from './Hero';
 import RecentAvisGrid from './RecentAvisGrid.tsx';
 import Newsletter from './Newsletter';
@@ -34,6 +36,7 @@ export default function HomePage() {
   const { data, status, reload } = useFeed(medium);
 
   const [hero, ...recent] = data ?? [];
+  const seo = MEDIUM_SEO[medium ?? 'film'];
 
   return (
     <section
@@ -42,6 +45,7 @@ export default function HomePage() {
       data-medium={medium ?? 'all'}
       data-anim="stagger"
     >
+      <Seo title={seo.title} description={seo.description} path={pathname} />
       {status === 'loading' && <PageLoading />}
       {status === 'error' && <PageError onRetry={reload} />}
       {status === 'ready' &&

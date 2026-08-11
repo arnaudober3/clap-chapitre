@@ -111,6 +111,13 @@ export interface FunctionContext {
    * type says so rather than lying by omission.
    */
   params?: Record<string, string | string[]>;
+  /**
+   * Continues to the next handler in Pages' own dispatch chain — another
+   * middleware, a matching Function, or the static asset / SPA fallback. Only
+   * ever populated for `functions/_middleware.ts`; every other Function ignores
+   * it, so adding it here is additive.
+   */
+  next?: () => Promise<Response>;
 }
 
 export type Handler = (context: FunctionContext) => Promise<Response>;

@@ -1,5 +1,7 @@
 import { useMeSuivre } from '../../api/content';
 import { PageError, PageLoading } from '../../components/ui';
+import { Seo } from '../../seo/Seo';
+import { ME_SUIVRE_FALLBACK_DESCRIPTION } from '../../seo/staticCopy';
 import NewsletterFeature from './NewsletterFeature';
 import SocialGrid from './SocialGrid';
 import styles from './MeSuivre.module.css';
@@ -16,6 +18,7 @@ export default function MeSuivrePage() {
   if (status === 'loading' || status === 'idle') {
     return (
       <div className={styles.page} data-testid="me-suivre-page">
+        <Seo title="Me suivre" description={ME_SUIVRE_FALLBACK_DESCRIPTION} path="/me-suivre" />
         <PageLoading />
       </div>
     );
@@ -24,6 +27,7 @@ export default function MeSuivrePage() {
   if (!data) {
     return (
       <div className={styles.page} data-testid="me-suivre-page">
+        <Seo title="Me suivre" description={ME_SUIVRE_FALLBACK_DESCRIPTION} path="/me-suivre" />
         <PageError onRetry={reload} />
       </div>
     );
@@ -33,6 +37,11 @@ export default function MeSuivrePage() {
 
   return (
     <div className={styles.page} data-testid="me-suivre-page" data-anim="stagger">
+      <Seo
+        title="Me suivre"
+        description={intro || ME_SUIVRE_FALLBACK_DESCRIPTION}
+        path="/me-suivre"
+      />
       {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
       <h1 className={styles.title}>{title}</h1>
       {intro ? <p className={styles.intro}>{intro}</p> : null}
