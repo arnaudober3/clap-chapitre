@@ -45,6 +45,8 @@ export default function SocialBar({ article }: { article: Article }) {
       <ShareMenu
         title={article.title}
         excerpt={article.excerpt}
+        targetType="article"
+        targetId={article.id}
         triggerClassName={styles.sharePill}
         placement="top"
         data-testid="article-share"

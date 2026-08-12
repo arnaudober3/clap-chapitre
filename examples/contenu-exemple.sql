@@ -85,18 +85,21 @@ INSERT INTO bilan_counts (bilan_id, medium, count) VALUES
 -- ---------------------------------------------------------------------------
 -- Deux fils de commentaires
 -- ---------------------------------------------------------------------------
-INSERT INTO comments (id, target_type, target_id, parent_id, author, is_author, body, comment_date, likes, position)
+-- `created_at` est relatif à `now()` plutôt qu'une date figée : c'est ce qui
+-- nourrit la carte « Commentaires » du tableau de bord, dont les fenêtres se
+-- calculent contre l'heure réelle au moment où la démo tourne.
+INSERT INTO comments (id, target_type, target_id, parent_id, author, is_author, body, comment_date, likes, position, created_at)
 VALUES
   ('c-article-1', 'article', 'un-dernier-ete', NULL, 'Camille', 0,
    'J''ai vu le film hier soir et je n''arrive toujours pas à en sortir.',
-   '2026-07-19', 9, 1),
+   '2026-07-19', 9, 1, datetime('now', '-6 days')),
   -- La réponse de l'autrice n'est pas datée : l'interface affiche une pastille.
   ('c-article-1-reponse', 'article', 'un-dernier-ete', 'c-article-1', 'Marie-Zoé', 1,
    'Merci Camille — c''est exactement la scène du dîner qui m''a fait écrire cet avis.',
-   NULL, 4, 1),
+   NULL, 4, 1, datetime('now', '-5 days')),
   ('c-bilan-1', 'bilan', '2026-07', NULL, 'Léa', 0,
    'Ce bilan m''a donné envie de tout rattraper cet été.',
-   '2026-08-03', 12, 1);
+   '2026-08-03', 12, 1, datetime('now', '-2 days'));
 
 -- ---------------------------------------------------------------------------
 -- Les pages éditoriales
@@ -140,28 +143,75 @@ INSERT INTO mesuivre_socials (key, position, name, handle, glyph, url, cta) VALU
   ('babelio',    3, 'Babelio',    'marie-zoe',       'Ba', 'https://babelio.com/marie-zoe',       'Voir mes lectures');
 
 -- ---------------------------------------------------------------------------
--- Les statistiques du tableau de bord
+-- L'audience
 -- ---------------------------------------------------------------------------
-INSERT INTO stat_periods (id, label, position, is_default) VALUES
-  ('7j',  '7 derniers jours',   1, 0),
-  ('30j', '30 derniers jours',  2, 1),
-  ('12m', '12 derniers mois',   3, 0);
+-- stat_periods ne se sème plus ici : ce n'est pas du contenu, c'est la
+-- configuration du sélecteur de période, et la migration 0003 la porte déjà.
+--
+-- Les vues, les partages et les likes, eux, sont de vrais événements — des
+-- centaines par cible sur douze mois — qu'écrire à la main ligne par ligne
+-- serait à la fois illisible et faux (aucune ne "compterait" quoi que ce
+-- soit de réel). Une CTE récursive les engendre à la place : `day(n)` couvre
+-- les 360 derniers jours, et chaque SELECT choisit un sous-ensemble de jours
+-- par cible via un modulo, à une heure qui lui est propre pour que les
+-- horodatages ne se chevauchent pas exactement.
+--
+-- Toutes les dates sont relatives à `now()`, pas figées comme celles des
+-- avis : c'est ce qui rend la démo vivante quel que soit le jour où elle
+-- tourne, et qui exerce réellement /api/admin/dashboard.
+WITH RECURSIVE day(n) AS (
+  SELECT 0
+  UNION ALL
+  SELECT n + 1 FROM day WHERE n < 359
+)
+INSERT INTO view_hits (target_type, target_id, viewed_at)
+SELECT 'article', 'un-dernier-ete', datetime('now', '-' || n || ' days', '+3 hours')
+  FROM day WHERE n % 2 = 0
+UNION ALL
+SELECT 'article', 'l-annee-de-la-pluie', datetime('now', '-' || n || ' days', '+9 hours')
+  FROM day WHERE n % 3 = 0
+UNION ALL
+SELECT 'bilan', '2026-07', datetime('now', '-' || n || ' days', '+18 hours')
+  FROM day WHERE n % 4 = 0
+-- Un mois plus vu que les autres, pour que la courbe ait un vrai pic plutôt
+-- qu'un plat : une fenêtre d'un mois, environ quatre mois en arrière.
+UNION ALL
+SELECT 'article', 'un-dernier-ete', datetime('now', '-' || n || ' days', '+14 hours')
+  FROM day WHERE n BETWEEN 95 AND 125;
 
-INSERT INTO stat_kpis (period_id, key, label, value, delta_pct, position) VALUES
-  ('7j',  'views',    'Vues',          2180,  6, 1),
-  ('7j',  'likes',    'Likes',           74, -4, 2),
-  ('7j',  'comments', 'Commentaires',    11,  3, 3),
-  ('7j',  'shares',   'Partages',        24,  8, 4),
-  ('30j', 'views',    'Vues',          8940, 18, 1),
-  ('30j', 'likes',    'Likes',          314,  9, 2),
-  ('30j', 'comments', 'Commentaires',    46, 12, 3),
-  ('30j', 'shares',   'Partages',       105, 23, 4),
-  ('12m', 'views',    'Vues',         76400, 41, 1),
-  ('12m', 'likes',    'Likes',         2680, 27, 2),
-  ('12m', 'comments', 'Commentaires',   392, -6, 3),
-  ('12m', 'shares',   'Partages',       910, 34, 4);
+WITH RECURSIVE day(n) AS (
+  SELECT 0
+  UNION ALL
+  SELECT n + 1 FROM day WHERE n < 359
+)
+INSERT INTO share_hits (target_type, target_id, channel, created_at)
+SELECT 'article', 'un-dernier-ete',
+       CASE n % 4 WHEN 0 THEN 'facebook' WHEN 1 THEN 'x' WHEN 2 THEN 'whatsapp' ELSE 'copy' END,
+       datetime('now', '-' || n || ' days', '+5 hours')
+  FROM day WHERE n % 6 = 0
+UNION ALL
+SELECT 'article', 'l-annee-de-la-pluie',
+       CASE n % 5 WHEN 0 THEN 'facebook' WHEN 1 THEN 'x' WHEN 2 THEN 'whatsapp' WHEN 3 THEN 'email' ELSE 'copy' END,
+       datetime('now', '-' || n || ' days', '+11 hours')
+  FROM day WHERE n % 9 = 0
+UNION ALL
+SELECT 'bilan', '2026-07', 'copy', datetime('now', '-' || n || ' days', '+20 hours')
+  FROM day WHERE n % 12 = 0;
 
-INSERT INTO stat_trend (position, month_label, views) VALUES
-  (1, 'sep', 4200), (2,  'oct', 4600), (3,  'nov', 4400), (4,  'déc', 5200),
-  (5, 'jan', 5600), (6,  'fév', 5300), (7,  'mar', 6200), (8,  'avr', 5900),
-  (9, 'mai', 6800), (10, 'juin', 7200), (11, 'juil', 8100), (12, 'août', 8940);
+-- Le ledger des likes, sur le même modèle. `ip_hash` n'a besoin que d'être
+-- unique ici — ce n'est jamais une vraie adresse, en démo pas plus qu'en
+-- production.
+WITH RECURSIVE day(n) AS (
+  SELECT 0
+  UNION ALL
+  SELECT n + 1 FROM day WHERE n < 359
+)
+INSERT INTO likes (target_type, target_id, ip_hash, created_at)
+SELECT 'article', 'un-dernier-ete', 'demo-ete-' || n, datetime('now', '-' || n || ' days', '+8 hours')
+  FROM day WHERE n % 3 = 0
+UNION ALL
+SELECT 'article', 'l-annee-de-la-pluie', 'demo-pluie-' || n, datetime('now', '-' || n || ' days', '+13 hours')
+  FROM day WHERE n % 4 = 0
+UNION ALL
+SELECT 'bilan', '2026-07', 'demo-bilan-' || n, datetime('now', '-' || n || ' days', '+21 hours')
+  FROM day WHERE n % 5 = 0;

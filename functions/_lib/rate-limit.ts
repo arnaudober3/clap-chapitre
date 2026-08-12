@@ -24,6 +24,12 @@ export interface Window {
 export const COMMENT_WINDOW: Window = { max: 5, minutes: 15 };
 
 /**
+ * Shares: twenty per quarter of an hour. A legitimate reader can hit every
+ * channel on several avis in a row; this is here to stop a script, not a fan.
+ */
+export const SHARE_WINDOW: Window = { max: 20, minutes: 15 };
+
+/**
  * Records a hit and says whether it was allowed.
  *
  * The count runs *before* the insert, so the caller's own hit does not count

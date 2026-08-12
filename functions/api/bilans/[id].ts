@@ -11,6 +11,8 @@
  *
  * Public: published months and published avis only.
  */
+import { isAdminCaller } from '../../_lib/admin';
+import { isCrawler } from '../../_lib/audience';
 import { requireDb } from '../../_lib/env';
 import { dbUnavailable, getOnly, json, misconfigured, notFound } from '../../_lib/http';
 import { groupCounts, nestComments, rowToPublishedArticle, rowToPublishedBilan, type Row } from '../../_lib/rows';
@@ -20,7 +22,7 @@ import type { D1Database, Handler } from '../../types';
 /** The id that means "whichever month is newest". */
 const LATEST = 'latest';
 
-export const onRequestGet: Handler = async ({ env, params }) => {
+export const onRequestGet: Handler = async ({ request, env, params }) => {
   let db: D1Database;
   try {
     db = requireDb(env);
@@ -53,7 +55,12 @@ export const onRequestGet: Handler = async ({ env, params }) => {
 
     const monthId = String((bilan as Row).id);
 
-    const [avis, counts, comments] = await db.batch([
+    // A view is recorded for a real reader only: not a crawler, and not the
+    // editor's own visit to the month they just published.
+    const recordView =
+      !isCrawler(request.headers.get('user-agent')) && !(await isAdminCaller(request, env));
+
+    const batch = [
       db
         .prepare(
           `SELECT ${ARTICLE_COLUMNS_FULL}
@@ -74,7 +81,18 @@ export const onRequestGet: Handler = async ({ env, params }) => {
             ORDER BY position, comment_date, id`,
         )
         .bind(monthId),
-    ]);
+    ];
+
+    if (recordView) {
+      batch.push(
+        db
+          .prepare(`INSERT INTO view_hits (target_type, target_id, viewed_at) VALUES ('bilan', ?, datetime('now'))`)
+          .bind(monthId),
+        db.prepare(`UPDATE bilans SET views = views + 1 WHERE id = ?`).bind(monthId),
+      );
+    }
+
+    const [avis, counts, comments] = await db.batch(batch);
 
     return json({
       bilan: {

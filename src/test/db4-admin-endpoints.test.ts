@@ -15,6 +15,7 @@ import { onRequestGet as adminArticle } from '../../functions/api/admin/articles
 import { onRequestGet as adminBilans } from '../../functions/api/admin/bilans/index';
 import { onRequestGet as adminBilan } from '../../functions/api/admin/bilans/[id]';
 import { onRequestGet as dashboard } from '../../functions/api/admin/dashboard';
+import { lastMonths, monthAbbrev } from '../../functions/_lib/audience';
 import type { Env } from '../../functions/types';
 
 function env(sql = SEED): Env {
@@ -203,12 +204,27 @@ describe('DB-4 /api/admin/bilans', () => {
 });
 
 describe('DB-4 /api/admin/dashboard', () => {
-  it('serves the stored KPIs and derives the ranking from the content tables', async () => {
-    const response = await dashboard({ request: await get('/api/admin/dashboard'), env: env() });
+  // Five real view_hits, all within the last few hours — enough to give the
+  // KPI and the trend's peak a known, non-zero value instead of asserting on
+  // whatever an empty events table happens to compute.
+  const WITH_VIEWS = `${SEED}
+    INSERT INTO view_hits (target_type, target_id, viewed_at) VALUES
+      ('bilan', '2026-07', datetime('now')),
+      ('bilan', '2026-07', datetime('now', '-1 hours')),
+      ('article', 'un-dernier-ete', datetime('now', '-2 hours')),
+      ('article', 'un-dernier-ete', datetime('now', '-3 hours')),
+      ('article', 'l-annee-de-la-pluie', datetime('now', '-4 hours'));
+  `;
+
+  it('computes the KPIs from real events and derives the ranking from the content tables', async () => {
+    const response = await dashboard({
+      request: await get('/api/admin/dashboard'),
+      env: env(WITH_VIEWS),
+    });
     const body = await json<{
       period: string;
       defaultPeriod: string;
-      kpis: Array<{ key: string }>;
+      kpis: Array<{ key: string; value: number; deltaPct: number }>;
       leaderboard: Array<{ id: string; kind: string; views: number; articleId?: string }>;
       trendPeak: { month: string; views: number };
       drafts: Array<{ id: string }>;
@@ -216,7 +232,19 @@ describe('DB-4 /api/admin/dashboard', () => {
 
     expect(body.period).toBe('30j');
     expect(body.defaultPeriod).toBe('30j');
-    expect(body.kpis.map((kpi) => kpi.key)).toEqual(['views', 'likes']);
+    expect(body.kpis.map((kpi) => kpi.key)).toEqual(['views', 'likes', 'comments', 'shares']);
+    // Five views in the current window, none in the previous one: the
+    // "went from nothing to something" case of the delta helper.
+    expect(body.kpis.find((kpi) => kpi.key === 'views')).toEqual({
+      key: 'views',
+      label: 'Vues',
+      value: 5,
+      deltaPct: 100,
+    });
+    // Nothing seeds likes/comments.created_at/share_hits here.
+    expect(body.kpis.find((kpi) => kpi.key === 'likes')?.value).toBe(0);
+    expect(body.kpis.find((kpi) => kpi.key === 'comments')?.value).toBe(0);
+    expect(body.kpis.find((kpi) => kpi.key === 'shares')?.value).toBe(0);
 
     // Avis and bilans are ranked together, by views.
     expect(body.leaderboard.map((row) => row.id)).toEqual([
@@ -227,7 +255,9 @@ describe('DB-4 /api/admin/dashboard', () => {
     // Only an avis is a link; a bilan has no article page.
     expect(body.leaderboard[0].articleId).toBeUndefined();
 
-    expect(body.trendPeak).toEqual({ month: 'août', views: 8940 });
+    // All five view_hits land in the current calendar month, the only one
+    // with any views — so it is the peak regardless of which month "now" is.
+    expect(body.trendPeak).toEqual({ month: monthAbbrev(lastMonths(1)[0]), views: 5 });
     expect(body.drafts.map((draft) => draft.id)).toEqual(['contre-champs']);
   });
 
