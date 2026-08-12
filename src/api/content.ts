@@ -125,7 +125,13 @@ interface WireArticleView {
  * rather than asking the server about the empty string.
  */
 export function useArticleView(id: string | undefined): Mapped<ArticleView> {
-  const query = useApi<WireArticleView>(id ? `/api/articles/${encodeURIComponent(id)}` : null);
+  // `admin: true` sends the editor's own bearer token when they're signed in,
+  // so the server can tell their own visits apart from a reader's and leave
+  // them out of the view count. Anonymous visitors send nothing extra.
+  const query = useApi<WireArticleView>(
+    id ? `/api/articles/${encodeURIComponent(id)}` : null,
+    { admin: true },
+  );
   return useMapped(query, (payload) => ({
     article: toPublishedArticle(payload.article),
     related: payload.related.map((item) => ({ ...toPublishedArticle(item), note: item.note })),
@@ -171,8 +177,11 @@ export interface BilanView {
  * it on every visit.
  */
 export function useBilanView(id: string | null): Mapped<BilanView> {
+  // Same reasoning as `useArticleView`: the editor's own reads of a bilan
+  // they just published should not count as an audience view.
   const query = useApi<{ bilan: WirePublishedBilan; comments: WireComment[] }>(
     id ? `/api/bilans/${encodeURIComponent(id)}` : null,
+    { admin: true },
   );
   return useMapped(query, (payload) => ({
     bilan: toPublishedBilan(payload.bilan),

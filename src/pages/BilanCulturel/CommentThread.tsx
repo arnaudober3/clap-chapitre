@@ -88,6 +88,8 @@ export default function CommentThread({
         <ShareMenu
           title={bilan.title}
           excerpt={bilan.mood}
+          targetType="bilan"
+          targetId={bilan.id}
           path={`/bilan-culturel?mois=${bilan.id}`}
           triggerClassName={styles.socialButton}
           data-testid="bilan-share"

@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 import { createTestDb } from './d1';
 import { SEED } from './fixtures';
-import { TEST_ENV } from './api-server';
+import { TEST_ENV, signTestToken } from './api-server';
 import { onRequestGet as feed, onRequest as feedRoute } from '../../functions/api/feed';
 import { onRequestGet as articles } from '../../functions/api/articles/index';
 import { onRequestGet as article } from '../../functions/api/articles/[id]';
@@ -27,8 +27,8 @@ function env(sql = SEED): Env {
   return { ...TEST_ENV, DB: db };
 }
 
-function get(url: string): Request {
-  return new Request(`http://localhost${url}`);
+function get(url: string, headers: Record<string, string> = {}): Request {
+  return new Request(`http://localhost${url}`, { headers });
 }
 
 async function json<T>(response: Response): Promise<T> {
@@ -153,6 +153,49 @@ describe('DB-3 /api/articles/:id', () => {
   });
 });
 
+describe('DB-3 /api/articles/:id recording a view', () => {
+  const views = async (database: Env) =>
+    (await database.DB!.prepare("SELECT views FROM articles WHERE id = 'un-dernier-ete'").first<{
+      views: number;
+    }>())?.views;
+  const hits = async (database: Env) =>
+    (await database.DB!
+      .prepare("SELECT count(*) AS total FROM view_hits WHERE target_type = 'article' AND target_id = 'un-dernier-ete'")
+      .first<{ total: number }>())?.total;
+
+  it('logs a hit and increments the counter for an ordinary reader', async () => {
+    const database = env();
+    await article({ request: get('/api/articles/un-dernier-ete'), env: database, params: { id: 'un-dernier-ete' } });
+    expect(await views(database)).toBe(2181); // SEED seeds 2180
+    expect(await hits(database)).toBe(1);
+  });
+
+  it('does not count a crawler’s visit', async () => {
+    const database = env();
+    await article({
+      request: get('/api/articles/un-dernier-ete', {
+        'user-agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+      }),
+      env: database,
+      params: { id: 'un-dernier-ete' },
+    });
+    expect(await views(database)).toBe(2180);
+    expect(await hits(database)).toBe(0);
+  });
+
+  it('does not count the signed-in editor’s own visit', async () => {
+    const database = env();
+    const token = await signTestToken();
+    await article({
+      request: get('/api/articles/un-dernier-ete', { authorization: `Bearer ${token}` }),
+      env: database,
+      params: { id: 'un-dernier-ete' },
+    });
+    expect(await views(database)).toBe(2180);
+    expect(await hits(database)).toBe(0);
+  });
+});
+
 describe('DB-3 /api/bilans', () => {
   it('summarises each month with its chips, its count and its first covers', async () => {
     const response = await bilans({ request: get('/api/bilans'), env: env() });
@@ -207,6 +250,38 @@ describe('DB-3 /api/bilans/:id', () => {
       params: { id: 'latest' },
     });
     expect(empty.status).toBe(404);
+  });
+});
+
+describe('DB-3 /api/bilans/:id recording a view', () => {
+  const views = async (database: Env) =>
+    (await database.DB!.prepare("SELECT views FROM bilans WHERE id = '2026-07'").first<{ views: number }>())
+      ?.views;
+
+  it('logs a hit and increments the counter, resolving `latest` to the real id first', async () => {
+    const database = env();
+    await bilan({ request: get('/api/bilans/latest'), env: database, params: { id: 'latest' } });
+    expect(await views(database)).toBe(3421); // SEED seeds 3420
+    const hits = await database.DB!
+      .prepare("SELECT target_id FROM view_hits WHERE target_type = 'bilan'")
+      .first<{ target_id: string }>();
+    expect(hits?.target_id).toBe('2026-07');
+  });
+
+  it('does not count a crawler’s or the editor’s own visit', async () => {
+    const database = env();
+    const token = await signTestToken();
+    await bilan({
+      request: get('/api/bilans/2026-07', { 'user-agent': 'facebookexternalhit/1.1' }),
+      env: database,
+      params: { id: '2026-07' },
+    });
+    await bilan({
+      request: get('/api/bilans/2026-07', { authorization: `Bearer ${token}` }),
+      env: database,
+      params: { id: '2026-07' },
+    });
+    expect(await views(database)).toBe(3420);
   });
 });
 

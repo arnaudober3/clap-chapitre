@@ -11,13 +11,15 @@
  *
  * Public: an unpublished avis is a 404 here, not a preview.
  */
+import { isAdminCaller } from '../../_lib/admin';
+import { isCrawler } from '../../_lib/audience';
 import { requireDb } from '../../_lib/env';
 import { dbUnavailable, getOnly, json, misconfigured, notFound } from '../../_lib/http';
 import { nestComments, rowToPublishedArticle, type Row } from '../../_lib/rows';
 import { ARTICLE_COLUMNS, ARTICLE_COLUMNS_FULL } from '../../_lib/articles';
 import type { D1Database, Handler } from '../../types';
 
-export const onRequestGet: Handler = async ({ env, params }) => {
+export const onRequestGet: Handler = async ({ request, env, params }) => {
   let db: D1Database;
   try {
     db = requireDb(env);
@@ -45,7 +47,12 @@ export const onRequestGet: Handler = async ({ env, params }) => {
     // order, and inserting an older avis never renumbers anything.
     const publishedAt = String((article as Row).published_at ?? '');
 
-    const [related, previous, next, bilan, comments] = await db.batch([
+    // A view is recorded for a real reader only: not a crawler, and not the
+    // editor's own visit to the page they just published.
+    const recordView =
+      !isCrawler(request.headers.get('user-agent')) && !(await isAdminCaller(request, env));
+
+    const batch = [
       db
         .prepare(
           `SELECT ${ARTICLE_COLUMNS}, ar.note AS note
@@ -99,7 +106,18 @@ export const onRequestGet: Handler = async ({ env, params }) => {
             ORDER BY position, comment_date, id`,
         )
         .bind(id),
-    ]);
+    ];
+
+    if (recordView) {
+      batch.push(
+        db
+          .prepare(`INSERT INTO view_hits (target_type, target_id, viewed_at) VALUES ('article', ?, datetime('now'))`)
+          .bind(id),
+        db.prepare(`UPDATE articles SET views = views + 1 WHERE id = ?`).bind(id),
+      );
+    }
+
+    const [related, previous, next, bilan, comments] = await db.batch(batch);
 
     return json({
       article: rowToPublishedArticle(article as Row),

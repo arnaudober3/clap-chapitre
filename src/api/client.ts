@@ -55,7 +55,13 @@ export function setUnauthorizedHandler(handler: UnauthorizedHandler | undefined)
 const inFlight = new Map<string, Promise<unknown>>();
 
 export interface GetOptions {
-  /** Send the admin bearer token. Required by every `/api/admin/**` route. */
+  /**
+   * Send the admin bearer token, if there is one. Required by every
+   * `/api/admin/**` route; also set by `useArticleView`/`useBilanView` on the
+   * public avis/bilan pages, so a signed-in editor's own reads can be told
+   * apart from a reader's — an anonymous visitor has no token, so the header
+   * is simply omitted for them.
+   */
   admin?: boolean;
   /** Abort when the caller unmounts or moves on. */
   signal?: AbortSignal;

@@ -248,9 +248,6 @@ VALUES ('threads',1,'Threads','@mariezoe · réactions à chaud','@','https://ww
        ('babelio',3,'Babelio','@mariezoe · ma bibliothèque','B','https://www.babelio.com/monprofil.php','Suivre'),
        ('linkedin',4,'LinkedIn','Marie-Zoé · le côté pro','in','https://www.linkedin.com/in/mariezoe/','Suivre');
 
-INSERT INTO stat_periods (id,label,position,is_default) VALUES ('7j','7 derniers jours',1,0),('30j','30 derniers jours',2,1);
-INSERT INTO stat_kpis (period_id,key,label,value,delta_pct,position) VALUES
- ('30j','views','Vues',8940,18,1),('30j','likes','Likes',314,9,2),
- ('7j','views','Vues',2180,6,1),('7j','likes','Likes',74,-4,2);
-INSERT INTO stat_trend (position,month_label,views) VALUES (1,'juil',8100),(2,'août',8940);
+-- No stat_periods insert here: migration 0003 seeds it (it's UI configuration,
+-- not content), so every test database already has it.
 `;

@@ -40,6 +40,7 @@ const ROUTES: ReadonlyArray<RoutePattern<string>> = [
   { pattern: '/api/pages/me-suivre', target: '/functions/api/pages/me-suivre.ts' },
   { pattern: '/api/comments', target: '/functions/api/comments.ts' },
   { pattern: '/api/likes', target: '/functions/api/likes.ts' },
+  { pattern: '/api/shares', target: '/functions/api/shares.ts' },
   { pattern: '/api/media/:key', target: '/functions/api/media/[key].ts' },
 
   { pattern: '/api/admin/dashboard', target: '/functions/api/admin/dashboard.ts' },

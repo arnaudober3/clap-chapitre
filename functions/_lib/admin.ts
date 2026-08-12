@@ -50,3 +50,28 @@ export async function requireAdmin(request: Request, env: Env): Promise<AdminChe
 
   return { ok: true, username: claims.sub, config };
 }
+
+/**
+ * Whether this request carries the editor's own session, on a public route
+ * that must serve everyone regardless of the answer.
+ *
+ * Unlike `requireAdmin`, this never fails closed — a missing header, a
+ * misconfigured deployment, or a stale token all resolve to `false` rather
+ * than an error, because the caller here is a public GET that has to succeed
+ * either way. It exists only so the editor's own visits to their own site
+ * (previewing what they just published) do not inflate the view count.
+ */
+export async function isAdminCaller(request: Request, env: Env): Promise<boolean> {
+  const match = BEARER.exec((request.headers.get('authorization') ?? '').trim());
+  if (!match) return false;
+
+  let config: AdminConfig;
+  try {
+    config = requireEnv(env);
+  } catch {
+    return false;
+  }
+
+  const claims = await verifyToken(match[1], config.jwtSecret);
+  return claims?.sub === config.username;
+}

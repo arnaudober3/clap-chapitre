@@ -1,12 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { apiSend } from '../../../api/client';
 import {
   COPY_LINK_ICON,
   SHARE_CHANNELS,
   absoluteUrl,
+  type ShareChannel,
   type ShareTarget,
 } from '../../../share';
 import styles from './ShareMenu.module.css';
+
+/**
+ * Records a click on a share destination. Fire-and-forget: the actual share
+ * (a navigation, a clipboard write) never waits on this, and a failure here
+ * — offline, a misconfigured deployment — must not stop the reader from
+ * sharing the page.
+ */
+function recordShare(targetType: 'article' | 'bilan', targetId: string, channel: ShareChannel | 'copy'): void {
+  void apiSend('/api/shares', 'POST', { targetType, targetId, channel }).catch(() => {});
+}
 
 /** How long "Lien copié" stays up before the menu closes itself. */
 const COPIED_MS = 1200;
@@ -31,6 +43,9 @@ export interface ShareMenuProps {
   title: string;
   /** Optional teaser used as the email body. */
   excerpt?: string;
+  /** What is being shared, for the share tracking endpoint. */
+  targetType: 'article' | 'bilan';
+  targetId: string;
   /**
    * In-app path to share, when the current location is not the canonical one —
    * `/bilan-culturel` shares as `/bilan-culturel?mois=<id>` so the link keeps
@@ -64,6 +79,8 @@ export interface ShareMenuProps {
 export default function ShareMenu({
   title,
   excerpt,
+  targetType,
+  targetId,
   path,
   triggerClassName,
   placement = 'bottom',
@@ -118,6 +135,7 @@ export default function ShareMenu({
     try {
       await navigator.clipboard.writeText(target.url);
       setCopied(true);
+      recordShare(targetType, targetId, 'copy');
     } catch {
       // Clipboard denied or unavailable: the menu stays open on its other
       // entries rather than claiming a copy that did not happen.
@@ -164,7 +182,10 @@ export default function ShareMenu({
                 {...(entry.external
                   ? { target: '_blank', rel: 'noopener noreferrer' }
                   : {})}
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  recordShare(targetType, targetId, entry.channel);
+                  setOpen(false);
+                }}
               >
                 <Icon path={entry.icon} />
                 {entry.label}

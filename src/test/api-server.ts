@@ -22,6 +22,7 @@ import { onRequest as aproposRoute } from '../../functions/api/pages/apropos';
 import { onRequest as meSuivreRoute } from '../../functions/api/pages/me-suivre';
 import { onRequest as commentsRoute } from '../../functions/api/comments';
 import { onRequest as likesRoute } from '../../functions/api/likes';
+import { onRequest as sharesRoute } from '../../functions/api/shares';
 import { onRequest as mediaRoute } from '../../functions/api/media/[key]';
 import { onRequest as adminDashboardRoute } from '../../functions/api/admin/dashboard';
 import { onRequest as adminUploadsRoute } from '../../functions/api/admin/uploads';
@@ -113,6 +114,7 @@ const ROUTES: ReadonlyArray<RoutePattern<Handler>> = [
   { pattern: '/api/pages/me-suivre', target: meSuivreRoute },
   { pattern: '/api/comments', target: commentsRoute },
   { pattern: '/api/likes', target: likesRoute },
+  { pattern: '/api/shares', target: sharesRoute },
   { pattern: '/api/media/:key', target: mediaRoute },
 
   { pattern: '/api/admin/dashboard', target: adminDashboardRoute },

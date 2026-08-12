@@ -18,8 +18,15 @@ alive locally.
 created, saved, published, unpublished and deleted; the "À propos" and "Me
 suivre" pages are saved whole. Visitors can post comments — which land in a
 moderation queue and stay invisible until released from `/admin/commentaires` —
-and toggle a ♡, deduplicated per address. Covers and the portrait are real
-images in R2, uploaded from the forms.
+toggle a ♡, deduplicated per address, and share to a channel. Covers and the
+portrait are real images in R2, uploaded from the forms.
+
+**The admin dashboard's KPI band and 12-month trend are computed from real
+audience events**, not stored placeholders: every visit to a published avis or
+bilan, every like, every approved comment and every share click is logged
+(`view_hits`, `share_hits`, `likes.created_at`, `comments.created_at`), and
+`GET /api/admin/dashboard` derives the four cards' values and deltas, and the
+trend's points, from those tables at read time.
 
 Three actions, not one, in every editor (`src/components/ui/EditorActions`):
 **Enregistrer** stores without touching the publication state, **Publier** /
@@ -79,6 +86,7 @@ GET  /api/pages/me-suivre             the "Me suivre" page
 GET  /api/media/:key                  an image, cached a year (see the R2 section)
 POST /api/comments                    deposits a comment in moderation → 201 { queued }
 POST /api/likes                       toggles a ♡ → 200 { likes, liked }
+POST /api/shares                      records a share click → 201 { recorded }
 
 GET    /api/admin/articles?status=&medium=&search=&sort=&page=  listing + catalogue totals
 POST   /api/admin/articles                                      creates → 201 { id }
@@ -96,7 +104,7 @@ GET    /api/admin/comments?status=&page=                        the moderation q
 PUT    /api/admin/comments/:id                                  approves (or re-queues)
 DELETE /api/admin/comments/:id                                  204
 POST   /api/admin/uploads?kind=                                 raw image bytes → 201 { key }
-GET    /api/admin/dashboard?period=                             the six cards, one request
+GET    /api/admin/dashboard?period=                             the six cards, computed from real events
 ```
 
 Two rules run through all of them. **One page, one request**: the avis view
@@ -140,12 +148,13 @@ accepting slightly different things.
 - Deleting an avis or a bilan clears its `comments` and `likes` **by hand**:
   both carry a polymorphic `target_id` with no foreign key to cascade through.
 
-**Public writes** — the only two routes an anonymous caller can write through,
-and the guards are layered cheapest-first: a honeypot field, a three-second
-minimum since the composer mounted (bounded at both ends — `Number(null)` is 0,
-which would otherwise read as "opened at the epoch"), then a sliding window in
-`rate_hits` keyed on a salted IP digest. The first two answer **201 anyway** and
-write nothing: telling a bot which check caught it tells it what to change.
+**Public writes** — the three routes an anonymous caller can write through.
+`/api/comments` layers its guards cheapest-first: a honeypot field, a
+three-second minimum since the composer mounted (bounded at both ends —
+`Number(null)` is 0, which would otherwise read as "opened at the epoch"), then
+a sliding window in `rate_hits` keyed on a salted IP digest. The first two
+answer **201 anyway** and write nothing: telling a bot which check caught it
+tells it what to change.
 
 None of that is the real guard. A comment lands `pending` and is invisible until
 released — so every query reading `comments` filters `status = 'approved'`,
@@ -158,6 +167,12 @@ then cannot make it drift. `IP_SALT` is what makes the digest useless outside
 this deployment; it is deliberately not `JWT_SECRET`, whose rotation is meant to
 end sessions and should not also wipe every like. Missing salt is a 500, never
 an unthrottled write.
+
+`/api/shares` has no free-text field, so it skips the honeypot and the timing
+check — a crawler User-Agent (`_lib/audience.ts`) gets the same quiet 201 the
+other two guards give, and the same sliding window applies, just wider (twenty
+per quarter hour, since sharing several avis in a row is ordinary reader
+behaviour, not a flood).
 
 **Admin auth**.
 
@@ -204,7 +219,10 @@ makes it testable.
 **The D1 database** (`DB` binding, `wrangler.toml`) holds the whole site.
 `migrations/0000_socle.sql` is the probe `GET /api/db-health` reads (200 wired and
 migrated, 503 not migrated, 500 no binding at all); `migrations/0001_contenu.sql`
-is the content schema. Its decisions, worth knowing before changing a query:
+is the content schema, `migrations/0002_ecriture.sql` adds moderation, the likes
+registry and the rate limiter, and `migrations/0003_audience.sql` adds the
+audience events (`view_hits`, `share_hits`) the dashboard now reads. Its
+decisions, worth knowing before changing a query:
 
 - **One `articles` table** for the feed avis and the bilan ones alike. The
   prototype kept two sets, which is why an avis could be reachable at
@@ -224,6 +242,17 @@ is the content schema. Its decisions, worth knowing before changing a query:
 - Accent-insensitive search is an expression built in `functions/_lib/sql.ts`; it
   must fold exactly like `fold()` in `functions/_lib/text.ts` and `src/format.ts`,
   or "été" stops matching "ete" with nothing to show why.
+- `view_hits`/`share_hits` are append-only, on the shape of `rate_hits` but
+  without an `ip_hash`: a view is a plain counted hit, not deduplicated per
+  visitor, and — unlike `rate_hits` — never purged, since the trend needs
+  twelve months of history. `articles.views`/`bilans.views` stay the fast
+  running counter the leaderboard sorts by; `view_hits` exists only so the
+  dashboard can bucket views by time. Recorded for neither a crawler UA nor
+  the signed-in editor's own reads of the page they just published
+  (`isCrawler`/`isAdminCaller` in `functions/_lib/audience.ts` and
+  `_lib/admin.ts`) — the second of which is why `useArticleView`/
+  `useBilanView` opportunistically send the admin bearer token on an
+  otherwise-public route.
 
 Local data lives in `.wrangler/state/v3` (gitignored), and `getPlatformProxy()`
 persists to that same directory — so `npm run dev` and `npm run preview:cf` share
