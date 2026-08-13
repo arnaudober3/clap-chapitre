@@ -2,7 +2,7 @@
  * Routes `fetch` to the real Cloudflare Functions, in-process.
  *
  * No `vi.mock` anywhere in the suite: the client code under test runs against
- * the actual handlers, JSON serialisation and HTTP status codes included. The
+ * the actual handlers, JSON serialization and HTTP status codes included. The
  * only thing simulated is the wire between them — and, since the content moved
  * into D1, the database, which is a real SQLite one (`./d1.ts`) carrying the
  * project's own migrations. So a page test exercises the component, the hook,
@@ -34,12 +34,19 @@ import { onRequest as adminCommentsRoute } from '../../functions/api/admin/comme
 import { onRequest as adminCommentRoute } from '../../functions/api/admin/comments/[id]';
 import { onRequest as adminAproposRoute } from '../../functions/api/admin/pages/apropos';
 import { onRequest as adminMeSuivreRoute } from '../../functions/api/admin/pages/me-suivre';
+import { onRequest as newsletterSubscribeRoute } from '../../functions/api/newsletter/subscribe';
+import { onRequest as newsletterUnsubscribeRoute } from '../../functions/api/newsletter/unsubscribe';
+import { onRequest as adminNewsletterRoute } from '../../functions/api/admin/newsletter/index';
+import { onRequest as adminNewsletterDispatchRoute } from '../../functions/api/admin/newsletter/dispatch';
+import { onRequest as adminNewsletterSendRoute } from '../../functions/api/admin/newsletter/send/[bilanId]';
+import { onRequest as adminNewsletterTestRoute } from '../../functions/api/admin/newsletter/test/[bilanId]';
+import { onRequest as adminNewsletterScheduleRoute } from '../../functions/api/admin/newsletter/schedule/[bilanId]';
 import { sha256Hex } from '../../functions/_lib/crypto';
 import { signToken, TOKEN_TTL_MS } from '../../functions/_lib/jwt';
 import type { D1Database, Env, Handler } from '../../functions/types';
 import { matchRoute, type RoutePattern } from '../../vite/routeMatch';
 import { createTestDb } from './d1';
-import { createTestBucket, type TestBucket } from './r2';
+import { type TestBucket } from './r2';
 import { TEST_JWT_SECRET, TEST_PASSWORD, TEST_USERNAME } from './credentials';
 
 export const TEST_ENV: Env = {
@@ -53,6 +60,13 @@ export const TEST_ENV: Env = {
   // baseline env rather than something each test remembers to add. The `DB` and
   // `MEDIA` bindings stay out — see below.
   IP_SALT: 'sel-de-test-pour-les-ip',
+  NEWSLETTER_UNSUB_SECRET: 'secret-de-test-pour-le-desabonnement',
+  CRON_SECRET: 'secret-de-test-pour-le-cron',
+  // Resend itself is stubbed below (see `installApiStub`'s `api.resend.com`
+  // branch), so a fake key/from-address is enough for every newsletter route
+  // to run without answering misconfigured().
+  RESEND_API_KEY: 'cle-de-test-resend',
+  NEWSLETTER_FROM: '"Clap et chapitre" <newsletter@test.local>',
 };
 
 /**
@@ -69,10 +83,10 @@ let database: (D1Database & { close(): void }) | undefined;
  * Per test rather than per file: one test inserting a draft must not change what
  * the next one counts.
  */
-export function useTestDb(sql?: string): D1Database {
+export async function useTestDb(sql?: string): Promise<D1Database> {
   database?.close();
   database = createTestDb();
-  if (sql) database.exec(sql);
+  if (sql) await database.exec(sql);
   return database;
 }
 
@@ -82,17 +96,24 @@ export function useTestDb(sql?: string): D1Database {
  */
 let bucket: TestBucket | undefined;
 
-/** Start a fresh bucket for the current test. Returns it, for asserting on keys. */
-export function useTestBucket(): TestBucket {
-  bucket = createTestBucket();
-  return bucket;
-}
-
 /** Drop the database and the bucket. Called from the global `afterEach`. */
 export function resetTestDb(): void {
   database?.close();
   database = undefined;
   bucket = undefined;
+  resendOutcome = 'ok';
+}
+
+/**
+ * The one external dependency the app calls: Resend. Stubbed at the same
+ * `fetch` seam as everything else — `_lib/email.ts` runs unmodified inside
+ * the handler, and the test controls whether the call succeeds. Defaults to
+ * 'ok' and resets with the rest of a test's state in `resetTestDb`.
+ */
+let resendOutcome: 'ok' | 'fail' = 'ok';
+
+export function setResendOutcome(outcome: 'ok' | 'fail'): void {
+  resendOutcome = outcome;
 }
 
 /**
@@ -127,6 +148,13 @@ const ROUTES: ReadonlyArray<RoutePattern<Handler>> = [
   { pattern: '/api/admin/comments/:id', target: adminCommentRoute },
   { pattern: '/api/admin/pages/apropos', target: adminAproposRoute },
   { pattern: '/api/admin/pages/me-suivre', target: adminMeSuivreRoute },
+  { pattern: '/api/newsletter/subscribe', target: newsletterSubscribeRoute },
+  { pattern: '/api/newsletter/unsubscribe', target: newsletterUnsubscribeRoute },
+  { pattern: '/api/admin/newsletter', target: adminNewsletterRoute },
+  { pattern: '/api/admin/newsletter/dispatch', target: adminNewsletterDispatchRoute },
+  { pattern: '/api/admin/newsletter/send/:bilanId', target: adminNewsletterSendRoute },
+  { pattern: '/api/admin/newsletter/test/:bilanId', target: adminNewsletterTestRoute },
+  { pattern: '/api/admin/newsletter/schedule/:bilanId', target: adminNewsletterScheduleRoute },
 ];
 
 /**
@@ -142,7 +170,17 @@ export function signTestToken(
 
 export function installApiStub(): void {
   globalThis.fetch = async (input, init) => {
-    const request = new Request(new URL(String(input), 'http://localhost'), init);
+    const target = new URL(String(input), 'http://localhost');
+
+    // Resend, the app's one outbound HTTP dependency, called from inside a
+    // handler running on this very fetch — never the real network.
+    if (target.hostname === 'api.resend.com') {
+      return resendOutcome === 'ok'
+        ? new Response(JSON.stringify({ id: 'stub-resend-id' }), { status: 200 })
+        : new Response(JSON.stringify({ error: 'stubbed failure' }), { status: 502 });
+    }
+
+    const request = new Request(target, init);
     const route = matchRoute(new URL(request.url).pathname, ROUTES);
     // Throwing is what a real fetch does for an unreachable host — which both
     // exercises the offline branch and guarantees no test reaches the network.

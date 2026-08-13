@@ -31,7 +31,7 @@ function read(env: Partial<Env>, key: keyof Env): string {
 export function requireEnv(env: Partial<Env> | undefined): AdminConfig {
   if (!env) throw new Error("Contexte d'exécution sans environnement.");
 
-  // Same normalisation the mock applied: `.dev.vars` is hand-edited, so stray
+  // Same normalization the mock applied: `.dev.vars` is hand-edited, so stray
   // case or spacing is expected. This is the canonical form the `sub` carries.
   const username = read(env, 'ADMIN_USERNAME').toLowerCase();
   const passwordHash = read(env, 'ADMIN_PASSWORD_HASH').toLowerCase();
@@ -106,4 +106,43 @@ export function requireIpSalt(env: Partial<Env> | undefined): string {
     throw new Error('IP_SALT doit faire au moins 16 caractères.');
   }
   return salt;
+}
+
+/** The Resend API key. Same fail-closed stance as requireDb/requireBucket. */
+export function requireResendKey(env: Partial<Env> | undefined): string {
+  if (!env) throw new Error("Contexte d'exécution sans environnement.");
+  return read(env, 'RESEND_API_KEY');
+}
+
+/** The newsletter's verified "From" address. */
+export function requireNewsletterFrom(env: Partial<Env> | undefined): string {
+  if (!env) throw new Error("Contexte d'exécution sans environnement.");
+  return read(env, 'NEWSLETTER_FROM');
+}
+
+/**
+ * The HMAC key behind unsubscribe tokens, deliberately not JWT_SECRET — same
+ * reasoning as requireIpSalt: rotating a session secret must not invalidate
+ * every unsubscribe link already sent.
+ */
+export function requireUnsubSecret(env: Partial<Env> | undefined): string {
+  if (!env) throw new Error("Contexte d'exécution sans environnement.");
+  const secret = read(env, 'NEWSLETTER_UNSUB_SECRET');
+  if (secret.length < 16) {
+    throw new Error('NEWSLETTER_UNSUB_SECRET doit faire au moins 16 caractères.');
+  }
+  return secret;
+}
+
+/**
+ * The shared secret the cron Worker presents. Kept separate from AdminConfig:
+ * the caller here is a machine on a timer, not a signed-in editor.
+ */
+export function requireCronSecret(env: Partial<Env> | undefined): string {
+  if (!env) throw new Error("Contexte d'exécution sans environnement.");
+  const secret = read(env, 'CRON_SECRET');
+  if (secret.length < 16) {
+    throw new Error('CRON_SECRET doit faire au moins 16 caractères.');
+  }
+  return secret;
 }

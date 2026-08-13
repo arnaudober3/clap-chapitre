@@ -1,0 +1,35 @@
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 48px 24px;
+}
+
+.card {
+  max-width: 440px;
+  text-align: center;
+}
+
+.title {
+  margin: 0 0 12px;
+  font-family: var(--font-serif), sans-serif;
+  font-weight: 400;
+  font-size: 28px;
+  color: var(--ink);
+}
+
+.copy {
+  margin: 0 0 20px;
+  color: var(--faint);
+}
+
+.link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

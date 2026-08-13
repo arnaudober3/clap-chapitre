@@ -96,6 +96,28 @@ export function optionalText(
   return trimmed === '' ? undefined : trimmed;
 }
 
+/** A permissive but real address shape — same bar `isPlausibleEmail` sets client-side. */
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * A required e-mail address. Trimmed and lowercased — the newsletter table
+ * treats an address as its own identity, so two callers spelling it
+ * differently must not become two rows.
+ */
+export function email(
+  body: Record<string, unknown>,
+  field: string,
+  opts: { max: number },
+): string {
+  const value = body[field];
+  if (typeof value !== 'string') throw new BodyError(field);
+  const trimmed = value.trim().toLowerCase();
+  if (trimmed === '' || trimmed.length > opts.max || !EMAIL_SHAPE.test(trimmed)) {
+    throw new BodyError(field);
+  }
+  return trimmed;
+}
+
 /**
  * A string from a closed set — status, medium, target type. The frozen list is
  * the caller's, so this stays the single check for every enumeration rather

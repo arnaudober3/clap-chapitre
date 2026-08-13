@@ -1,0 +1,27 @@
+# A second, independent Worker — not part of the `clap-chapitre` Pages project
+# (whose wrangler.toml sits at the repo root). Pages Functions have no cron
+# support; only a standalone Worker does. This one does a single thing: ping
+# the Pages project's dispatch endpoint on a timer, so a scheduled newsletter
+# actually fires unattended.
+#
+# Deployed on its own, from this directory:
+#
+#     cd cron-newsletter
+#     npx wrangler secret put CRON_SECRET   # same value as the Pages project's
+#     npx wrangler deploy
+#
+# Not wired into the root `npm run deploy` — a one-time-then-forget step.
+name = "clap-chapitre-newsletter-cron"
+main = "src/index.ts"
+compatibility_date = "2026-07-01"
+
+# Every 15 minutes. A newsletter is not minute-sensitive, and this costs
+# nothing extra to tighten later if it ever needs to be.
+[triggers]
+crons = ["*/15 * * * *"]
+
+# The production Pages URL. Not sensitive — a plain var, not a secret — but
+# worth double-checking: pointed at a preview URL by mistake, real sends would
+# carry a *.pages.dev origin in their unsubscribe/CTA links.
+[vars]
+DISPATCH_URL = "https://clap-chapitre.pages.dev/api/admin/newsletter/dispatch"

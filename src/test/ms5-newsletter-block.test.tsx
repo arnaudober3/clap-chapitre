@@ -5,6 +5,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { NewsletterBlock } from '../components/ui';
+import { useTestDb } from './api-server';
 
 const root = resolve(__dirname, '../..');
 const read = (path: string) => readFileSync(resolve(root, path), 'utf8');
@@ -19,7 +20,8 @@ const meSuivreCss = read('src/pages/MeSuivre/MeSuivre.module.css');
 const aproposCss = read('src/pages/APropos/APropos.module.css');
 
 describe('MS-5 shared NewsletterBlock', () => {
-  it("variant='band' renders the copy and an inert signup form", async () => {
+  it("variant='band' renders the copy and a real signup form", () => {
+    useTestDb();
     const user = userEvent.setup();
     const { container } = render(
       <NewsletterBlock
@@ -39,20 +41,26 @@ describe('MS-5 shared NewsletterBlock', () => {
     expect(input).toHaveAttribute('type', 'email');
     expect(input).toHaveAttribute('placeholder', 'votre@email.fr');
 
+    // The honeypot: off-screen, unreachable by a keyboard user.
+    const trap = container.querySelector('input[name="website"]');
+    expect(trap).toHaveAttribute('aria-hidden', 'true');
+    expect(trap).toHaveAttribute('tabindex', '-1');
+
     const form = container.querySelector('form') as HTMLFormElement;
 
     await user.type(input, 'a@b.fr');
     expect((input as HTMLInputElement).value).toBe('a@b.fr');
     await user.click(screen.getByRole('button', { name: 'S’abonner' }));
-    // dispatchEvent returns false exactly when preventDefault() was called.
-    // Probe the dispatch result, NOT a listener on the form: React 18
-    // delegates at the root container, so a form-level listener runs before
-    // the onSubmit handler and would always read defaultPrevented === false.
+    // dispatchEvent returns false exactly when preventDefault() was called —
+    // the form no longer stays inert past that point, but a submit must
+    // never navigate or reload regardless of what the write does next.
     expect(fireEvent.submit(form)).toBe(false);
-    expect(screen.queryByText(/merci|erreur|succès/i)).not.toBeInTheDocument();
+    expect(await screen.findByText('Merci ! Vous êtes abonné·e.')).toBeInTheDocument();
+    expect((input as HTMLInputElement).value).toBe('');
   });
 
-  it("variant='feature' renders the eyebrow and the same inert form", async () => {
+  it("variant='feature' renders the eyebrow and subscribes for real", () => {
+    useTestDb();
     const user = userEvent.setup();
     const { container } = render(
       <NewsletterBlock
@@ -71,8 +79,28 @@ describe('MS-5 shared NewsletterBlock', () => {
     expect(screen.getByText('Le bilan complet.')).toBeInTheDocument();
 
     const form = container.querySelector('form') as HTMLFormElement;
+    await user.type(screen.getByLabelText('Adresse e-mail'), 'c@d.fr');
     await user.click(screen.getByRole('button', { name: 'S’abonner' }));
     expect(fireEvent.submit(form)).toBe(false);
+    expect(await screen.findByText('Merci ! Vous êtes abonné·e.')).toBeInTheDocument();
+  });
+
+  it('rejects an implausible address before any write, on either form variant', async () => {
+    const user = userEvent.setup();
+    render(
+      <NewsletterBlock
+        variant="band"
+        title="Le courrier du mois"
+        copy="Une lettre par mois."
+        placeholder="votre@email.fr"
+        cta="S’abonner"
+      />,
+    );
+    await user.type(screen.getByLabelText('Adresse e-mail'), 'a@b');
+    await user.click(screen.getByRole('button', { name: 'S’abonner' }));
+    expect(
+      await screen.findByText('Cette adresse ne ressemble pas à un e-mail.'),
+    ).toBeInTheDocument();
   });
 
   it("variant='compact' renders a router Link and no form", () => {

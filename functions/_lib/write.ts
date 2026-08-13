@@ -78,17 +78,26 @@ export function slugify(title: string): string {
  * bounded: an editor with 50 identically-titled avis has a different problem.
  */
 export async function uniqueId(db: D1Database, title: string): Promise<string> {
-  const base = slugify(title);
+  return uniqueIdIn(db, 'articles', slugify(title));
+}
+
+/**
+ * The same collision-avoiding loop, against any table with a TEXT primary key
+ * named `id`. `articles` (via `uniqueId` above) and `newsletter_sends` both
+ * want it, and a single loop is what keeps a third caller from reimplementing
+ * it slightly differently.
+ */
+export async function uniqueIdIn(db: D1Database, table: string, base: string): Promise<string> {
   for (let suffix = 1; suffix <= 50; suffix += 1) {
     const candidate = suffix === 1 ? base : `${base}-${suffix}`;
     const clash = await db
-      .prepare('SELECT 1 AS taken FROM articles WHERE id = ?')
+      .prepare(`SELECT 1 AS taken FROM ${table} WHERE id = ?`)
       .bind(candidate)
       .first();
     if (!clash) return candidate;
   }
   // Deterministic rather than random: the suite forbids Date.now()/Math.random()
-  // in generated ids, and 50 collisions on one title never happen in practice.
+  // in generated ids, and 50 collisions on one base never happen in practice.
   return `${base}-${slugify(now())}`;
 }
 

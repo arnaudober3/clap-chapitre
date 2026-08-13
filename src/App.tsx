@@ -10,6 +10,7 @@ import BilanCulturelArchivesPage from "./pages/BilanCulturelArchives";
 import AvisArchivesPage from "./pages/AvisArchives";
 import AProposPage from "./pages/APropos";
 import MeSuivrePage from "./pages/MeSuivre";
+import UnsubscribePage from "./pages/Unsubscribe";
 import AdminLoginPage from "./pages/AdminLogin";
 import AdminDashboardPage from "./pages/AdminDashboard";
 import AdminArticlesPage from "./pages/AdminArticles";
@@ -50,6 +51,7 @@ export default function App() {
           />
           <Route path="/a-propos" element={<AProposPage />} />
           <Route path="/me-suivre" element={<MeSuivrePage />} />
+          <Route path="/desinscription" element={<UnsubscribePage />} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Route>

@@ -239,3 +239,72 @@ export function toggleLike(
     targetId,
   });
 }
+
+export interface NewsletterSubscribePayload {
+  email: string;
+  /** The honeypot. Always sent, always empty when a human filled the form. */
+  trap: string;
+  /** When the form mounted — the server refuses anything faster than 3 s. */
+  openedAt: number;
+}
+
+/** Subscribes an address. Answers `{ subscribed: true }` and nothing else — same "queued, not the row" rule as `postComment`. */
+export function subscribeNewsletter(payload: NewsletterSubscribePayload): Promise<{ subscribed: true }> {
+  return apiSend<{ subscribed: true }>('/api/newsletter/subscribe', 'POST', payload);
+}
+
+/** Unsubscribes by token — idempotent, so a link clicked twice is still a success. */
+export function unsubscribeNewsletter(token: string): Promise<{ unsubscribed: true }> {
+  return apiSend<{ unsubscribed: true }>('/api/newsletter/unsubscribe', 'POST', { token });
+}
+
+/* -------------------------------------------------------------------------- *
+ * Newsletter — admin
+ * -------------------------------------------------------------------------- */
+
+/** Sends the edition generated from `bilanId` to every subscribed address. */
+export function sendNewsletter(
+  bilanId: string,
+  subject: string,
+): Promise<{ id: string; recipientCount: number; failureCount: number }> {
+  return apiSend(`/api/admin/newsletter/send/${encodeURIComponent(bilanId)}`, 'POST', { subject }, ADMIN);
+}
+
+/** Sends a proof of the edition to one private address. Not logged as a real send. */
+export function sendNewsletterTest(
+  bilanId: string,
+  subject: string,
+  email: string,
+): Promise<{ sent: true }> {
+  return apiSend(
+    `/api/admin/newsletter/test/${encodeURIComponent(bilanId)}`,
+    'POST',
+    { subject, email },
+    ADMIN,
+  );
+}
+
+/** Books a future send — the date/time are Europe/Paris local, converted server-side. */
+export function scheduleNewsletter(
+  bilanId: string,
+  subject: string,
+  date: string,
+  time: string,
+): Promise<{ scheduledAt: string }> {
+  return apiSend(
+    `/api/admin/newsletter/schedule/${encodeURIComponent(bilanId)}`,
+    'POST',
+    { subject, date, time },
+    ADMIN,
+  );
+}
+
+/** Cancels a booked send. */
+export function cancelNewsletterSchedule(bilanId: string): Promise<void> {
+  return apiSend<void>(
+    `/api/admin/newsletter/schedule/${encodeURIComponent(bilanId)}`,
+    'DELETE',
+    undefined,
+    ADMIN,
+  );
+}

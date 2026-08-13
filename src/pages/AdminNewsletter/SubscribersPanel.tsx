@@ -1,19 +1,19 @@
 import { frNumber, signedNumber } from '../../format';
-import type { SendRecord, SubscriberStats } from '../../mock/newsletter';
+import type { NewsletterSendRecord, NewsletterStats } from '../../api/admin';
+import { instantLabel } from '../../newsletter';
 import styles from './AdminNewsletter.module.css';
 
 /**
- * The "Abonnés" card (design 6e): the audience at a glance, then the editions
- * already mailed with their open rate. Both lists come from the page, which is
- * the one place that reads the mock: `sends` so an edition mailed during the
- * session leads the list (React state only, nothing is written back).
+ * The "Abonnés" card: the audience at a glance, then the editions already
+ * mailed. No open rate — the site does not track opens (no tracking pixel),
+ * so there is nothing to show there.
  */
 export default function SubscribersPanel({
   stats,
   sends,
 }: {
-  stats: SubscriberStats;
-  sends: SendRecord[];
+  stats: NewsletterStats;
+  sends: NewsletterSendRecord[];
 }) {
   // A month can lose more subscribers than it gains, so the delta carries its
   // own sign and reads terracotta when it does — same code as the dashboard KPIs.
@@ -41,24 +41,19 @@ export default function SubscribersPanel({
           </div>
           <div className={styles.statLabel}>ce mois</div>
         </div>
-        <div className={styles.stat}>
-          {/* The mean across every edition ever mailed — see SubscriberStats.
-              The rows below carry each send's own rate instead. */}
-          <div className={styles.statValue}>{stats.openRatePct}%</div>
-          <div className={styles.statLabel}>ouverture</div>
-        </div>
       </div>
 
       <p className={`${styles.cardLabel} ${styles.sendsLabel}`}>Derniers envois</p>
       <ul className={styles.sends} data-testid="newsletter-sends">
+        {sends.length === 0 && (
+          <li className={styles.sendRow}>
+            <span>Aucun envoi pour l'instant.</span>
+          </li>
+        )}
         {sends.map((send) => (
           <li key={send.id} className={styles.sendRow}>
             <span>{send.title}</span>
-            <span className={styles.sendMeta}>
-              {send.openRatePct === undefined
-                ? send.dateLabel
-                : `${send.dateLabel} · ${send.openRatePct}%`}
-            </span>
+            <span className={styles.sendMeta}>{instantLabel(send.sentAt)}</span>
           </li>
         ))}
       </ul>
