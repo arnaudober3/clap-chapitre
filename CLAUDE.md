@@ -34,8 +34,18 @@ Three actions, not one, in every editor (`src/components/ui/EditorActions`):
 not express the difference, and a draft going live because "Enregistrer" was the
 only control on screen is exactly the mistake this prevents.
 
-What is left of `src/mock/` is the newsletter, which is out of that scope and
-still runs on static data.
+**The newsletter sends real e-mail**, through Resend. "Le courrier du mois" is
+generated from a bilan (`src/newsletter.ts` client-side, `functions/_lib/
+newsletter-email.ts` server-side — the same shape, deliberately duplicated
+rather than shared across the `src`/`functions` boundary). Visitors subscribe
+and unsubscribe for real (`/api/newsletter/subscribe`, `/api/newsletter/
+unsubscribe`, the latter reached from `/desinscription?token=...`); the admin
+can send now, send a test to a private address, or schedule a send for later
+(Europe/Paris local time, converted to UTC — `functions/_lib/schedule.ts`).
+Scheduled sends fire unattended: `functions/api/admin/newsletter/dispatch.ts`
+is polled by a small, **separate** Cloudflare Worker with a Cron Trigger —
+`cron-newsletter/`, its own `wrangler.toml`, deployed on its own — since Pages
+Functions carry no cron support. `src/mock/` no longer exists.
 
 ## Commands
 
@@ -87,6 +97,8 @@ GET  /api/media/:key                  an image, cached a year (see the R2 sectio
 POST /api/comments                    deposits a comment in moderation → 201 { queued }
 POST /api/likes                       toggles a ♡ → 200 { likes, liked }
 POST /api/shares                      records a share click → 201 { recorded }
+POST /api/newsletter/subscribe        (re)subscribes an address → 201 { subscribed: true }
+POST /api/newsletter/unsubscribe      flips a token to unsubscribed → 200 { unsubscribed: true } | 404
 
 GET    /api/admin/articles?status=&medium=&search=&sort=&page=  listing + catalogue totals
 POST   /api/admin/articles                                      creates → 201 { id }
@@ -105,6 +117,12 @@ PUT    /api/admin/comments/:id                                  approves (or re-
 DELETE /api/admin/comments/:id                                  204
 POST   /api/admin/uploads?kind=                                 raw image bytes → 201 { key }
 GET    /api/admin/dashboard?period=                             the six cards, computed from real events
+GET    /api/admin/newsletter                                    audience stats, send history, what's scheduled
+POST   /api/admin/newsletter/send/:bilanId                      sends the edition now → 201 | 404 | 409
+POST   /api/admin/newsletter/test/:bilanId                      sends one proof copy → 200 { sent: true }
+POST   /api/admin/newsletter/schedule/:bilanId                  books a future send → 201 | 422 | 409
+DELETE /api/admin/newsletter/schedule/:bilanId                  cancels a booking → 204
+POST   /api/admin/newsletter/dispatch                           fires due sends; X-Cron-Secret, not the admin JWT
 ```
 
 Two rules run through all of them. **One page, one request**: the avis view
@@ -207,7 +225,14 @@ Secrets: `.dev.vars` locally (gitignored, see `.dev.vars.example`), Cloudflare
 Pages secrets in production — `wrangler pages secret put <KEY>`, repeated with
 `--env preview` or previews answer 500. Rotating `ADMIN_PASSWORD_HASH` changes
 the password without ending live sessions; rotating `JWT_SECRET` ends all of them
-at once. `IP_SALT` is the third secret — see the public-write rules above.
+at once. `IP_SALT` is the third secret — see the public-write rules above. The
+newsletter adds four more: `RESEND_API_KEY` and `NEWSLETTER_FROM` (a domain
+verified in Resend, created outside this repo), `NEWSLETTER_UNSUB_SECRET` (the
+HMAC key behind every unsubscribe token — separate from `JWT_SECRET` for the
+same reason `IP_SALT` is: rotating a session secret must not invalidate a link
+already sitting in an inbox), and `CRON_SECRET` (checked on `POST
+/api/admin/newsletter/dispatch`, and set again, identically, on the standalone
+`cron-newsletter/` Worker that calls it).
 
 Known gap, and it is only about **sign-in**: no application-level rate limit
 there, just a 250ms delay on failure, because the runtime cannot count between
@@ -220,9 +245,10 @@ makes it testable.
 `migrations/0000_socle.sql` is the probe `GET /api/db-health` reads (200 wired and
 migrated, 503 not migrated, 500 no binding at all); `migrations/0001_contenu.sql`
 is the content schema, `migrations/0002_ecriture.sql` adds moderation, the likes
-registry and the rate limiter, and `migrations/0003_audience.sql` adds the
-audience events (`view_hits`, `share_hits`) the dashboard now reads. Its
-decisions, worth knowing before changing a query:
+registry and the rate limiter, `migrations/0003_audience.sql` adds the
+audience events (`view_hits`, `share_hits`) the dashboard now reads, and
+`migrations/0004_newsletter.sql` adds `newsletter_subscribers` and
+`newsletter_sends`. Its decisions, worth knowing before changing a query:
 
 - **One `articles` table** for the feed avis and the bilan ones alike. The
   prototype kept two sets, which is why an avis could be reachable at
@@ -305,8 +331,9 @@ also typechecks `src/`. Widen those interfaces as queries need more of the API.
 - `/article/:id` → `ArticlePage`.
 - `/archives` → redirects to `/archives/films`; `/archives/:medium` is always
   medium-filtered via the URL.
-- `/bilan-culturel`, `/bilan-culturel/archives`, `/a-propos`, `/me-suivre`, and a
-  `*` NotFound.
+- `/bilan-culturel`, `/bilan-culturel/archives`, `/a-propos`, `/me-suivre`,
+  `/desinscription?token=...` (where a newsletter unsubscribe link lands), and
+  a `*` NotFound.
 
 **The medium abstraction** (`src/media.ts`) is the single source of truth mapping
 `Medium` (`'film' | 'serie' | 'livre' | 'doc'`) ↔ URL segment (`films`/`series`/…)

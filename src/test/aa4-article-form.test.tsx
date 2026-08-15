@@ -23,8 +23,8 @@ function renderAt(path: string) {
 const avis = anArticle();
 
 /** Both the listing and the editor fetch, so every test needs the catalogue. */
-beforeEach(() => {
-  useTestDb(SEED);
+beforeEach(async () => {
+  await useTestDb(SEED);
 });
 
 describe('AA-4 article form — creation', () => {
@@ -73,7 +73,7 @@ describe('AA-4 article form — creation', () => {
 
   it('stores a draft and stays out of the public feed', async () => {
     const user = userEvent.setup();
-    const db = useTestDb(SEED);
+    const db = await useTestDb(SEED);
     renderAt('/admin/articles/nouveau');
 
     await user.type(screen.getByLabelText('Titre'), 'Une nuit blanche');
@@ -101,7 +101,7 @@ describe('AA-4 article form — creation', () => {
 
   it('publishes what it stores, dating it', async () => {
     const user = userEvent.setup();
-    const db = useTestDb(SEED);
+    const db = await useTestDb(SEED);
     renderAt('/admin/articles/nouveau');
 
     await user.type(screen.getByLabelText('Titre'), 'Une nuit blanche');
@@ -157,7 +157,7 @@ describe('AA-4 article form — editing', () => {
 
   it('saves an edit to the row it was opened on', async () => {
     const user = userEvent.setup();
-    const db = useTestDb(SEED);
+    const db = await useTestDb(SEED);
     renderAt(`/admin/articles/${avis.id}`);
     await screen.findByTestId('admin-new-article-page');
 
@@ -176,7 +176,7 @@ describe('AA-4 article form — editing', () => {
 
   it('offers Dépublier on a live avis, and unpublishing clears its date', async () => {
     const user = userEvent.setup();
-    const db = useTestDb(SEED);
+    const db = await useTestDb(SEED);
     renderAt(`/admin/articles/${avis.id}`);
     await screen.findByTestId('admin-new-article-page');
 
@@ -195,7 +195,7 @@ describe('AA-4 article form — editing', () => {
 
   it('asks before deleting, then removes the avis and returns to the listing', async () => {
     const user = userEvent.setup();
-    const db = useTestDb(SEED);
+    const db = await useTestDb(SEED);
     renderAt(`/admin/articles/${avis.id}`);
     await screen.findByTestId('admin-new-article-page');
 
@@ -212,7 +212,7 @@ describe('AA-4 article form — editing', () => {
 
   it('backs out of the confirmation without deleting anything', async () => {
     const user = userEvent.setup();
-    const db = useTestDb(SEED);
+    const db = await useTestDb(SEED);
     renderAt(`/admin/articles/${avis.id}`);
     await screen.findByTestId('admin-new-article-page');
 

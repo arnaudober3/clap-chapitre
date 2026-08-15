@@ -208,3 +208,39 @@ export function useAdminComments(
   if (perPage !== undefined) params.set('perPage', String(perPage));
   return useApi<ModerationList>(`/api/admin/comments?${params}`, ADMIN);
 }
+
+/** The audience figures the "Abonnés" card shows. */
+export interface NewsletterStats {
+  total: number;
+  /** Net subscribers gained over the trailing 30 days — negative when unsubscribes win. */
+  monthDelta: number;
+}
+
+/** A real, mailed edition — "Derniers envois". */
+export interface NewsletterSendRecord {
+  id: string;
+  bilanId: string;
+  title: string;
+  subject: string;
+  sentAt: string;
+  recipientCount: number;
+  failureCount: number;
+}
+
+/** A booked, not-yet-fired send. */
+export interface NewsletterSchedule {
+  bilanId: string;
+  subject: string;
+  scheduledAt: string;
+}
+
+export interface NewsletterData {
+  stats: NewsletterStats;
+  sends: NewsletterSendRecord[];
+  scheduled: NewsletterSchedule[];
+}
+
+/** The newsletter page in one request: audience, send history, and what is booked. */
+export function useAdminNewsletter(): Query<NewsletterData> {
+  return useApi<NewsletterData>('/api/admin/newsletter', ADMIN);
+}

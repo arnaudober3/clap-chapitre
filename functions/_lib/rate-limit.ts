@@ -30,6 +30,13 @@ export const COMMENT_WINDOW: Window = { max: 5, minutes: 15 };
 export const SHARE_WINDOW: Window = { max: 20, minutes: 15 };
 
 /**
+ * Newsletter subscriptions: ten per quarter of an hour. Looser than comments
+ * (one write per person, not a conversation), tighter than shares (a script
+ * hammering the form should still be capped).
+ */
+export const NEWSLETTER_SUBSCRIBE_WINDOW: Window = { max: 10, minutes: 15 };
+
+/**
  * Records a hit and says whether it was allowed.
  *
  * The count runs *before* the insert, so the caller's own hit does not count

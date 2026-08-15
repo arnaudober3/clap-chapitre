@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import EmailPreview from '../pages/AdminNewsletter/EmailPreview';
-import { defaultNewsletterSource, editionFor } from '../mock/newsletter';
+import { editionFor } from '../newsletter';
+import { aBilan } from './fixtures';
 
-const edition = editionFor(defaultNewsletterSource());
+const edition = editionFor(aBilan());
 
 function renderPreview() {
   return render(

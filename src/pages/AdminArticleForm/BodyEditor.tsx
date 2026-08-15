@@ -63,7 +63,7 @@ export default function BodyEditor({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null as HTMLTextAreaElement);
 
   const handleToolClick = (tool: (typeof TOOLS)[number]) => {
     const textarea = textareaRef.current;
@@ -95,7 +95,7 @@ export default function BodyEditor({
     <div className={`${styles.field} ${styles.fieldBody}`}>
       <div className={styles.bodyHead}>
         <label className={styles.label} htmlFor="article-body">
-          Corps de l'avis
+          Corps de l’avis
         </label>
         <div className={styles.toolbar}>
           {TOOLS.map((tool) => (
@@ -117,7 +117,7 @@ export default function BodyEditor({
         className={styles.textarea}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Écrivez l'avis…"
+        placeholder="Écrivez l’avis…"
       />
     </div>
   );

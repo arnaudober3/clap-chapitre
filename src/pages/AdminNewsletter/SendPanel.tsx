@@ -1,94 +1,99 @@
 import { useState } from 'react';
 import { AdminSelect } from '../../components/ui';
 import { frNumber } from '../../format';
-import {
-  EDITOR_EMAIL,
-  isPlausibleEmail,
-  newsletterSources,
-  slotLabel,
-  sourceLabel,
-  type ScheduleSlot,
-  type SubscriberStats,
-} from '../../mock/newsletter';
+import { EDITOR_EMAIL, instantLabel, slotLabel, type ScheduleSlot } from '../../newsletter';
+import { isPlausibleEmail } from '../../validation';
 import styles from './AdminNewsletter.module.css';
 
 /** Which secondary action has its form open, if any. */
 type OpenForm = 'test' | 'schedule';
 
 /**
- * The "Cet envoi" card (design 6e): the subject line, the bilan the edition is
- * generated from, who it goes to, and the send actions. The design's "Modèle"
- * row is dropped — there is only ever one template ("Résumé de bilan"), so the
- * row states a constant rather than a choice.
+ * The "Cet envoi" card: the subject line, the bilan the edition is generated
+ * from, who it goes to, and the send actions. The design's "Modèle" row is
+ * dropped — there is only ever one template ("Résumé de bilan"), so the row
+ * states a constant rather than a choice.
  *
  * The two secondary actions ask for what they need before doing anything: a
  * test needs an address, a schedule needs a date and a time. Both open an
  * inline form rather than a popover — the sidebar is 320px wide and a floating
  * panel would sit over the preview it is about. Only one is open at a time.
  *
- * Nothing is persisted. The subject and the schedule are the page's state; the
- * test acknowledgment is this panel's alone, because it changes nothing beyond
- * saying the proof went out.
+ * Every action here is a real write — `onSend`/`onSendTest`/`onSchedule`/
+ * `onCancelSchedule` are wired to the API in `AdminNewsletter/index.tsx`, and
+ * this panel only owns the pending/error surface each one reports.
  */
 export default function SendPanel({
   subject,
   onSubjectChange,
   sourceId,
   onSourceChange,
-  stats,
+  sources,
+  recipientCount,
   slot,
   schedule,
   onSchedule,
+  schedulePending,
+  scheduleError,
   onCancelSchedule,
   sent,
   onSend,
+  sendPending,
+  sendError,
+  onSendTest,
+  testPending,
+  testError,
 }: {
   subject: string;
   onSubjectChange: (subject: string) => void;
   sourceId: string;
   onSourceChange: (id: string) => void;
-  stats: SubscriberStats;
+  sources: Array<{ id: string; label: string }>;
+  recipientCount: number;
   /** The slot the schedule form opens on. */
   slot: ScheduleSlot;
   /** The slot this edition is booked for, if it has been scheduled. */
-  schedule?: ScheduleSlot;
-  onSchedule: (slot: ScheduleSlot) => void;
+  schedule?: { scheduledAt: string };
+  onSchedule: (date: string, time: string) => void | Promise<void>;
+  schedulePending: boolean;
+  scheduleError?: string;
   onCancelSchedule: () => void;
   sent: boolean;
-  onSend: () => void;
+  onSend: () => void | Promise<void>;
+  sendPending: boolean;
+  sendError?: string;
+  onSendTest: (email: string) => void | Promise<void>;
+  testPending: boolean;
+  testError?: string;
 }) {
   const [openForm, setOpenForm] = useState<OpenForm>();
   const [testEmail, setTestEmail] = useState(EDITOR_EMAIL);
-  const [testError, setTestError] = useState<string>();
+  const [testFormatError, setTestFormatError] = useState<string>();
   const [testSentTo, setTestSentTo] = useState<string>();
   const [date, setDate] = useState(slot.date);
   const [time, setTime] = useState(slot.time);
 
-  const options = newsletterSources().map((bilan) => ({
-    id: bilan.id,
-    label: sourceLabel(bilan),
-  }));
-
   /** Toggling one action closes the other, and clears the last acknowledgment. */
   function toggle(form: OpenForm) {
     setOpenForm((previous) => (previous === form ? undefined : form));
-    setTestError(undefined);
+    setTestFormatError(undefined);
     setTestSentTo(undefined);
   }
 
-  function submitTest() {
+  async function submitTest() {
     const address = testEmail.trim();
     if (!isPlausibleEmail(address)) {
-      setTestError('Cette adresse ne ressemble pas à un e-mail.');
+      setTestFormatError('Cette adresse ne ressemble pas à un e-mail.');
       return;
     }
-    setTestError(undefined);
+    setTestFormatError(undefined);
+    await onSendTest(address);
     setTestSentTo(address);
     setOpenForm(undefined);
   }
 
-  function submitSchedule() {
-    onSchedule({ date, time });
+  async function submitSchedule() {
+    await onSchedule(date, time);
     setOpenForm(undefined);
   }
 
@@ -117,7 +122,7 @@ export default function SendPanel({
         <AdminSelect
           label="Source du contenu"
           value={sourceId}
-          options={options}
+          options={sources}
           onChange={onSourceChange}
           className={styles.sourceSelect}
           data-testid="newsletter-source"
@@ -126,12 +131,22 @@ export default function SendPanel({
 
       <div className={`${styles.row} ${styles.rowDivided}`}>
         <span>Destinataires</span>
-        <span className={styles.rowValueStrong}>{frNumber(stats.total)} abonnés</span>
+        <span className={styles.rowValueStrong}>{frNumber(recipientCount)} abonnés</span>
       </div>
 
-      <button type="button" className={styles.sendButton} onClick={onSend} disabled={sent}>
-        {sent ? 'Envoyée' : 'Envoyer maintenant'}
+      <button
+        type="button"
+        className={styles.sendButton}
+        onClick={onSend}
+        disabled={sent || sendPending}
+      >
+        {sent ? 'Envoyée' : sendPending ? 'Envoi…' : 'Envoyer maintenant'}
       </button>
+      {sendError && (
+        <p className={styles.actionError} role="alert">
+          {sendError}
+        </p>
+      )}
 
       <div className={styles.secondaryActions}>
         <button
@@ -145,7 +160,7 @@ export default function SendPanel({
           onClick={() => toggle('test')}
           disabled={sent}
         >
-          M’envoyer un test
+          M'envoyer un test
         </button>
         <button
           type="button"
@@ -174,19 +189,24 @@ export default function SendPanel({
             value={testEmail}
             onChange={(event) => {
               setTestEmail(event.target.value);
-              setTestError(undefined);
+              setTestFormatError(undefined);
             }}
-            aria-invalid={testError !== undefined}
-            aria-describedby={testError ? 'newsletter-test-error' : undefined}
+            aria-invalid={testFormatError !== undefined || !testError}
+            aria-describedby={testFormatError || testError ? 'newsletter-test-error' : undefined}
           />
-          {testError && (
+          {(testFormatError || testError) && (
             <p id="newsletter-test-error" className={styles.actionError} role="alert">
-              {testError}
+              {testFormatError ?? testError}
             </p>
           )}
           <div className={styles.actionFormActions}>
-            <button type="button" className={styles.actionConfirm} onClick={submitTest}>
-              Envoyer le test
+            <button
+              type="button"
+              className={styles.actionConfirm}
+              onClick={submitTest}
+              disabled={testPending}
+            >
+              {testPending ? 'Envoi…' : 'Envoyer le test'}
             </button>
             <button
               type="button"
@@ -228,14 +248,24 @@ export default function SendPanel({
             </div>
           </div>
           {/* The confirmation the editor reads before committing — the slot in
-              full French, not the two raw fields above. */}
+              full French, not the two raw fields above. Heure de Paris. */}
           <p className={styles.actionConfirmCopy}>
-            L’envoi partira le {slotLabel({ date, time })} aux{' '}
-            {frNumber(stats.total)} abonnés.
+            L'envoi partira le {slotLabel({ date, time })} (heure de Paris) aux{' '}
+            {frNumber(recipientCount)} abonnés.
           </p>
+          {scheduleError && (
+            <p className={styles.actionError} role="alert">
+              {scheduleError}
+            </p>
+          )}
           <div className={styles.actionFormActions}>
-            <button type="button" className={styles.actionConfirm} onClick={submitSchedule}>
-              Confirmer
+            <button
+              type="button"
+              className={styles.actionConfirm}
+              onClick={submitSchedule}
+              disabled={schedulePending}
+            >
+              {schedulePending ? 'Envoi…' : 'Confirmer'}
             </button>
             <button
               type="button"
@@ -256,7 +286,7 @@ export default function SendPanel({
 
       {schedule && !sent && (
         <p className={styles.actionNote} role="status">
-          Programmée pour le {slotLabel(schedule)}.{' '}
+          Programmée pour le {instantLabel(schedule.scheduledAt)}.{' '}
           <button type="button" className={styles.actionUndo} onClick={onCancelSchedule}>
             Annuler
           </button>

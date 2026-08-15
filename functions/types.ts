@@ -98,6 +98,25 @@ export interface Env {
   DB?: D1Database;
   /** The R2 binding holding covers and the portrait. Optional for the same reasons. */
   MEDIA?: R2Bucket;
+  /**
+   * Resend API key. Optional: absent means the newsletter send/test/dispatch
+   * routes answer misconfigured() rather than sending unauthenticated.
+   */
+  RESEND_API_KEY?: string;
+  /** The newsletter's "From" header — must be on a domain verified in Resend. */
+  NEWSLETTER_FROM?: string;
+  /**
+   * HMAC key behind every unsubscribe token. Separate from JWT_SECRET so
+   * rotating sessions never invalidates a link already sitting in an inbox —
+   * see requireUnsubSecret.
+   */
+  NEWSLETTER_UNSUB_SECRET?: string;
+  /**
+   * Shared secret the standalone cron Worker presents on
+   * POST /api/admin/newsletter/dispatch. Not part of AdminConfig: this route
+   * is called by a machine, not a signed-in editor.
+   */
+  CRON_SECRET?: string;
 }
 
 /** The slice of the Pages Function context our handlers actually read. */

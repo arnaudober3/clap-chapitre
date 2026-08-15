@@ -65,8 +65,8 @@ INSERT INTO comments (id, target_type, target_id, parent_id, author, is_author, 
   ('c-dash-pending', 'article', 'un-dernier-ete', NULL, 'Bot', 0, 'Spam potentiel.', '2026-08-06', 0, 4, 'pending', datetime('now', '-1 days'));
 `;
 
-beforeEach(() => {
-  useTestDb(DASHBOARD);
+beforeEach(async () => {
+  await useTestDb(DASHBOARD);
 });
 
 function renderPage() {
@@ -130,8 +130,9 @@ describe('TB-3 dashboard page', () => {
     renderPage();
     expect(await screen.findByText('À terminer')).toBeInTheDocument();
     expect(screen.getAllByText('Contre-champs').length).toBeGreaterThan(0);
-    // The newsletter card is the one figure still coming from the mock: sending
-    // e-mail is outside this change's scope.
-    expect(screen.getByText(/1 284 abonnés/)).toBeInTheDocument();
+    // The newsletter card now reads real figures from the database: no
+    // subscriber has ever been seeded here, so the count is honestly zero.
+    expect(await screen.findByText(/0 abonnés/)).toBeInTheDocument();
+    expect(screen.getByText(/prête à partir/)).toBeInTheDocument();
   });
 });

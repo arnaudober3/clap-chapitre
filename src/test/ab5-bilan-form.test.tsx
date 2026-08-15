@@ -60,8 +60,8 @@ const draft = aBilan({
   ],
 });
 
-beforeEach(() => {
-  useTestDb(DRAFT);
+beforeEach(async () => {
+  await useTestDb(DRAFT);
 });
 
 function renderAt(path: string) {
@@ -117,7 +117,7 @@ describe('AB-5 bilan form — creation', () => {
     const user = userEvent.setup();
     // The file's own seed, which puts a draft month at 2026-07 — so the month
     // on offer for a new bilan is the one after it.
-    const db = useTestDb(DRAFT);
+    const db = await useTestDb(DRAFT);
     renderAt('/admin/bilans/nouveau');
     await screen.findByTestId('admin-bilan-form-page');
 

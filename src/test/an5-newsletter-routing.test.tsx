@@ -3,8 +3,8 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
-import { defaultNewsletterSource, editionLabel } from '../mock/newsletter';
-import { SEED } from './fixtures';
+import { editionLabel } from '../newsletter';
+import { aBilan, SEED } from './fixtures';
 import { useTestDb } from './api-server';
 
 // The pages these routes render read the API, so the suite needs content.
@@ -40,8 +40,8 @@ describe('AN-5 admin newsletter routing', () => {
     renderAt('/admin/newsletter');
     const header = within(screen.getByRole('banner'));
     expect(
-      header.getAllByText(`Édition ${editionLabel(defaultNewsletterSource())}`).length,
-    ).toBeGreaterThan(0);
+      await header.findAllByText(`Édition ${editionLabel(aBilan())}`),
+    ).not.toHaveLength(0);
   });
 
   it('is where the dashboard newsletter CTA leads', async () => {

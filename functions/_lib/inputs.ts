@@ -10,7 +10,7 @@
  * caller cannot hand us a megabyte of title, and they are generous enough that
  * no real avis will ever meet one.
  */
-import { ids, int, objects, oneOf, optionalText, text, BodyError } from './body';
+import { email, ids, int, objects, oneOf, optionalText, text, BodyError } from './body';
 import { isMediaKey } from './media';
 import { MEDIA } from './query';
 import { slug } from './write';
@@ -283,4 +283,44 @@ function slugKey(name: string): string {
   const key = slug(name).slice(0, 40);
   if (!key) throw new BodyError('socials');
   return key;
+}
+
+export interface NewsletterSendInput {
+  subject: string;
+}
+
+export function readNewsletterSendInput(body: Record<string, unknown>): NewsletterSendInput {
+  return { subject: text(body, 'subject', { max: 200 }) };
+}
+
+export interface NewsletterTestInput extends NewsletterSendInput {
+  email: string;
+}
+
+export function readNewsletterTestInput(body: Record<string, unknown>): NewsletterTestInput {
+  return {
+    subject: text(body, 'subject', { max: 200 }),
+    email: email(body, 'email', { max: 254 }),
+  };
+}
+
+export interface NewsletterScheduleInput extends NewsletterSendInput {
+  date: string;
+  time: string;
+}
+
+/** 'AAAA-MM-JJ', the shape an HTML `<input type="date">` sends. */
+const DATE_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
+/** 'HH:MM', the shape an HTML `<input type="time">` sends. */
+const TIME_SHAPE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+export function readNewsletterScheduleInput(
+  body: Record<string, unknown>,
+): NewsletterScheduleInput {
+  const date = text(body, 'date', { max: 10 });
+  if (!DATE_SHAPE.test(date)) throw new BodyError('date');
+  const time = text(body, 'time', { max: 5 });
+  if (!TIME_SHAPE.test(time)) throw new BodyError('time');
+
+  return { subject: text(body, 'subject', { max: 200 }), date, time };
 }
