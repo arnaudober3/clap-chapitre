@@ -42,6 +42,8 @@ const ROUTES: ReadonlyArray<RoutePattern<string>> = [
   { pattern: '/api/likes', target: '/functions/api/likes.ts' },
   { pattern: '/api/shares', target: '/functions/api/shares.ts' },
   { pattern: '/api/media/:key', target: '/functions/api/media/[key].ts' },
+  { pattern: '/api/newsletter/subscribe', target: '/functions/api/newsletter/subscribe.ts' },
+  { pattern: '/api/newsletter/unsubscribe', target: '/functions/api/newsletter/unsubscribe.ts' },
 
   { pattern: '/api/admin/dashboard', target: '/functions/api/admin/dashboard.ts' },
   { pattern: '/api/admin/uploads', target: '/functions/api/admin/uploads.ts' },
@@ -53,6 +55,14 @@ const ROUTES: ReadonlyArray<RoutePattern<string>> = [
   { pattern: '/api/admin/comments/:id', target: '/functions/api/admin/comments/[id].ts' },
   { pattern: '/api/admin/pages/apropos', target: '/functions/api/admin/pages/apropos.ts' },
   { pattern: '/api/admin/pages/me-suivre', target: '/functions/api/admin/pages/me-suivre.ts' },
+  { pattern: '/api/admin/newsletter', target: '/functions/api/admin/newsletter/index.ts' },
+  { pattern: '/api/admin/newsletter/dispatch', target: '/functions/api/admin/newsletter/dispatch.ts' },
+  { pattern: '/api/admin/newsletter/send/:bilanId', target: '/functions/api/admin/newsletter/send/[bilanId].ts' },
+  { pattern: '/api/admin/newsletter/test/:bilanId', target: '/functions/api/admin/newsletter/test/[bilanId].ts' },
+  {
+    pattern: '/api/admin/newsletter/schedule/:bilanId',
+    target: '/functions/api/admin/newsletter/schedule/[bilanId].ts',
+  },
 ];
 
 type Handler = (context: {
