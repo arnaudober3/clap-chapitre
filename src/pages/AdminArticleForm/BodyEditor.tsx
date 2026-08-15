@@ -63,7 +63,7 @@ export default function BodyEditor({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null as HTMLTextAreaElement);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleToolClick = (tool: (typeof TOOLS)[number]) => {
     const textarea = textareaRef.current;
