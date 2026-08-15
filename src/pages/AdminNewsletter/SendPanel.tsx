@@ -64,7 +64,7 @@ export default function SendPanel({
   sendError?: string;
   onSendTest: (email: string) => void | Promise<void>;
   testPending: boolean;
-  testError: string | undefined;
+  testError?: string;
 }) {
   const [openForm, setOpenForm] = useState<OpenForm>();
   const [testEmail, setTestEmail] = useState(EDITOR_EMAIL);
@@ -191,7 +191,7 @@ export default function SendPanel({
               setTestEmail(event.target.value);
               setTestFormatError(undefined);
             }}
-            aria-invalid={testFormatError !== undefined || testError !== undefined}
+            aria-invalid={testFormatError !== undefined || !testError}
             aria-describedby={testFormatError || testError ? 'newsletter-test-error' : undefined}
           />
           {(testFormatError || testError) && (

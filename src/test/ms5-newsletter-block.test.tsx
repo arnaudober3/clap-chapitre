@@ -20,7 +20,7 @@ const meSuivreCss = read('src/pages/MeSuivre/MeSuivre.module.css');
 const aproposCss = read('src/pages/APropos/APropos.module.css');
 
 describe('MS-5 shared NewsletterBlock', () => {
-  it("variant='band' renders the copy and a real signup form", () => {
+  it("variant='band' renders the copy and a real signup form", async () => {
     useTestDb();
     const user = userEvent.setup();
     const { container } = render(
@@ -59,7 +59,7 @@ describe('MS-5 shared NewsletterBlock', () => {
     expect((input as HTMLInputElement).value).toBe('');
   });
 
-  it("variant='feature' renders the eyebrow and subscribes for real", () => {
+  it("variant='feature' renders the eyebrow and subscribes for real", async () => {
     useTestDb();
     const user = userEvent.setup();
     const { container } = render(

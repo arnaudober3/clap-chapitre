@@ -115,7 +115,7 @@ describe('ART-5 CommentThread', () => {
 
   it('posts the comment and says it is waiting to be read, without showing it', async () => {
     const user = userEvent.setup();
-    const db = useTestDb(SEED);
+    const db = await useTestDb(SEED);
     render(<CommentThread comments={thread} articleId="un-dernier-ete" />);
 
     await user.type(screen.getByLabelText('Votre commentaire'), 'Très juste.');
@@ -140,7 +140,7 @@ describe('ART-5 CommentThread', () => {
 
   it('swallows the honeypot: a filled trap answers normally and writes nothing', async () => {
     const user = userEvent.setup();
-    const db = useTestDb(SEED);
+    const db = await useTestDb(SEED);
     const { container } = render(
       <CommentThread comments={thread} articleId="un-dernier-ete" />,
     );
@@ -166,7 +166,7 @@ describe('ART-5 CommentThread', () => {
 
   it('refuses a form submitted faster than anyone could read it', async () => {
     const user = userEvent.setup();
-    const db = useTestDb(SEED);
+    const db = await useTestDb(SEED);
     render(<CommentThread comments={thread} articleId="un-dernier-ete" />);
 
     // No backdating: the composer mounted a moment ago.
