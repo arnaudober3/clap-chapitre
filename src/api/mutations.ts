@@ -11,6 +11,7 @@
  * ever travels up, which is the same contract `map.ts` enforces on the way down.
  */
 import { apiSend, apiUpload } from './client';
+import { notifyArticlesChanged, notifyBilansChanged } from './adminEvents';
 import type { Medium } from '../../shared/content';
 
 const ADMIN = { admin: true } as const;
@@ -71,7 +72,10 @@ export interface BilanPayload {
 
 /** Creates an avis. The id is derived from the title server-side. */
 export function createArticle(payload: ArticlePayload): Promise<{ id: string }> {
-  return apiSend<{ id: string }>('/api/admin/articles', 'POST', payload, ADMIN);
+  return apiSend<{ id: string }>('/api/admin/articles', 'POST', payload, ADMIN).then((result) => {
+    notifyArticlesChanged();
+    return result;
+  });
 }
 
 export function updateArticle(id: string, payload: ArticlePayload): Promise<{ id: string }> {
@@ -84,7 +88,12 @@ export function updateArticle(id: string, payload: ArticlePayload): Promise<{ id
 }
 
 export function deleteArticle(id: string): Promise<void> {
-  return apiSend<void>(`/api/admin/articles/${encodeURIComponent(id)}`, 'DELETE', undefined, ADMIN);
+  return apiSend<void>(
+    `/api/admin/articles/${encodeURIComponent(id)}`,
+    'DELETE',
+    undefined,
+    ADMIN,
+  ).then(() => notifyArticlesChanged());
 }
 
 /** Create or replace, depending on whether the form is editing something. */
@@ -100,20 +109,32 @@ export function saveArticle(
  * -------------------------------------------------------------------------- */
 
 export function createBilan(payload: BilanPayload): Promise<{ id: string }> {
-  return apiSend<{ id: string }>('/api/admin/bilans', 'POST', payload, ADMIN);
+  return apiSend<{ id: string }>('/api/admin/bilans', 'POST', payload, ADMIN).then((result) => {
+    notifyBilansChanged();
+    return result;
+  });
 }
 
+/** A PUT can flip `status`, so the published count needs the same nudge as a create. */
 export function updateBilan(id: string, payload: BilanPayload): Promise<{ id: string }> {
   return apiSend<{ id: string }>(
     `/api/admin/bilans/${encodeURIComponent(id)}`,
     'PUT',
     payload,
     ADMIN,
-  );
+  ).then((result) => {
+    notifyBilansChanged();
+    return result;
+  });
 }
 
 export function deleteBilan(id: string): Promise<void> {
-  return apiSend<void>(`/api/admin/bilans/${encodeURIComponent(id)}`, 'DELETE', undefined, ADMIN);
+  return apiSend<void>(
+    `/api/admin/bilans/${encodeURIComponent(id)}`,
+    'DELETE',
+    undefined,
+    ADMIN,
+  ).then(() => notifyBilansChanged());
 }
 
 export function saveBilan(id: string | undefined, payload: BilanPayload): Promise<{ id: string }> {
