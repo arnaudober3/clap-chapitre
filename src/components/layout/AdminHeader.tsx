@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Link,
   useLocation,
@@ -14,7 +14,9 @@ import {
 import { ThemeToggle } from "../ui";
 import { useAuth } from "../../auth/AuthContext";
 import { useAdminKicker } from "./adminPageMeta";
-import { useAdminComments } from "../../api/admin";
+import { useAdminArticles, useAdminBilans, useAdminComments } from "../../api/admin";
+import { onArticlesChanged, onBilansChanged } from "../../api/adminEvents";
+import { DEFAULT_QUERY, DEFAULT_BILAN_QUERY } from "../../content/query";
 import styles from "./AdminLayout.module.css";
 
 /** True when `pathname` is the item's route (exact for /admin, prefix otherwise). */
@@ -95,13 +97,13 @@ function NavGroups({
       <div className={styles.navSectionLabel}>Publications</div>
       <nav className={styles.navGroup} aria-label="Publications">
         {primaryNav.map((item) => (
-          <AdminNavLink key={item.to} item={item} onNavigate={onNavigate} />
+          <AdminNavLink item={item} onNavigate={onNavigate} />
         ))}
       </nav>
       <div className={styles.navSectionLabel}>Pages du site</div>
       <nav className={styles.navGroup} aria-label="Pages du site">
         {adminPagesNav.map((item) => (
-          <AdminNavLink key={item.to} item={item} onNavigate={onNavigate} />
+          <AdminNavLink item={item} onNavigate={onNavigate} />
         ))}
       </nav>
     </>
@@ -150,15 +152,30 @@ export default function AdminHeader() {
   const { pathname } = useLocation();
   const pageKicker = useAdminKicker();
   const { data: moderation } = useAdminComments('pending', 1, 1);
+  const { data: articles, reload: reloadArticles } = useAdminArticles(DEFAULT_QUERY, 1);
+  const { data: bilans, reload: reloadBilans } = useAdminBilans(DEFAULT_BILAN_QUERY, 1);
+
+  // The header mounts once for the whole admin session, so its counts would
+  // otherwise go stale the moment a form elsewhere creates, publishes or
+  // deletes something — see adminEvents.ts.
+  useEffect(() => onArticlesChanged(reloadArticles), [reloadArticles]);
+  useEffect(() => onBilansChanged(reloadBilans), [reloadBilans]);
 
   const primaryNav = useMemo(
     () =>
-      adminPrimaryNav.map((item) =>
-        item.to === '/admin/commentaires' && moderation?.pending
-          ? { ...item, badge: moderation.pending }
-          : item,
-      ),
-    [moderation?.pending],
+      adminPrimaryNav.map((item) => {
+        if (item.to === '/admin/commentaires') {
+          return moderation?.pending ? { ...item, badge: moderation.pending } : item;
+        }
+        if (item.to === '/admin/articles') {
+          return { ...item, badge: articles?.catalogue.total ?? 0 };
+        }
+        if (item.to === '/admin/bilans') {
+          return { ...item, badge: bilans?.catalogue.published ?? 0 };
+        }
+        return item;
+      }),
+    [moderation?.pending, articles?.catalogue.total, bilans?.catalogue.published],
   );
 
   // Mobile top-bar title = the active section's label (defaults to dashboard).
@@ -166,7 +183,7 @@ export default function AdminHeader() {
     adminNav.find((item) => isItemActive(pathname, item.to)) ?? adminNav[0];
 
   return (
-    <header className={styles.header}>
+    <header>
       {/* Desktop left rail */}
       <aside className={styles.rail}>
         <div className={styles.railBrand}>
