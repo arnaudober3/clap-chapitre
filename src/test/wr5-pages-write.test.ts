@@ -7,7 +7,6 @@ import { createTestDb } from './d1';
 import { TEST_ENV, signTestToken } from './api-server';
 import { SEED } from './fixtures';
 import type { D1Database, Handler } from '../../functions/types';
-import Request from 'node';
 
 let db: D1Database & { close(): void };
 
