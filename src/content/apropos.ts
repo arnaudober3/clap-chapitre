@@ -22,8 +22,6 @@ export interface AProposContent {
   name: string;
   /** Serif --muted standfirst under the H1. */
   intro: string;
-  /** Alt text for the portrait — a real caption now that there is a real image. */
-  portraitLabel: string;
   /** R2 key of the portrait, or '' while none has been uploaded. */
   portraitImage: string;
   /** Bio paragraphs, in order. */
@@ -38,6 +36,39 @@ export interface AProposContent {
   /** Dark follow CTA card. */
   follow: { title: string; copy: string; cta: string; to: string };
 }
+
+/**
+ * What the admin editor mounts when `page_apropos` has never been written — an
+ * empty database, not a load failure. The static labels below match the ones
+ * `examples/contenu-exemple.sql` seeds, since they are not edited on screen;
+ * the fields the form does edit (name, intro, bio, quote, stats, portrait)
+ * start blank for the editor to fill in.
+ */
+export const BLANK_APROPOS_CONTENT: AProposContent = {
+  eyebrow: 'À propos',
+  greeting: 'Bonjour, moi c’est',
+  name: '',
+  intro: '',
+  portraitImage: '',
+  bio: [],
+  bioEmphasis: [],
+  quote: '',
+  statsTitle: 'Cette année',
+  // `YearStatsFields` has no add/remove control — it renders exactly the rows
+  // it is given — so the editor needs the three blank slots the public panel
+  // expects, not an empty list with nothing to fill in.
+  stats: [
+    { label: '', value: 0 },
+    { label: '', value: 0 },
+    { label: '', value: 0 },
+  ],
+  follow: {
+    title: 'On garde le contact ?',
+    copy: 'Le bilan du mois arrive dans votre boîte, jamais plus souvent.',
+    cta: 'Me suivre',
+    to: '/me-suivre',
+  },
+};
 
 /** One editable row of the "Cette année" block in the back-office form. */
 export interface YearStatField {
@@ -88,7 +119,7 @@ export function aproposFormValues(content: AProposContent): AProposFormValues {
  * The way back: edited values → what `PUT /api/admin/pages/apropos` stores.
  *
  * It takes the loaded content as well, and has to: the form edits five things,
- * the row has fourteen columns. The eyebrow, the emphasis terms and the follow
+ * the row has thirteen columns. The eyebrow, the emphasis terms and the follow
  * card are not on screen, so they are carried through unchanged rather than
  * being blanked by a save.
  *
@@ -105,7 +136,6 @@ export function aproposPayload(
     eyebrow: content.eyebrow,
     ...splitTitle(content, values.title),
     intro: values.intro,
-    portraitLabel: content.portraitLabel,
     portraitImage,
     bio: values.bio.trim(),
     bioEmphasis: content.bioEmphasis.join('\n'),

@@ -9,6 +9,7 @@ import { EditorActions, PageError, PageLoading } from "../../components/ui";
 import {
   aproposFormValues,
   aproposPayload,
+  BLANK_APROPOS_CONTENT,
   type AProposFormValues,
   type YearStatField,
 } from "../../content/apropos";
@@ -22,27 +23,30 @@ const SUBTITLE = "Ce que voient les visiteurs sur la page À propos";
  * Unlike the article and bilan editors this is a singleton page: there is no
  * listing above it, so the header names the page instead of a breadcrumb.
  *
- * Nothing is persisted yet — the API is read-only, so "Enregistrer" still only
- * flips a passive state line. What did change is where the fields come from:
- * the page content is fetched, and the form is mounted only once it has
+ * The page content is fetched, and the form is mounted only once it has
  * arrived. That is what lets `useState` keep an initialiser instead of needing
  * an effect to refill fields the editor may already be typing in.
+ *
+ * A 404 here means the row was never written — an empty database, not a load
+ * failure — and it is exactly the case this editor exists to fix, so the form
+ * still mounts, on `BLANK_APROPOS_CONTENT`: the first "Enregistrer" then
+ * creates the row rather than being blocked behind a retry button.
  */
 export default function AdminAProposPage() {
-  const { data, status, reload } = useAPropos();
+  const { data, status, notFound, reload } = useAPropos();
 
   if (status === 'loading' || status === 'idle') return <PageLoading />;
-  if (!data) return <PageError onRetry={reload} />;
-  return <AProposForm content={data} />;
+  if (status === 'error' && !notFound) return <PageError onRetry={reload} />;
+  return <AProposForm content={data ?? BLANK_APROPOS_CONTENT} />;
 }
 
 function AProposForm({ content }: { content: AProposContent }) {
   const [values, setValues] = useState<AProposFormValues>(() => aproposFormValues(content));
   const [saved, setSaved] = useState(false);
-  // The portrait and its alt text live beside `values`: they belong to the row,
-  // not to the five fields `AProposFormValues` was drawn around.
+  // The portrait lives beside `values`: it belongs to the row, not to the
+  // five fields `AProposFormValues` was drawn around. Its alt text is not
+  // edited here any more — `Hero.tsx` fixes it in code.
   const [portrait, setPortrait] = useState(content.portraitImage);
-  const [portraitLabel, setPortraitLabel] = useState(content.portraitLabel);
   const save = useMutation(saveApropos);
 
   // On mobile the shell's top bar is the page header (design 7e): it shows
@@ -66,11 +70,7 @@ function AProposForm({ content }: { content: AProposContent }) {
   }
 
   async function submit() {
-    const payload = {
-      ...aproposPayload(content, values, portrait),
-      portraitLabel: portraitLabel.trim() || content.portraitLabel,
-    };
-    if (await save.run(payload)) setSaved(true);
+    if (await save.run(aproposPayload(content, values, portrait))) setSaved(true);
   }
 
   return (
@@ -101,11 +101,6 @@ function AProposForm({ content }: { content: AProposContent }) {
             value={portrait}
             onChange={(key) => {
               setPortrait(key);
-              setSaved(false);
-            }}
-            label={portraitLabel}
-            onLabelChange={(next) => {
-              setPortraitLabel(next);
               setSaved(false);
             }}
           />

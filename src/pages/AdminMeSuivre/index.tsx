@@ -7,6 +7,7 @@ import { saveMeSuivre } from "../../api/mutations";
 import { useMutation } from "../../api/useMutation";
 import { EditorActions, PageError, PageLoading } from "../../components/ui";
 import {
+  BLANK_MESUIVRE_CONTENT,
   mesuivreFormValues,
   mesuivrePayload,
   type MeSuivreFormValues,
@@ -22,16 +23,21 @@ const SUBTITLE = "Les liens affichés sur la page Me suivre";
  * Like the "À propos" editor this is a singleton page: no listing above it, so
  * the header names the page instead of a breadcrumb.
  *
- * Nothing is persisted yet — the API is read-only. The form is mounted only once
- * the page content has arrived, which is what keeps its fields a plain
- * `useState` initialiser rather than an effect racing the editor's typing.
+ * The form is mounted only once the page content has arrived, which is what
+ * keeps its fields a plain `useState` initialiser rather than an effect
+ * racing the editor's typing.
+ *
+ * A 404 here means the row was never written — an empty database, not a load
+ * failure — and it is exactly the case this editor exists to fix, so the form
+ * still mounts, on `BLANK_MESUIVRE_CONTENT`: the first "Enregistrer" then
+ * creates the row rather than being blocked behind a retry button.
  */
 export default function AdminMeSuivrePage() {
-  const { data, status, reload } = useMeSuivre();
+  const { data, status, notFound, reload } = useMeSuivre();
 
   if (status === 'loading' || status === 'idle') return <PageLoading />;
-  if (!data) return <PageError onRetry={reload} />;
-  return <MeSuivreForm content={data} />;
+  if (status === 'error' && !notFound) return <PageError onRetry={reload} />;
+  return <MeSuivreForm content={data ?? BLANK_MESUIVRE_CONTENT} />;
 }
 
 function MeSuivreForm({ content }: { content: MeSuivreContent }) {

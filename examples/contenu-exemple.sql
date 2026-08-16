@@ -105,12 +105,11 @@ VALUES
 -- Les pages éditoriales
 -- ---------------------------------------------------------------------------
 INSERT INTO page_apropos
-  (id, eyebrow, greeting, name, intro, portrait_label, bio, bio_emphasis,
+  (id, eyebrow, greeting, name, intro, bio, bio_emphasis,
    quote, stats_title, follow_title, follow_copy, follow_cta, follow_to)
 VALUES
   (1, 'À propos', 'Bonjour, moi c''est', 'Marie-Zoé',
    'J''écris sur ce que je regarde et ce que je lis, une fois que ça a reposé.',
-   'Portrait de Marie-Zoé',
    'Je tiens ce carnet depuis quatre ans, sans calendrier et sans obligation.
 
 Chaque fin de mois, je rassemble ce qui a compté dans un bilan.',

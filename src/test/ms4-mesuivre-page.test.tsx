@@ -8,25 +8,15 @@ import MeSuivrePage from '../pages/MeSuivre';
 import App from '../App';
 import { aMeSuivre, SEED } from './fixtures';
 import { useTestDb } from './api-server';
+import { readSource, stripComments } from './sourceScan';
 
 const meSuivre = aMeSuivre();
 
 const root = resolve(__dirname, '../..');
 const pageDir = resolve(root, 'src/pages/MeSuivre');
 
-/**
- * Source scans below look for real code, so comments are stripped first —
- * otherwise a doc comment that *describes* a rule ("never href='#'") trips the
- * assertion that enforces it.
- */
-function stripComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '');
-}
-
-const pageSource = stripComments(readFileSync(resolve(pageDir, 'index.tsx'), 'utf8'));
-const css = stripComments(
-  readFileSync(resolve(pageDir, 'MeSuivre.module.css'), 'utf8'),
-);
+const pageSource = readSource('src/pages/MeSuivre/index.tsx');
+const css = readSource('src/pages/MeSuivre/MeSuivre.module.css');
 
 function renderPage() {
   return render(
@@ -86,7 +76,7 @@ describe('MS-4 Me suivre page', () => {
   it('renders head and newsletter without throwing when socials is empty', async () => {
     // The page row with no links at all — a state the editor can reach, so the
     // page has to survive it.
-    useTestDb(`
+    await useTestDb(`
       INSERT INTO page_mesuivre (id,eyebrow,title,intro,newsletter_eyebrow,newsletter_title,newsletter_copy,newsletter_placeholder,newsletter_cta)
       VALUES (1,'Me suivre','On garde le contact','Choisissez votre endroit préféré.','La newsletter','Le courrier du mois','Le bilan complet.','votre@email.fr','Je m’abonne');
     `);
@@ -103,6 +93,18 @@ describe('MS-4 Me suivre page', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Le courrier du mois')).toBeInTheDocument();
     expect(screen.queryAllByTestId('social-card')).toHaveLength(0);
+  });
+
+  it('shows the empty-page state, not the load-error panel, when the row was never written', async () => {
+    // A fresh database — the row doesn't exist yet, not a fetch failure.
+    await useTestDb();
+    renderPage();
+
+    expect(
+      await screen.findByText('Cette page n’a pas encore été écrite.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('page-error')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Réessayer' })).not.toBeInTheDocument();
   });
 
   it('renders nothing remote: no dangerouslySetInnerHTML, no <img>, no url()', () => {
