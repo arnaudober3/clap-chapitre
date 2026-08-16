@@ -109,7 +109,13 @@ button {
 }
 
 [data-anim-in] {
-  animation: cc-rise var(--dur-enter) var(--ease-enter) both;
+  /* `backwards`, not `both`: data-anim-in is never removed, so a `forwards`
+     fill would leave the animation permanently "in effect" — which gives the
+     block a stacking context even at rest, trapping any z-index'd descendant
+     (a select's dropdown, a picker panel) behind later siblings. `backwards`
+     still covers the animation-delay window, and the settled state is
+     identical either way. */
+  animation: cc-rise var(--dur-enter) var(--ease-enter) backwards;
   animation-delay: calc(var(--anim-step) * var(--anim-i, 0));
 }
 
