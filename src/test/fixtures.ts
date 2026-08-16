@@ -9,7 +9,7 @@
  * enough to be interesting is a fixture set nobody can hold in their head while
  * reading a failure.
  */
-import type { Comment, DraftArticle, PublishedArticle, PublishedBilan } from '../../shared/content';
+import type { Comment, PublishedArticle, PublishedBilan } from '../../shared/content';
 import type { BilanSummary } from '../api/content';
 import type { AProposContent } from '../content/apropos';
 import type { MeSuivreContent } from '../content/mesuivre';
@@ -35,25 +35,6 @@ export function anArticle(over: Partial<PublishedArticle> = {}): PublishedArticl
     readingTime: '4 min de lecture',
     body: 'Il y a des films qui ressemblent à une maison.\n\nOn en ressort avec du sable dans les poches.',
     pullQuote: 'Rien n’explose : tout se déplace d’un millimètre.',
-    ...over,
-  };
-}
-
-/** An avis still being written: no publication date, no figures. */
-export function aDraft(over: Partial<DraftArticle> = {}): DraftArticle {
-  return {
-    id: 'contre-champs',
-    title: 'Contre-champs',
-    medium: 'serie',
-    excerpt: 'Notes en cours.',
-    cover: '',
-    date: '',
-    author: 'Marie-Zoé',
-    likes: 0,
-    comments: 0,
-    views: 0,
-    status: 'draft',
-    updatedLabel: 'Modifié il y a 2 jours',
     ...over,
   };
 }
@@ -118,7 +99,6 @@ export function anApropos(over: Partial<AProposContent> = {}): AProposContent {
     greeting: 'Bonjour, moi c’est',
     name: 'Marie-Zoé',
     intro: 'J’écris sur ce que je regarde.',
-    portraitLabel: 'Portrait de Marie-Zoé',
     // No portrait uploaded — which is what an empty database looks like, and
     // what the page's neutral placeholder is for.
     portraitImage: '',
@@ -231,8 +211,8 @@ VALUES
  ('c-article-1-reponse','article','un-dernier-ete','c-article-1','Marie-Zoé',1,'Merci Camille.',NULL,4,1),
  ('c-bilan-1','bilan','2026-07',NULL,'Léa',0,'Ce bilan m’a donné envie de tout rattraper.','2026-08-03',12,1);
 
-INSERT INTO page_apropos (id,eyebrow,greeting,name,intro,portrait_label,bio,bio_emphasis,quote,stats_title,follow_title,follow_copy,follow_cta,follow_to)
-VALUES (1,'À propos','Bonjour, moi c’est','Marie-Zoé','J’écris sur ce que je regarde.','Portrait de Marie-Zoé',
+INSERT INTO page_apropos (id,eyebrow,greeting,name,intro,bio,bio_emphasis,quote,stats_title,follow_title,follow_copy,follow_cta,follow_to)
+VALUES (1,'À propos','Bonjour, moi c’est','Marie-Zoé','J’écris sur ce que je regarde.',
  'Je tiens ce carnet depuis quatre ans.
 
 Chaque fin de mois, je rassemble ce qui a compté dans un bilan.','un bilan','« Un avis n’est jamais qu’une conversation. »','Cette année','On garde le contact ?','Le bilan du mois arrive dans votre boîte.','Me suivre →','/me-suivre');

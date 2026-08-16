@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,28 +6,20 @@ import AdminMeSuivrePage from '../pages/AdminMeSuivre';
 import { mesuivreFormValues } from '../content/mesuivre';
 import { aMeSuivre, SEED } from './fixtures';
 import { useTestDb } from './api-server';
+import { readSources } from './sourceScan';
 
 const meSuivre = aMeSuivre();
 
-const root = resolve(__dirname, '../..');
-
-/** Source scans below look for real code, so comments are stripped first. */
-function stripComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '');
-}
-
-const sources = [
+const sources = readSources([
   'src/pages/AdminMeSuivre/index.tsx',
   'src/pages/AdminMeSuivre/LinkRows.tsx',
   'src/pages/AdminMeSuivre/LinkRow.tsx',
   'src/pages/AdminMeSuivre/AdminMeSuivre.module.css',
-].map(
-  (path) => [path, stripComments(readFileSync(resolve(root, path), 'utf8'))] as const,
-);
+]);
 
 /** The editor fetches its content, so every test starts from a seeded database. */
-beforeEach(() => {
-  useTestDb(SEED);
+beforeEach(async () => {
+  await useTestDb(SEED);
 });
 
 function renderPage() {
@@ -42,6 +32,26 @@ function renderPage() {
 
 const initial = mesuivreFormValues(meSuivre);
 const INTRO_LABEL = /Petit mot d/;
+
+/**
+ * The state both "blocks submit" tests and the "clears the error" test start
+ * from: a 5th link named but left without a URL, submit already attempted.
+ */
+async function addNamedLinkWithoutUrl() {
+  const user = userEvent.setup();
+  renderPage();
+  await screen.findByTestId('admin-mesuivre-page');
+
+  // Fixture has 4 links; adding one makes it the 5th.
+  await user.click(screen.getByTestId('add-link'));
+  const nameInput = screen.getByLabelText('Nom du lien 5');
+  const urlInput = screen.getByLabelText('Adresse du lien 5');
+
+  await user.type(nameInput, 'GitHub');
+  await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+  return { user, nameInput, urlInput };
+}
 
 afterEach(() => {
   vi.doUnmock('../mock/mesuivre');
@@ -122,7 +132,7 @@ describe('AMS-3 admin Me suivre form', () => {
   it('renders without a single link and still offers to add one', async () => {
     // A page row with no links: reachable by removing them all, so the editor
     // has to survive it. A different row rather than a stubbed module.
-    useTestDb(`
+    await useTestDb(`
       INSERT INTO page_mesuivre (id,eyebrow,title,intro,newsletter_eyebrow,newsletter_title,newsletter_copy,newsletter_placeholder,newsletter_cta)
       VALUES (1,'Me suivre','On garde le contact','Choisissez votre endroit préféré.','La newsletter','Le courrier du mois','Le bilan complet.','votre@email.fr','S’abonner');
     `);
@@ -148,18 +158,7 @@ describe('AMS-3 admin Me suivre form', () => {
   });
 
   it('blocks submit if a named link has no URL, showing an error on the line', async () => {
-    const user = userEvent.setup();
-    renderPage();
-    await screen.findByTestId('admin-mesuivre-page');
-
-    // Fixture has 4 links; adding one makes it the 5th.
-    await user.click(screen.getByTestId('add-link'));
-    const nameInput = screen.getByLabelText('Nom du lien 5');
-    const urlInput = screen.getByLabelText('Adresse du lien 5');
-
-    await user.type(nameInput, 'GitHub');
-    // Leave URL empty and try to save.
-    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    const { nameInput, urlInput } = await addNamedLinkWithoutUrl();
 
     // The error should appear on the line, tied to both fields via aria-invalid.
     expect(
@@ -193,17 +192,7 @@ describe('AMS-3 admin Me suivre form', () => {
   });
 
   it('clears the error as soon as either field changes', async () => {
-    const user = userEvent.setup();
-    renderPage();
-    await screen.findByTestId('admin-mesuivre-page');
-
-    // Fixture has 4 links; adding one makes it the 5th.
-    await user.click(screen.getByTestId('add-link'));
-    const nameInput = screen.getByLabelText('Nom du lien 5');
-    const urlInput = screen.getByLabelText('Adresse du lien 5');
-
-    await user.type(nameInput, 'GitHub');
-    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    const { user, nameInput, urlInput } = await addNamedLinkWithoutUrl();
 
     expect(
       screen.getByText('Une adresse est nécessaire pour enregistrer ce lien.'),
@@ -241,5 +230,25 @@ describe('AMS-3 admin Me suivre form', () => {
     expect(screen.getByLabelText('Nom du lien 5')).toHaveValue('GitHub');
     expect(screen.getByLabelText('Adresse du lien 5')).toHaveValue('github.com/mariezoe');
     expect(screen.getByLabelText('Pseudo du lien 5')).toHaveValue('@mariezoe');
+  });
+});
+
+describe('AMS-3 admin Me suivre form, row never written', () => {
+  it('mounts a blank, editable form instead of the load-error panel', async () => {
+    // A fresh database — the row doesn't exist yet, so the editor is exactly
+    // where a first-time save has to happen, not somewhere blocked by a retry
+    // button.
+    await useTestDb();
+    renderPage();
+
+    await screen.findByTestId('admin-mesuivre-page');
+    expect(screen.queryByTestId('page-error')).not.toBeInTheDocument();
+    expect(screen.getByLabelText(INTRO_LABEL)).toHaveValue('');
+    expect(screen.getByTestId('add-link')).toBeInTheDocument();
+
+    const user = userEvent.setup();
+    const intro = screen.getByLabelText(INTRO_LABEL);
+    await user.type(intro, 'Où me retrouver.');
+    expect(intro).toHaveValue('Où me retrouver.');
   });
 });

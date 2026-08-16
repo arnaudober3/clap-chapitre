@@ -40,6 +40,29 @@ export interface MeSuivreContent {
   socials: SocialLink[];
 }
 
+/**
+ * What the admin editor mounts when `page_mesuivre` has never been written —
+ * an empty database, not a load failure. The static labels below match the
+ * ones `examples/contenu-exemple.sql` seeds, since they are not edited on
+ * screen; the fields the form does edit (title, intro, links) start blank.
+ */
+export const BLANK_MESUIVRE_CONTENT: MeSuivreContent = {
+  eyebrow: 'Me suivre',
+  // Unlike `intro`, `title` has no field on the form — `mesuivrePayload` sends
+  // it back unchanged — so it needs a real value or the first save 422s on a
+  // field the editor never saw.
+  title: 'On garde le contact',
+  intro: '',
+  newsletter: {
+    eyebrow: 'La newsletter',
+    title: 'Le courrier du mois',
+    copy: 'Le bilan complet, les coups de cœur et une reco rien que pour vous.',
+    placeholder: 'votre@email.fr',
+    cta: 'Je m’abonne',
+  },
+  socials: [],
+};
+
 /** One editable row of the links list. */
 export interface SocialLinkField {
   /**

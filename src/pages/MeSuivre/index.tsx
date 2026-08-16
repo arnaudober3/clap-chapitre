@@ -13,7 +13,7 @@ import styles from './MeSuivre.module.css';
  * collapses to one column below the md breakpoint.
  */
 export default function MeSuivrePage() {
-  const { data, status, reload } = useMeSuivre();
+  const { data, status, notFound, reload } = useMeSuivre();
 
   if (status === 'loading' || status === 'idle') {
     return (
@@ -24,11 +24,18 @@ export default function MeSuivrePage() {
     );
   }
 
+  // A 404 is the row never having been written — an empty database, not a
+  // failure — so it keeps its own empty state rather than the error panel,
+  // the way `BilanCulturelPage` does.
   if (!data) {
     return (
       <div className={styles.page} data-testid="me-suivre-page">
         <Seo title="Me suivre" description={ME_SUIVRE_FALLBACK_DESCRIPTION} path="/me-suivre" />
-        <PageError onRetry={reload} />
+        {notFound ? (
+          <p className={styles.empty}>Cette page n’a pas encore été écrite.</p>
+        ) : (
+          <PageError onRetry={reload} />
+        )}
       </div>
     );
   }

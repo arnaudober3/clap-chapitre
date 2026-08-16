@@ -166,7 +166,6 @@ export interface AproposInput {
   greeting: string;
   name: string;
   intro: string;
-  portraitLabel: string;
   portraitImage: string;
   bio: string;
   bioEmphasis: string;
@@ -195,7 +194,6 @@ export function readAproposInput(body: Record<string, unknown>): AproposInput {
     greeting: text(body, 'greeting', { max: 120 }),
     name: text(body, 'name', { max: 120 }),
     intro: text(body, 'intro', { max: 1000 }),
-    portraitLabel: text(body, 'portraitLabel', { max: 200 }),
     portraitImage: typeof portrait === 'string' ? portrait : '',
     bio: text(body, 'bio', { max: 20_000 }),
     // Allowed to be empty: an editor emphasising nothing is a valid choice, and

@@ -10,8 +10,8 @@ export interface AdminNavItem {
 /** Publications group — editorial sections. Only "Tableau de bord" is wired. */
 export const adminPrimaryNav: AdminNavItem[] = [
   { label: 'Tableau de bord', to: '/admin' },
-  { label: 'Articles', to: '/admin/articles', badge: 32 },
-  { label: 'Bilans culturels', to: '/admin/bilans', badge: 14 },
+  { label: 'Articles', to: '/admin/articles' },
+  { label: 'Bilans culturels', to: '/admin/bilans' },
   // Comments arrive in moderation and are invisible until released. Without a
   // destination here the queue would fill up with no way in.
   { label: 'Commentaires', to: '/admin/commentaires' },
