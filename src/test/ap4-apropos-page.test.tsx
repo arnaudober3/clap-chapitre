@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -7,29 +5,13 @@ import AProposPage, { emphasize } from '../pages/APropos';
 import App from '../App';
 import { anApropos, SEED } from './fixtures';
 import { useTestDb } from './api-server';
+import { readSource } from './sourceScan';
 
 const apropos = anApropos();
 
-const root = resolve(__dirname, '../..');
-
-/**
- * Source scans below look for real code, so comments are stripped first —
- * otherwise a doc comment that *describes* the rule ("never via
- * dangerouslySetInnerHTML") trips the assertion that enforces it.
- */
-function stripComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '');
-}
-
-const pageSource = stripComments(
-  readFileSync(resolve(root, 'src/pages/APropos/index.tsx'), 'utf8'),
-);
-const heroSource = stripComments(
-  readFileSync(resolve(root, 'src/pages/APropos/Hero.tsx'), 'utf8'),
-);
-const css = stripComments(
-  readFileSync(resolve(root, 'src/pages/APropos/APropos.module.css'), 'utf8'),
-);
+const pageSource = readSource('src/pages/APropos/index.tsx');
+const heroSource = readSource('src/pages/APropos/Hero.tsx');
+const css = readSource('src/pages/APropos/APropos.module.css');
 
 function renderPage() {
   return render(
@@ -132,9 +114,9 @@ describe('AP-4 À propos page empty content', () => {
   it('renders the hero and does not throw with empty bio and stats', async () => {
     // A row with no bio and no stats — reachable by hand, so the page has to
     // survive it. No module stubbing needed: it is just a different row.
-    useTestDb(`
-      INSERT INTO page_apropos (id,eyebrow,greeting,name,intro,portrait_label,bio,bio_emphasis,quote,stats_title,follow_title,follow_copy,follow_cta,follow_to)
-      VALUES (1,'À propos','Bonjour, moi c’est','Marie-Zoé','J’écris.','Portrait','','','','Cette année','On garde le contact ?','Le bilan du mois.','Me suivre','/me-suivre');
+    await useTestDb(`
+      INSERT INTO page_apropos (id,eyebrow,greeting,name,intro,bio,bio_emphasis,quote,stats_title,follow_title,follow_copy,follow_cta,follow_to)
+      VALUES (1,'À propos','Bonjour, moi c’est','Marie-Zoé','J’écris.','','','','Cette année','On garde le contact ?','Le bilan du mois.','Me suivre','/me-suivre');
     `);
     expect(() =>
       render(
@@ -148,5 +130,21 @@ describe('AP-4 À propos page empty content', () => {
     expect(screen.queryByTestId('bio-paragraph')).not.toBeInTheDocument();
     expect(screen.queryByTestId('year-stat-row')).not.toBeInTheDocument();
     expect(screen.getByText('Cette année')).toBeInTheDocument();
+  });
+
+  it('shows the empty-page state, not the load-error panel, when the row was never written', async () => {
+    // A fresh database — the row doesn't exist yet, not a fetch failure.
+    await useTestDb();
+    render(
+      <MemoryRouter>
+        <AProposPage />
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByText('Cette page n’a pas encore été écrite.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('page-error')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Réessayer' })).not.toBeInTheDocument();
   });
 });

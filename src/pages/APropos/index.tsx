@@ -65,7 +65,7 @@ export function emphasize(text: string, terms: string[]): ReactNode[] {
  * the columns collapse to one below the md breakpoint.
  */
 export default function AProposPage() {
-  const { data, status, reload } = useAPropos();
+  const { data, status, notFound, reload } = useAPropos();
 
   if (status === 'loading' || status === 'idle') {
     return (
@@ -77,12 +77,17 @@ export default function AProposPage() {
   }
 
   // A 404 is the row never having been written — an empty database, not a
-  // failure — so it reads as an error the editor can act on either way.
+  // failure — so it keeps its own empty state rather than the error panel,
+  // the way `BilanCulturelPage` does.
   if (!data) {
     return (
       <div className={styles.page} data-testid="a-propos-page">
         <Seo title="À propos" description={APROPOS_FALLBACK_DESCRIPTION} path="/a-propos" />
-        <PageError onRetry={reload} />
+        {notFound ? (
+          <p className={styles.empty}>Cette page n’a pas encore été écrite.</p>
+        ) : (
+          <PageError onRetry={reload} />
+        )}
       </div>
     );
   }

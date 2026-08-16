@@ -9,21 +9,18 @@ import styles from './AdminAPropos.module.css';
  * to put one. Both are true no longer: the portrait is a file in R2, and
  * `page_apropos.portrait_image` holds its key.
  *
- * The alt text is edited alongside it. `portrait_label` was a caption for a
- * gradient, which made it decorative; over a real photograph it is what a screen
- * reader reads, so it stops being optional.
+ * There used to be an alt-text field beside it — but the public page never
+ * actually read it (the portrait renders as a background-image, not an
+ * `<img>`), so a real, always-present alt text is fixed in `Hero.tsx` instead
+ * of left to whatever the editor typed or forgot to.
  */
 export default function PortraitField({
   value,
   onChange,
-  label,
-  onLabelChange,
 }: {
   /** R2 key, or '' while there is no portrait. */
   value: string;
   onChange: (key: string) => void;
-  label: string;
-  onLabelChange: (label: string) => void;
 }) {
   return (
     <div className={styles.portraitField}>
@@ -36,15 +33,6 @@ export default function PortraitField({
         hint="Glisser une photo ou parcourir"
         data-testid="apropos-portrait-field"
       />
-      <label className={styles.field}>
-        <span className={styles.portraitLabel}>Texte alternatif</span>
-        <input
-          className={styles.input}
-          value={label}
-          onChange={(event) => onLabelChange(event.target.value)}
-          placeholder="Ce que décrit la photo, pour qui ne la voit pas"
-        />
-      </label>
     </div>
   );
 }

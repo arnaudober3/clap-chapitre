@@ -29,7 +29,6 @@ const COLUMNS = [
   'greeting',
   'name',
   'intro',
-  'portrait_label',
   'portrait_image',
   'bio',
   'bio_emphasis',
@@ -80,7 +79,6 @@ export const onRequestPut: Handler = async ({ request, env }) => {
           input.greeting,
           input.name,
           input.intro,
-          input.portraitLabel,
           input.portraitImage,
           input.bio,
           input.bioEmphasis,
@@ -94,7 +92,7 @@ export const onRequestPut: Handler = async ({ request, env }) => {
         ),
       // Cleared and rewritten, like every ordered table here — `position` is the
       // primary key, so renumbering in place would collide. `reorder` is not
-      // used: it scopes the delete to an owner column, and this table has none
+      // used: it scopes the deletion to an owner column, and this table has none
       // (the page is a singleton, the whole table belongs to it).
       db.prepare('DELETE FROM apropos_stats'),
       ...input.stats.map((stat, index) =>

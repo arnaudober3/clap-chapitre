@@ -1,29 +1,13 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import Hero from '../pages/APropos/Hero';
 import { anApropos } from './fixtures';
+import { readSource } from './sourceScan';
 
 const apropos = anApropos();
 
-const root = resolve(__dirname, '../..');
-
-/**
- * Source scans below look for real code, so comments are stripped first —
- * otherwise a doc comment that *describes* the rule ("no <img>") trips the
- * assertion that enforces it.
- */
-function stripComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '');
-}
-
-const heroSource = stripComments(
-  readFileSync(resolve(root, 'src/pages/APropos/Hero.tsx'), 'utf8'),
-);
-const css = stripComments(
-  readFileSync(resolve(root, 'src/pages/APropos/APropos.module.css'), 'utf8'),
-);
+const heroSource = readSource('src/pages/APropos/Hero.tsx');
+const css = readSource('src/pages/APropos/APropos.module.css');
 
 function renderHero(overrides: Partial<Parameters<typeof Hero>[0]> = {}) {
   return render(
@@ -76,6 +60,13 @@ describe('AP-2 À propos hero band', () => {
       backgroundSize: 'cover',
       backgroundPosition: 'center',
     });
+  });
+
+  it('gives the portrait a fixed accessible label, not one derived from a prop', () => {
+    renderHero();
+    // No `portraitLabel`/alt prop exists anymore — the label is a constant
+    // inside Hero.tsx, so it survives whether a portrait is uploaded.
+    expect(screen.getByRole('img', { name: 'Portrait de Marie-Zoé' })).toBeInTheDocument();
   });
 
   it('uses tokens only — no raw hex color literal in Hero.tsx or the CSS module', () => {

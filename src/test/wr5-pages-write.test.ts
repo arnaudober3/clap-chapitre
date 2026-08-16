@@ -7,12 +7,13 @@ import { createTestDb } from './d1';
 import { TEST_ENV, signTestToken } from './api-server';
 import { SEED } from './fixtures';
 import type { D1Database, Handler } from '../../functions/types';
+import Request from 'node';
 
 let db: D1Database & { close(): void };
 
-beforeEach(() => {
-  db = createTestDb();
-  db.exec(SEED);
+beforeEach(async () => {
+  db = await createTestDb();
+  await db.exec(SEED);
 });
 
 const env = () => ({ ...TEST_ENV, DB: db });
@@ -35,7 +36,6 @@ const APROPOS = {
   greeting: 'Bonjour, moi c’est',
   name: 'Marie-Zoé',
   intro: 'J’écris sur ce que je regarde.',
-  portraitLabel: 'Portrait de Marie-Zoé',
   portraitImage: '',
   bio: 'Premier paragraphe.\n\nSecond paragraphe.',
   bioEmphasis: 'un bilan',
@@ -90,7 +90,7 @@ describe('WR-5 À propos', () => {
   it('upserts: it writes the page into a database that never had one', async () => {
     // The row is `id = 1` by constraint, so creating and updating are one act —
     // and an empty database is exactly when the editor first opens this form.
-    db.exec('DELETE FROM page_apropos');
+    await db.exec('DELETE FROM page_apropos');
     expect((await put(adminAproposRoute, APROPOS)).status).toBe(200);
 
     const row = await db.prepare('SELECT name FROM page_apropos WHERE id = 1').first();

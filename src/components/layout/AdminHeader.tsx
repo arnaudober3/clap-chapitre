@@ -51,11 +51,12 @@ function BrandMark({ label, kicker }: { label: string; kicker?: string }) {
 
 /** A single admin nav link with active treatment, optional badge, and gold dot. */
 function AdminNavLink({
-  item,
-  onNavigate,
-}: {
-  item: AdminNavItem;
-  onNavigate?: () => void;
+                          item,
+                          onNavigate
+                      }: {
+    item: AdminNavItem,
+    onNavigate?: () => void,
+    key?: string
 }) {
   const { pathname } = useLocation();
   const { pathname: toPathname } = useResolvedPath(item.to);
@@ -97,13 +98,13 @@ function NavGroups({
       <div className={styles.navSectionLabel}>Publications</div>
       <nav className={styles.navGroup} aria-label="Publications">
         {primaryNav.map((item) => (
-          <AdminNavLink item={item} onNavigate={onNavigate} />
+          <AdminNavLink key={item.to} item={item} onNavigate={onNavigate} />
         ))}
       </nav>
       <div className={styles.navSectionLabel}>Pages du site</div>
       <nav className={styles.navGroup} aria-label="Pages du site">
         {adminPagesNav.map((item) => (
-          <AdminNavLink item={item} onNavigate={onNavigate} />
+          <AdminNavLink key={item.to} item={item} onNavigate={onNavigate} />
         ))}
       </nav>
     </>

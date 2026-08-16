@@ -1,6 +1,9 @@
 import { coverStyle } from '../../api/mutations';
 import styles from './APropos.module.css';
 
+/** Fixed rather than editable: see `PortraitField.tsx` for why. */
+const PORTRAIT_ALT = 'Portrait de Marie-Zoé';
+
 /**
  * Design-3b À propos hero band: a gradient band with a round portrait
  * (a real image when one has been uploaded; a CSS gradient placeholder
@@ -26,7 +29,13 @@ export default function Hero({
       {/* The band paints edge-to-edge; this inner track keeps its content on the
           same --shell-max column as the rest of the page. */}
       <div className={styles.heroInner}>
-        <div className={styles.portrait} style={coverStyle(portraitImage)} data-testid="a-propos-portrait" />
+        <div
+          className={styles.portrait}
+          style={coverStyle(portraitImage)}
+          role="img"
+          aria-label={PORTRAIT_ALT}
+          data-testid="a-propos-portrait"
+        />
         <div className={styles.heroBody}>
           {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
           <h1 className={styles.heroTitle}>

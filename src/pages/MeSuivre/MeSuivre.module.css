@@ -8,6 +8,14 @@
   flex-direction: column;
 }
 
+.empty {
+  padding: 40px 4px;
+  font-family: var(--font-serif), sans-serif;
+  font-size: 18px;
+  font-style: italic;
+  color: var(--muted);
+}
+
 /* ---- Page head (MS-4) ---- */
 .eyebrow {
   margin: 0 0 8px;
@@ -159,10 +167,10 @@
   }
 
   .socialHandle {
-    font-size: 12.5px;
+    font-size: 12px;
   }
 
   .socialCta {
-    font-size: 12.5px;
+    font-size: 12px;
   }
 }

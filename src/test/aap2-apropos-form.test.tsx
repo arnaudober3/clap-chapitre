@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,24 +6,18 @@ import AdminAProposPage from '../pages/AdminAPropos';
 import { aproposFormValues } from '../content/apropos';
 import { anApropos, SEED } from './fixtures';
 import { useTestDb } from './api-server';
+import { readSources } from './sourceScan';
 
-const root = resolve(__dirname, '../..');
-
-/** Source scans below look for real code, so comments are stripped first. */
-function stripComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '');
-}
-
-const sources = [
+const sources = readSources([
   'src/pages/AdminAPropos/index.tsx',
   'src/pages/AdminAPropos/PortraitField.tsx',
   'src/pages/AdminAPropos/YearStatsFields.tsx',
   'src/pages/AdminAPropos/AdminAPropos.module.css',
-].map((path) => [path, stripComments(readFileSync(resolve(root, path), 'utf8'))] as const);
+]);
 
 /** The editor fetches the page content, so every test starts from a seeded database. */
-beforeEach(() => {
-  useTestDb(SEED);
+beforeEach(async () => {
+  await useTestDb(SEED);
 });
 
 function renderPage() {
@@ -108,7 +100,7 @@ describe('AAP-2 admin À propos form', () => {
     expect(screen.queryByText('Enregistré')).toBeNull();
   });
 
-  it('offers a portrait upload and its alt text', async () => {
+  it('offers a portrait upload, with no alt-text field beside it', async () => {
     renderPage();
     await screen.findByTestId('admin-apropos-page');
 
@@ -119,14 +111,37 @@ describe('AAP-2 admin À propos form', () => {
       'type',
       'file',
     );
-    // Alt text was decorative over a gradient. Over a photograph it is what a
-    // screen reader reads, so it is edited alongside.
-    expect(screen.getByLabelText('Texte alternatif')).toBeInTheDocument();
+    // The public page never read this field dynamically — the alt text is
+    // fixed in `Hero.tsx` now, so there is nothing to edit here.
+    expect(screen.queryByLabelText('Texte alternatif')).not.toBeInTheDocument();
   });
 
   it('uses tokens only — no raw hex color literal anywhere in the page', () => {
     for (const [path, code] of sources) {
       expect(code, path).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     }
+  });
+});
+
+describe('AAP-2 admin À propos form, row never written', () => {
+  it('mounts a blank, editable form instead of the load-error panel', async () => {
+    // A fresh database — the row doesn't exist yet, so the editor is exactly
+    // where a first-time save has to happen, not somewhere blocked by a retry
+    // button.
+    await useTestDb();
+    renderPage();
+
+    await screen.findByTestId('admin-apropos-page');
+    expect(screen.queryByTestId('page-error')).not.toBeInTheDocument();
+
+    // The greeting prefix is a helpful starting point, not fetched content —
+    // there is no name typed after it yet.
+    const title = screen.getByLabelText('Titre');
+    expect(title).toHaveValue('Bonjour, moi c’est ');
+    expect(screen.getByLabelText('Présentation')).toHaveValue('');
+
+    const user = userEvent.setup();
+    await user.type(title, 'Marie');
+    expect(title).toHaveValue('Bonjour, moi c’est Marie');
   });
 });

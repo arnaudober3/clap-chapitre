@@ -10,6 +10,9 @@
  * line. They are split here so the shape the client receives is already the
  * shape it renders.
  *
+ * The portrait's alt text is not part of this row: it is fixed in `Hero.tsx`
+ * rather than editable, so there is nothing here to make it dynamic again.
+ *
  * Public: this is the page itself, and the admin editor reads the same endpoint
  * — there is nothing privileged on it.
  */
@@ -54,7 +57,6 @@ export const onRequestGet: Handler = async ({ env }) => {
       greeting: String(row.greeting),
       name: String(row.name),
       intro: String(row.intro),
-      portraitLabel: String(row.portrait_label),
       // The R2 key, or '' while no portrait has been uploaded. The page renders
       // its neutral placeholder on the empty string rather than a broken image.
       portraitImage: String(row.portrait_image ?? ''),
