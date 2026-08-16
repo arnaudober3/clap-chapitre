@@ -56,8 +56,9 @@
   --social-linkedin: #1f5079;
 
   /* Chip tints — admin "Me suivre" editor (design 6g/7f). Pastel plate + accent
-     mark, one pair per network. Unlike --social-*, these sit on a light card and
-     DO get overridden in dark. The light marks coincide with the --medium-*
+     mark, one pair per network. These sit on a light card, so all of them get
+     overridden in dark — where --social-* only flips the one hue that drowns in
+     the night background (Threads). The light marks coincide with the --medium-*
      accents: same Salon accent family, different axis — kept separate so the two
      can drift. */
   --chip-threads-bg: #f6e4dc;
@@ -95,6 +96,14 @@
   --radius-card: 12px;
   --radius-nav: 9px;
   --radius-pill: 999px;
+
+  /* Motion — the mount cascade. Like every other Salon constant, durations live
+     here and components read them via var(--…). Not overridden in dark: motion
+     does not depend on the theme. */
+  --dur-enter: 320ms;   /* how long one block takes to arrive */
+  --anim-step: 60ms;    /* offset between two consecutive siblings */
+  --anim-rise: 8px;     /* how far a block travels upward */
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Breakpoints (mobile-first). Exposed as tokens for reference; media
      queries below/in components use the matching literal px values. */
@@ -151,6 +160,13 @@
   --medium-serie: #6fa0b0;
   --medium-docs: #b884a6;
   --medium-film: #e0714a;
+
+  /* Social swatches — only Threads changes sides. Its near-black plate (#221a14)
+     sat a hair away from --bg, and the glyph, painted in var(--bg), vanished
+     with it. In dark it inverts to cream, like the brand itself does and like
+     the component's --ink fallback. The other three are saturated mid-tones:
+     they hold on the night background, so they stay put. */
+  --social-threads: #f2e8d8;
 
   /* Chip tints — plates desaturated down to --surface-inset's range, marks
      brightened like the medium accents above. */

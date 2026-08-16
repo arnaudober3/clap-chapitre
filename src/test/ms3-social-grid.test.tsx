@@ -4,8 +4,10 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import SocialCard from '../pages/MeSuivre/SocialCard';
 import SocialGrid from '../pages/MeSuivre/SocialGrid';
-import { meSuivre } from '../mock/mesuivre';
-import type { SocialLink } from '../mock/mesuivre';
+import { aMeSuivre } from './fixtures';
+
+const meSuivre = aMeSuivre();
+import type { SocialLink } from '../content/mesuivre';
 
 const root = resolve(__dirname, '../..');
 const cardSource = readFileSync(
@@ -42,7 +44,9 @@ describe('MS-3 socials grid', () => {
       expect(within(card).getByText(social.name)).toBeInTheDocument();
       expect(within(card).getByText(social.handle)).toBeInTheDocument();
       expect(within(card).getByText(social.glyph)).toBeInTheDocument();
-      expect(within(card).getByText('Suivre')).toBeInTheDocument();
+      // Each card words its own call to action — "Suivre" on a social account,
+      // "Voir mes films" on a film log.
+      expect(within(card).getByText(social.cta)).toBeInTheDocument();
     });
   });
 

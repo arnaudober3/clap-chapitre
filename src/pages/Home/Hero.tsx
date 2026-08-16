@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import type { Article } from '../../mock/types';
+import { coverStyle } from '../../api/mutations';
+import type { Article } from '../../../shared/content';
 import { MEDIUM_LABEL } from '../../media';
 import styles from './Home.module.css';
 
@@ -11,7 +12,7 @@ import styles from './Home.module.css';
 export default function Hero({ item }: { item: Article }) {
   return (
     <section className={styles.hero} data-testid="home-hero">
-      <div className={styles.heroCover} style={{ background: item.cover }} aria-hidden="true" />
+      <div className={styles.heroCover} style={coverStyle(item.cover)} aria-hidden="true" />
       <div className={styles.heroBody}>
         <p className={styles.eyebrow}>
           Dernier avis · {MEDIUM_LABEL[item.medium]} · {item.date}

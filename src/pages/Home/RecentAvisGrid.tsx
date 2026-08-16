@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { Article, Medium } from '../../mock/types';
+import type { Article, Medium } from '../../../shared/content';
 import { MEDIUM_TO_SEGMENT, DEFAULT_SEGMENT } from '../../media';
 import { ReviewCard } from '../../components/ui';
 import styles from './Home.module.css';
@@ -30,7 +30,7 @@ export default function RecentAvisGrid({
       {items.length === 0 ? (
         <p className={styles.empty}>Aucun avis pour ce médium pour l’instant.</p>
       ) : (
-        <div className={styles.grid}>
+        <div className={styles.grid} data-anim="stagger">
           {items.map((item) => (
             <ReviewCard key={item.id} item={item} />
           ))}

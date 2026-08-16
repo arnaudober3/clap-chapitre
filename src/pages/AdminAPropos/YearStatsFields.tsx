@@ -1,4 +1,4 @@
-import type { YearStatField } from '../../mock/apropos';
+import type { YearStatField } from '../../content/apropos';
 import styles from './AdminAPropos.module.css';
 
 /**

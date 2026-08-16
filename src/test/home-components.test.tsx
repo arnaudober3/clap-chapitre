@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import type { PublishedArticle } from '../mock/types';
+import type { PublishedArticle } from '../../shared/content';
 import Hero from '../pages/Home/Hero';
 import RecentAvisGrid from '../pages/Home/RecentAvisGrid.tsx';
 import Newsletter from '../pages/Home/Newsletter';

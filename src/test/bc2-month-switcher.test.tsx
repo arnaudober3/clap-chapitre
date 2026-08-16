@@ -2,7 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import MonthSwitcher from '../pages/BilanCulturel/MonthSwitcher';
-import { bilans, latestBilan } from '../mock/bilans';
+import { aBilanSummary } from './fixtures';
+
+/** Three months, newest first — the switcher needs siblings to render pills. */
+const bilans = [
+  aBilanSummary(),
+  aBilanSummary({ id: '2026-06', month: 6, monthLabel: 'Juin', title: 'Les jours longs' }),
+  aBilanSummary({ id: '2026-05', month: 5, monthLabel: 'Mai', title: 'Le mois des seuils' }),
+];
+const latestBilan = () => bilans[0];
 
 function renderSwitcher() {
   const active = latestBilan();

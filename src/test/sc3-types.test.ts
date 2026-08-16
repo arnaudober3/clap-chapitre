@@ -5,7 +5,7 @@ import type {
   DraftArticle,
   PublishedArticle,
   Comment,
-} from '../mock/types';
+} from '../../shared/content';
 
 describe('SC-3 mock types', () => {
   it('Medium and Article are importable and well-shaped', () => {
@@ -56,15 +56,27 @@ describe('SC-3 mock types', () => {
     expect(draft.status === 'draft' && draft.updatedLabel).toBe('Modifié il y a 2 jours');
   });
 
-  it('Comment supports the isAuthor flag', () => {
+  it('Comment supports the isAuthor flag and a single nested reply', () => {
     const comment: Comment = {
       id: 'c1',
-      author: 'Marie-Zoé',
+      author: 'Camille',
       date: '13 juin 2026',
       body: 'Merci pour vos retours !',
-      isAuthor: true,
+      likes: 3,
+      reply: {
+        id: 'c1-reply',
+        author: 'Marie-Zoé',
+        // The author's answer is shown undated on purpose — a badge, not a date.
+        date: '',
+        body: 'Merci Camille !',
+        isAuthor: true,
+        likes: 1,
+      },
     };
-    expect(comment.isAuthor).toBe(true);
+    expect(comment.reply?.isAuthor).toBe(true);
     expectTypeOf<Comment['isAuthor']>().toEqualTypeOf<boolean | undefined>();
+    // A reply is a Comment, so the shape stops recursing only because no design
+    // nests a second level — the type would allow it.
+    expectTypeOf<Comment['reply']>().toEqualTypeOf<Comment | undefined>();
   });
 });

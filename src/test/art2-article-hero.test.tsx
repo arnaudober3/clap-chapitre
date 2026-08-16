@@ -4,10 +4,9 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ArticleHero from '../pages/Article/ArticleHero';
-import { articleById } from '../mock/articles';
-import { bilans } from '../mock/bilans';
-import type { PublishedArticle } from '../mock/types';
-import type { MonthlyBilan } from '../mock/bilans';
+import type { PublishedArticle } from '../../shared/content';
+import type { BilanCrumb } from '../api/content';
+import { aBilan, anArticle } from './fixtures';
 
 const root = resolve(__dirname, '../..');
 const heroSource = readFileSync(
@@ -19,11 +18,15 @@ const css = readFileSync(
   'utf8',
 );
 
-const feedAvis = articleById('un-dernier-ete')!;
-const juin: MonthlyBilan = bilans[0];
-const bilanAvis = juin.avis[0];
+const feedAvis = anArticle();
+// The breadcrumb only ever shows a month and a link, so the crumb is all the
+// hero is given — see BilanCrumb.
+const juillet: BilanCrumb = (({ id, monthLabel, year, title }) => ({ id, monthLabel, year, title }))(
+  aBilan(),
+);
+const bilanAvis = anArticle({ id: 'la-lumiere-du-nord', title: 'La lumière du Nord' });
 
-function renderHero(article: PublishedArticle, bilan?: MonthlyBilan) {
+function renderHero(article: PublishedArticle, bilan?: BilanCrumb) {
   return render(
     <MemoryRouter>
       <ArticleHero article={article} bilan={bilan} />
@@ -37,16 +40,16 @@ function breadcrumb() {
 
 describe('ART-2 breadcrumb', () => {
   it('renders the three-crumb form for a bilan-owned avis', () => {
-    renderHero(bilanAvis, juin);
+    renderHero(bilanAvis, juillet);
     const nav = breadcrumb();
 
     const lead = within(nav).getByRole('link', { name: 'Bilan culturel' });
     expect(lead).toHaveAttribute('href', '/bilan-culturel');
 
     const month = within(nav).getByRole('link', {
-      name: `${juin.monthLabel} ${juin.year}`,
+      name: `${juillet.monthLabel} ${juillet.year}`,
     });
-    expect(month).toHaveAttribute('href', `/bilan-culturel?mois=${juin.id}`);
+    expect(month).toHaveAttribute('href', `/bilan-culturel?mois=${juillet.id}`);
 
     // The medium crumb is plain text, not a link.
     const current = within(nav).getByText('Films');
@@ -65,10 +68,10 @@ describe('ART-2 breadcrumb', () => {
   });
 
   it('points the mobile back link at the same target as the month crumb', () => {
-    const { unmount } = renderHero(bilanAvis, juin);
+    const { unmount } = renderHero(bilanAvis, juillet);
     expect(
-      screen.getByRole('link', { name: `‹ ${juin.monthLabel} ${juin.year}` }),
-    ).toHaveAttribute('href', `/bilan-culturel?mois=${juin.id}`);
+      screen.getByRole('link', { name: `‹ ${juillet.monthLabel} ${juillet.year}` }),
+    ).toHaveAttribute('href', `/bilan-culturel?mois=${juillet.id}`);
     unmount();
 
     renderHero(feedAvis);
@@ -97,11 +100,34 @@ describe('ART-2 hero', () => {
       ),
     ).toBeInTheDocument();
 
-    // The cover is a CSS gradient, never an image.
+    // Covers were CSS gradients while nothing could upload a file. They are
+    // images now, served from R2 through /api/media — never a third-party URL.
     const cover = screen.getByTestId('article-cover');
-    expect(cover.getAttribute('style')).toContain('gradient');
-    expect(container.querySelector('img')).toBeNull();
-    expect(container.innerHTML).not.toContain('url(');
+    const withImage = { ...feedAvis, cover: `cover-${'a'.repeat(64)}.webp` };
+    expect(cover).toBeInTheDocument();
+
+    container.remove();
+    const painted = render(
+      <MemoryRouter>
+        <ArticleHero article={withImage} />
+      </MemoryRouter>,
+    );
+    const style = painted.getByTestId('article-cover').getAttribute('style') ?? '';
+    // Quoted or not is the serialiser's business; the path is ours.
+    expect(style).toContain(`/api/media/cover-${'a'.repeat(64)}.webp`);
+    expect(style).toContain('background-size: cover');
+  });
+
+  it('falls back to the neutral tile when there is no affiche yet', () => {
+    render(
+      <MemoryRouter>
+        <ArticleHero article={{ ...feedAvis, cover: '' }} />
+      </MemoryRouter>,
+    );
+    // No inline background at all — the stylesheet's own placeholder shows
+    // through, rather than a broken image.
+    const style = screen.getByTestId('article-cover').getAttribute('style') ?? '';
+    expect(style).not.toContain('url(');
   });
 
   it('degrades without genreMeta, hook or readingTime — no empty blocks, no dangling separator', () => {

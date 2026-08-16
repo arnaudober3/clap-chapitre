@@ -1,15 +1,44 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import CommentThread from '../pages/Article/CommentThread';
-import { thread } from '../pages/Article/thread';
+import { aComment, SEED } from './fixtures';
+import { useTestDb } from './api-server';
+
+/**
+ * Push the clock past the composer's three-second minimum.
+ *
+ * `openedAt` is stamped when the composer mounts, and `userEvent` types in no
+ * real time at all — so without this every test would look like a bot to the
+ * server, which is exactly what the last test in this file asserts.
+ */
+function backdate() {
+  vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 5000);
+}
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+/**
+ * The design 4a thread: Camille answered by the autrice, plus an anonymous
+ * entry. It used to be a module of its own under src/pages/; the comments now
+ * come from the API, so the shape lives with the other fixtures.
+ */
+const thread = [
+  aComment(),
+  aComment({
+    id: 'c-article-2',
+    author: 'Anonyme',
+    body: 'Merci pour cet avis.',
+    likes: 3,
+    reply: undefined,
+  }),
+];
 
 const root = resolve(__dirname, '../..');
-const threadSource = readFileSync(
-  resolve(root, 'src/pages/Article/thread.ts'),
-  'utf8',
-);
 const componentSource = readFileSync(
   resolve(root, 'src/pages/Article/CommentThread.tsx'),
   'utf8',
@@ -25,7 +54,7 @@ const total = thread.reduce(
   0,
 );
 
-describe('ART-5 thread mock', () => {
+describe('ART-5 thread fixture', () => {
   it('is the three-entry design thread: Camille + an undated autrice reply + Anonyme', () => {
     expect(total).toBe(3);
     expect(thread[0].author).toBe('Camille');
@@ -38,7 +67,7 @@ describe('ART-5 thread mock', () => {
 
 describe('ART-5 CommentThread', () => {
   it('renders the heading with the nested-inclusive count and every entry in order', () => {
-    render(<CommentThread />);
+    render(<CommentThread comments={thread} articleId="un-dernier-ete" />);
     expect(
       screen.getByRole('heading', { name: `Commentaires · ${total}` }),
     ).toBeInTheDocument();
@@ -57,7 +86,7 @@ describe('ART-5 CommentThread', () => {
   });
 
   it('nests the autrice reply, badged, with no date and no affordances of its own', () => {
-    render(<CommentThread />);
+    render(<CommentThread comments={thread} articleId="un-dernier-ete" />);
     const reply = screen.getByTestId('comment-reply');
     expect(reply).toHaveTextContent('Marie-Zoé');
     expect(within(reply).getByText('autrice')).toBeInTheDocument();
@@ -67,45 +96,88 @@ describe('ART-5 CommentThread', () => {
     expect(screen.getAllByTestId('comment-entry')[0]).toContainElement(reply);
   });
 
-  it('keeps every ♡ / Répondre affordance an inert button', () => {
-    const { container } = render(<CommentThread />);
-    const replyButtons = screen.getAllByRole('button', { name: 'Répondre' });
-    expect(replyButtons).toHaveLength(2);
-    const likeButtons = screen.getAllByRole('button', { name: /♡/ });
-    expect(likeButtons).toHaveLength(2);
+  it('gives every entry a ♡ that writes, and keeps Répondre inert', () => {
+    useTestDb(SEED);
+    render(<CommentThread comments={thread} articleId="un-dernier-ete" />);
 
-    const before = container.innerHTML;
-    for (const button of [...replyButtons, ...likeButtons]) {
-      expect(button.tagName).toBe('BUTTON');
-      expect(() => fireEvent.click(button)).not.toThrow();
+    // Still a placeholder: a reply needs its own composer aimed at the entry,
+    // and the thread is one level deep by design.
+    expect(screen.getAllByRole('button', { name: 'Répondre' })).toHaveLength(2);
+
+    // The ♡ used to be inert too. It is a real toggle now, and starts
+    // unpressed — the server dedupes on a hashed address.
+    const likeButtons = screen.getAllByRole('button', { name: /[♡♥]/ });
+    expect(likeButtons).toHaveLength(2);
+    for (const button of likeButtons) {
+      expect(button).toHaveAttribute('aria-pressed', 'false');
     }
-    expect(container.innerHTML).toBe(before);
   });
 
-  it('has an inert composer: submitting prevents default and adds no comment', () => {
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const before = window.location.href;
-    render(<CommentThread />);
+  it('posts the comment and says it is waiting to be read, without showing it', async () => {
+    const user = userEvent.setup();
+    const db = await useTestDb(SEED);
+    render(<CommentThread comments={thread} articleId="un-dernier-ete" />);
 
-    const publier = screen.getByRole('button', { name: 'Publier' });
-    expect(publier.tagName).toBe('BUTTON');
-    expect(publier).toHaveAttribute('type', 'submit');
-    expect(screen.getByLabelText('Nom — ou rester anonyme')).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Votre commentaire'), 'Très juste.');
+    await user.type(screen.getByLabelText('Nom — ou rester anonyme'), 'Sacha');
+    // The server refuses anything submitted under three seconds — the guard
+    // against a script that never rendered the form. Typing takes no real time
+    // under userEvent, so the mount stamp is pushed back instead.
+    backdate();
+    await user.click(screen.getByRole('button', { name: 'Publier' }));
 
-    const form = screen.getByLabelText('Votre commentaire').closest('form');
-    expect(form).not.toBeNull();
-    const submitEvent = new Event('submit', {
-      bubbles: true,
-      cancelable: true,
-    });
-    fireEvent(form!, submitEvent);
-    expect(submitEvent.defaultPrevented).toBe(true);
-
+    // The acknowledgement is what stops a visitor posting again: the comment is
+    // in moderation, so nothing appears in the thread.
+    expect(await screen.findByText(/sera publié après relecture/)).toBeInTheDocument();
     expect(screen.getAllByTestId('comment-entry')).toHaveLength(2);
     expect(screen.getAllByTestId('comment-reply')).toHaveLength(1);
-    expect(window.location.href).toBe(before);
-    expect(errorSpy).not.toHaveBeenCalled();
-    errorSpy.mockRestore();
+
+    const row = await db
+      .prepare("SELECT author, body, status FROM comments WHERE author = 'Sacha'")
+      .first<{ author: string; body: string; status: string }>();
+    expect(row).toEqual({ author: 'Sacha', body: 'Très juste.', status: 'pending' });
+  });
+
+  it('swallows the honeypot: a filled trap answers normally and writes nothing', async () => {
+    const user = userEvent.setup();
+    const db = await useTestDb(SEED);
+    const { container } = render(
+      <CommentThread comments={thread} articleId="un-dernier-ete" />,
+    );
+
+    // Only a form-filling bot touches this field.
+    const trap = container.querySelector<HTMLInputElement>('input[name="website"]');
+    expect(trap).not.toBeNull();
+    fireEvent.change(trap!, { target: { value: 'http://spam.example' } });
+
+    await user.type(screen.getByLabelText('Votre commentaire'), 'Achetez ceci.');
+    backdate();
+    await user.click(screen.getByRole('button', { name: 'Publier' }));
+
+    // Same answer, same wording: telling a bot which check caught it is telling
+    // it what to change.
+    expect(await screen.findByText(/sera publié après relecture/)).toBeInTheDocument();
+
+    const row = await db
+      .prepare("SELECT count(*) AS total FROM comments WHERE body = 'Achetez ceci.'")
+      .first<{ total: number }>();
+    expect(row?.total).toBe(0);
+  });
+
+  it('refuses a form submitted faster than anyone could read it', async () => {
+    const user = userEvent.setup();
+    const db = await useTestDb(SEED);
+    render(<CommentThread comments={thread} articleId="un-dernier-ete" />);
+
+    // No backdating: the composer mounted a moment ago.
+    await user.type(screen.getByLabelText('Votre commentaire'), 'Premier !');
+    await user.click(screen.getByRole('button', { name: 'Publier' }));
+
+    expect(await screen.findByText(/sera publié après relecture/)).toBeInTheDocument();
+    const row = await db
+      .prepare("SELECT count(*) AS total FROM comments WHERE body = 'Premier !'")
+      .first<{ total: number }>();
+    expect(row?.total).toBe(0);
   });
 });
 
@@ -141,13 +213,18 @@ describe('ART-5 responsive composer', () => {
 
 describe('ART-5 boundaries', () => {
   it('uses no raw Salon hex colour literal', () => {
-    expect(threadSource).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(componentSource).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 
-  it('is page-local: it never imports the Bilan culturel thread or component', () => {
+  it('stays page-local: it never reaches into the Bilan culturel thread', () => {
     expect(componentSource).not.toContain('BilanCulturel');
-    expect(threadSource).not.toContain('BilanCulturel');
+  });
+
+  it('renders whatever thread it is handed, holding none of its own', () => {
+    // The entries come from /api/articles/:id now; the component keeping a
+    // module-level thread is exactly what this guards against.
+    expect(componentSource).not.toMatch(/^const thread/m);
+    expect(componentSource).toContain('comments');
   });
 });

@@ -1,9 +1,16 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import HomePage from '../pages/Home';
-import { latestFor, recentFor } from '../mock/home';
+import { SEED } from './fixtures';
+import { useTestDb } from './api-server';
 
+/**
+ * The page reads `/api/feed`, which the stub serves from a real SQLite database
+ * carrying the project's migrations — so these assertions go through the hook,
+ * the handler and the SQL, not around them. Everything is therefore awaited:
+ * nothing is on screen on the first render but the loading line.
+ */
 function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -19,64 +26,52 @@ function renderAt(path: string) {
 }
 
 describe('HM-6 HomePage', () => {
-  it('shows the newest overall review as hero and at least three grid cards at /', () => {
-    renderAt('/');
-    const hero = screen.getByTestId('home-hero');
-    expect(within(hero).getByText(latestFor(undefined)!.title)).toBeInTheDocument();
-    const cards = recentFor(undefined);
-    expect(cards.length).toBeGreaterThanOrEqual(3);
-    for (const item of cards.slice(0, 3)) {
-      expect(
-        screen.getByRole('link', { name: new RegExp(item.title) }),
-      ).toBeInTheDocument();
-    }
+  beforeEach(() => {
+    useTestDb(SEED);
   });
 
-  it('limits hero and grid to a single medium on /livres', () => {
+  it('shows the newest review as hero and the rest as grid cards at /', async () => {
+    renderAt('/');
+    const hero = await screen.findByTestId('home-hero');
+    // The seed's newest avis, all media mixed.
+    expect(within(hero).getByText('Un dernier été')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /L’année de la pluie/ })).toBeInTheDocument();
+    // A draft is not published, so it never reaches the feed.
+    expect(screen.queryByText('Contre-champs')).not.toBeInTheDocument();
+  });
+
+  it('limits hero and grid to a single medium on /livres', async () => {
     renderAt('/livres');
-    const page = screen.getByTestId('home-page');
+    const page = await screen.findByTestId('home-page');
     expect(page).toHaveAttribute('data-medium', 'livre');
-    const hero = screen.getByTestId('home-hero');
-    expect(within(hero).getByText(latestFor('livre')!.title)).toBeInTheDocument();
-    // Every grid card is a livre (its /article link matches a livre id).
-    const livreIds = new Set(recentFor('livre').map((i) => i.id));
-    const otherMedium = recentFor(undefined).find((i) => i.medium !== 'livre');
-    expect(otherMedium).toBeTruthy();
-    expect(
-      screen.queryByRole('link', { name: new RegExp(otherMedium!.title) }),
-    ).not.toBeInTheDocument();
-    for (const item of recentFor('livre')) {
-      const link = screen.getByRole('link', { name: new RegExp(item.title) });
-      expect(link).toHaveAttribute('href', `/article/${item.id}`);
-      expect(livreIds.has(item.id)).toBe(true);
-    }
+
+    const hero = await screen.findByTestId('home-hero');
+    expect(within(hero).getByText('L’année de la pluie')).toBeInTheDocument();
+    expect(screen.queryByText('Un dernier été')).not.toBeInTheDocument();
   });
 
   it('renders the empty state and no hero when the medium has no items', async () => {
-    // The mock feed guarantees every medium, so exercise the defensive branch
-    // by stubbing the selectors to report an empty medium.
-    vi.resetModules();
-    vi.doMock('../mock/home', () => ({
-      feed: [],
-      latestFor: () => undefined,
-      recentFor: () => [],
-    }));
-    const { default: EmptyHome } = await import('../pages/Home');
-    render(
-      <MemoryRouter initialEntries={['/docs']}>
-        <Routes>
-          <Route path="/docs" element={<EmptyHome />} />
-        </Routes>
-      </MemoryRouter>,
-    );
-    expect(screen.queryByTestId('home-hero')).not.toBeInTheDocument();
-    // The empty message appears exactly once: the recent grid is hidden when
-    // there are no items, so it no longer duplicates the hero's empty state.
+    // No stubbing needed any more: a medium with no rows is just a medium with
+    // no rows — which is also what the whole site looks like before the editor
+    // has written anything.
+    renderAt('/docs');
     expect(
-      screen.getAllByText('Aucun avis pour ce médium pour l’instant.'),
-    ).toHaveLength(1);
+      await screen.findByText('Aucun avis pour ce médium pour l’instant.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('home-hero')).not.toBeInTheDocument();
+    // Exactly once: the grid hides itself when there is nothing in it, so it
+    // does not repeat the hero's message.
+    expect(screen.getAllByText('Aucun avis pour ce médium pour l’instant.')).toHaveLength(1);
     expect(screen.queryByText('Avis récents')).not.toBeInTheDocument();
-    vi.doUnmock('../mock/home');
-    vi.resetModules();
+  });
+
+  it('shows the loading line before the feed arrives, and no empty state', () => {
+    renderAt('/films');
+    expect(screen.getByTestId('page-loading')).toBeInTheDocument();
+    // The distinction that did not exist when the data was an import: "not yet"
+    // must not read as "there is nothing".
+    expect(
+      screen.queryByText('Aucun avis pour ce médium pour l’instant.'),
+    ).not.toBeInTheDocument();
   });
 });

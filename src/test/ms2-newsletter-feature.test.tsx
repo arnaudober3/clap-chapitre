@@ -1,10 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { beforeEach, describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import NewsletterFeature from '../pages/MeSuivre/NewsletterFeature';
-import { meSuivre } from '../mock/mesuivre';
+import { aMeSuivre } from './fixtures';
+import { useTestDb } from './api-server';
+
+const meSuivre = aMeSuivre();
 
 const root = resolve(__dirname, '../..');
 const source = readFileSync(
@@ -19,7 +22,7 @@ function renderFeature() {
 }
 
 describe('MS-2 newsletter feature', () => {
-  it('renders the eyebrow, title, copy and the signu˝p form', () => {
+  it('renders the eyebrow, title, copy and the signup form', () => {
     renderFeature();
     expect(screen.getByText(content.eyebrow)).toBeInTheDocument();
     expect(screen.getByText(content.title)).toBeInTheDocument();
@@ -38,25 +41,35 @@ describe('MS-2 newsletter feature', () => {
     expect(input.value).toBe('marie@zoe.fr');
   });
 
-  it('stays inert: submitting is defaultPrevented and shows no success/error text', async () => {
-    const user = userEvent.setup();
-    const { container } = renderFeature();
-    const form = container.querySelector('form') as HTMLFormElement;
+  describe('submitting', () => {
+    beforeEach(() => {
+      useTestDb();
+    });
 
-    const before = container.textContent;
-    await user.click(screen.getByRole('button', { name: content.cta }));
+    it('rejects an implausible address without a network round trip', async () => {
+      const user = userEvent.setup();
+      renderFeature();
 
-    // dispatchEvent returns false exactly when preventDefault() was called.
-    // Probe the dispatch result, NOT a listener on the form: React 18
-    // delegates at the root container, so a form-level listener runs before
-    // the onSubmit handler and would always read defaultPrevented === false.
-    expect(fireEvent.submit(form)).toBe(false);
+      await user.type(screen.getByLabelText('Adresse e-mail'), 'a@b');
+      await user.click(screen.getByRole('button', { name: content.cta }));
 
-    // Enter inside the input submits too — still inert, still nothing new.
-    await user.type(screen.getByLabelText('Adresse e-mail'), '{Enter}');
-    expect(fireEvent.submit(form)).toBe(false);
-    expect(container.textContent).toBe(before);
-    expect(screen.queryByText(/merci|erreur|succès/i)).not.toBeInTheDocument();
+      expect(
+        await screen.findByText('Cette adresse ne ressemble pas à un e-mail.'),
+      ).toBeInTheDocument();
+    });
+
+    it('subscribes a plausible address and shows the confirmation', async () => {
+      const user = userEvent.setup();
+      renderFeature();
+
+      const input = screen.getByLabelText('Adresse e-mail') as HTMLInputElement;
+      await user.type(input, 'marie@zoe.fr');
+      await user.click(screen.getByRole('button', { name: content.cta }));
+
+      expect(await screen.findByText('Merci ! Vous êtes abonné·e.')).toBeInTheDocument();
+      // The field clears once the write lands, so a second address can follow.
+      expect(input.value).toBe('');
+    });
   });
 
   it('uses a real email input and submit button inside a form', () => {

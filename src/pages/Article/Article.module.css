@@ -278,6 +278,12 @@
   color: var(--ink);
 }
 
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 26px 0;
+}
+
 /* ---- À rapprocher de (AT-3) ---- */
 .related {
   display: flex;
@@ -905,4 +911,14 @@
   text-box: trim-both cap alphabetic;
   padding-top: 2px;
   }
+}
+
+/* The composer's answer line: the acknowledgement that a comment went to
+   moderation, and the failure when it did not go at all. */
+.composerNotice {
+    grid-column: 1 / -1;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--muted-2);
+    margin: 8px 0 0;
 }

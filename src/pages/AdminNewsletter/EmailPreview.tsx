@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PosterThumb } from '../../components/ui';
 import { MEDIUM_ACCENT } from '../../media';
-import type { NewsletterEdition } from '../../mock/newsletter';
+import type { NewsletterEdition } from '../../newsletter';
 import styles from './AdminNewsletter.module.css';
 
 /**
@@ -39,7 +39,7 @@ export default function EmailPreview({ edition }: { edition: NewsletterEdition }
             <div>
               <div
                 className={styles.highlightLabel}
-                style={{ ['--highlight-accent' as string]: MEDIUM_ACCENT[highlight.medium] }}
+                style={{ ['--highlight-accent' as string]: MEDIUM_ACCENT[highlight.medium]  }}
               >
                 {highlight.label}
               </div>

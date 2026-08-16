@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { DraftBilan } from '../../mock/types';
+import type { DraftBilan } from '../../../shared/content';
 import MediumChips from './MediumChips';
 import styles from './AdminBilans.module.css';
 

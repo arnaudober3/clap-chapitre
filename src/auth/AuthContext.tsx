@@ -13,6 +13,7 @@ import {
   type AuthResult,
   type AuthUser,
 } from './auth';
+import { setUnauthorizedHandler } from '../api/client';
 
 /**
  * Admin session state for the whole app.
@@ -51,6 +52,14 @@ const AuthContext = createContext<AuthContextValue>(DEFAULT_VALUE);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(readStoredSession);
+
+  // Any admin request answered 401 ends the session here, not just in
+  // localStorage: otherwise the shell keeps rendering a signed-in back-office
+  // whose every panel quietly fails.
+  useEffect(() => {
+    setUnauthorizedHandler(() => setUser(null));
+    return () => setUnauthorizedHandler(undefined);
+  }, []);
 
   // Confirm the optimistic session against the server; drop it if it is stale.
   useEffect(() => {

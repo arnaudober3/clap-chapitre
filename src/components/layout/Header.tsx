@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Link, NavLink, matchPath, useLocation, useResolvedPath } from 'react-router-dom';
+import { Link, NavLink, useLocation, useResolvedPath } from 'react-router-dom';
 import { primaryNav, secondaryNav, drawerNav, type NavItem } from './nav';
-import { articleById } from '../../mock/articles';
+import { useActiveMedium } from './activeMedium';
 import { MEDIUM_TO_SEGMENT } from '../../media';
 import { ThemeToggle } from '../ui';
 import { useAuth } from '../../auth/AuthContext';
@@ -35,15 +35,13 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
 
 /**
  * On the article view (`/article/:id`) no medium feed route matches the URL, so
- * the rail would lose its selection. Resolve the article's medium to its feed
- * route (e.g. a film → `/films`) so that nav item can be forced active instead.
+ * the rail would lose its selection. The avis page publishes the medium it is
+ * showing (`activeMedium.tsx`) and this turns it into the feed route to
+ * highlight — the header itself never touches the content.
  */
-function activeFeedRoute(pathname: string): string | undefined {
-  const match = matchPath('/article/:id', pathname);
-  if (!match?.params.id) return undefined;
-  const article = articleById(match.params.id);
-  
-  return article ? `/${MEDIUM_TO_SEGMENT[article.medium]}` : undefined;
+function useActiveFeedRoute(): string | undefined {
+  const medium = useActiveMedium();
+  return medium ? `/${MEDIUM_TO_SEGMENT[medium]}` : undefined;
 }
 
 function tabClass({ isActive }: { isActive: boolean }) {
@@ -160,7 +158,7 @@ export default function Header() {
   const closeDrawer = () => setDrawerOpen(false);
   const { pathname } = useLocation();
   const isFeedRoute = feedRoutes.has(pathname);
-  const activeFeed = activeFeedRoute(pathname);
+  const activeFeed = useActiveFeedRoute();
 
   return (
     <header className={styles.header}>

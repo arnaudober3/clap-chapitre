@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { Article } from '../../mock/types';
+import type { Article } from '../../../shared/content';
 import { MEDIUM_ACCENT, MEDIUM_CHIP_LABEL } from '../../media';
 import { frNumber, shortDate } from '../../format';
 import styles from './AdminArticles.module.css';

@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { ApiError } from '../../api/client';
+import { subscribeNewsletter } from '../../api/mutations';
+import { isPlausibleEmail } from '../../validation';
 import styles from './ui.module.css';
 
 /**
@@ -47,14 +50,48 @@ const CARD_CLASS: Record<NewsletterBlockVariant, string> = {
  * The Salon --dark-grad card, shared by Home, Me suivre and À propos: gold
  * eyebrow, serif cream title, muted cream copy and a gold pill action.
  *
- * Content-only props — the component owns no mock data and imports nothing from
- * src/mock. The form variants are inert: onSubmit prevents default, so
- * submitting never navigates, reloads or fires a request, and there is no
- * validation, success or error state.
+ * Content-only props — the component owns no editorial copy of its own, taking
+ * every word as a prop. The form variants (`band`/`feature`) do submit for
+ * real, through `subscribeNewsletter` in `api/mutations.ts` rather than any
+ * mock: a honeypot field and a mount timestamp ride along, the same guards
+ * `CommentComposer` sends, and a pending/success/error line replaces the
+ * `preventDefault()`-only stub this used to be. `compact` renders no form and
+ * stays untouched — it is a plain `Link`.
  */
 export default function NewsletterBlock(props: NewsletterBlockProps) {
   const { variant, eyebrow, title, copy, cta, testId } = props;
   const [email, setEmail] = useState('');
+  const [pending, setPending] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+  const [error, setError] = useState<string>();
+
+  const openedAt = useRef(Date.now());
+  const trap = useRef<HTMLInputElement | null>(null);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const address = email.trim();
+    if (pending || !isPlausibleEmail(address)) {
+      setError('Cette adresse ne ressemble pas à un e-mail.');
+      return;
+    }
+
+    setPending(true);
+    setError(undefined);
+    try {
+      await subscribeNewsletter({
+        email: address,
+        trap: trap.current?.value ?? '',
+        openedAt: openedAt.current,
+      });
+      setSubscribed(true);
+      setEmail('');
+    } catch (cause: unknown) {
+      setError(cause instanceof ApiError ? cause.message : "L’inscription n’a pas pu être envoyée.");
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
     <section
@@ -72,22 +109,44 @@ export default function NewsletterBlock(props: NewsletterBlockProps) {
           {cta}
         </Link>
       ) : (
-        <form
-          className={styles.nbForm}
-          onSubmit={(event) => event.preventDefault()}
-        >
-          <input
-            type="email"
-            className={styles.nbInput}
-            placeholder={props.placeholder}
-            aria-label="Adresse e-mail"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-          <button type="submit" className={styles.nbAction}>
-            {cta}
-          </button>
-        </form>
+        <>
+          <form className={styles.nbForm} onSubmit={submit}>
+            <input
+              type="email"
+              className={styles.nbInput}
+              placeholder={props.placeholder}
+              aria-label="Adresse e-mail"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setError(undefined);
+              }}
+            />
+            {/* The honeypot: off-screen, only a script fills it. */}
+            <input
+              ref={trap}
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px' }}
+            />
+            <button type="submit" className={styles.nbAction} disabled={pending}>
+              {pending ? 'Envoi…' : cta}
+            </button>
+          </form>
+          {subscribed && (
+            <p className={styles.nbNotice} role="status">
+              Merci ! Vous êtes abonné·e.
+            </p>
+          )}
+          {error && (
+            <p className={styles.nbNotice} role="alert">
+              {error}
+            </p>
+          )}
+        </>
       )}
     </section>
   );

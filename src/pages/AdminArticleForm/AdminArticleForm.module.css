@@ -222,11 +222,6 @@
   font-style: italic;
 }
 
-/* The 4th tool only fits the desktop toolbar (design 7b drops it). */
-.toolWide {
-  display: none;
-}
-
 .textarea {
   border: 1px solid var(--border-2);
   background: var(--surface-card);

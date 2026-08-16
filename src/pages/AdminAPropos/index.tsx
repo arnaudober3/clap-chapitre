@@ -2,11 +2,16 @@ import { useState } from "react";
 import PortraitField from "./PortraitField";
 import YearStatsFields from "./YearStatsFields";
 import { useAdminPageKicker } from "../../components/layout/adminPageMeta";
+import { useAPropos, type AProposContent } from "../../api/content";
+import { saveApropos } from "../../api/mutations";
+import { useMutation } from "../../api/useMutation";
+import { EditorActions, PageError, PageLoading } from "../../components/ui";
 import {
   aproposFormValues,
+  aproposPayload,
   type AProposFormValues,
   type YearStatField,
-} from "../../mock/apropos";
+} from "../../content/apropos";
 import styles from "./AdminAPropos.module.css";
 
 /** Design 6f's standfirst — also the page summary the mobile top bar carries. */
@@ -16,12 +21,29 @@ const SUBTITLE = "Ce que voient les visiteurs sur la page À propos";
  * Admin editor for the public "À propos" page (design 6f desktop → 7e mobile).
  * Unlike the article and bilan editors this is a singleton page: there is no
  * listing above it, so the header names the page instead of a breadcrumb.
- * Nothing is persisted in this prototype — the fields are local state seeded
- * from src/mock/apropos.ts, and "Enregistrer" only flips a passive state line.
+ *
+ * Nothing is persisted yet — the API is read-only, so "Enregistrer" still only
+ * flips a passive state line. What did change is where the fields come from:
+ * the page content is fetched, and the form is mounted only once it has
+ * arrived. That is what lets `useState` keep an initialiser instead of needing
+ * an effect to refill fields the editor may already be typing in.
  */
 export default function AdminAProposPage() {
-  const [values, setValues] = useState<AProposFormValues>(aproposFormValues);
+  const { data, status, reload } = useAPropos();
+
+  if (status === 'loading' || status === 'idle') return <PageLoading />;
+  if (!data) return <PageError onRetry={reload} />;
+  return <AProposForm content={data} />;
+}
+
+function AProposForm({ content }: { content: AProposContent }) {
+  const [values, setValues] = useState<AProposFormValues>(() => aproposFormValues(content));
   const [saved, setSaved] = useState(false);
+  // The portrait and its alt text live beside `values`: they belong to the row,
+  // not to the five fields `AProposFormValues` was drawn around.
+  const [portrait, setPortrait] = useState(content.portraitImage);
+  const [portraitLabel, setPortraitLabel] = useState(content.portraitLabel);
+  const save = useMutation(saveApropos);
 
   // On mobile the shell's top bar is the page header (design 7e): it shows
   // "À propos" over this line, so the page keeps its own title block for lg.
@@ -43,40 +65,50 @@ export default function AdminAProposPage() {
     setSaved(false);
   }
 
-  // Mock save: no store, no navigation — the state line is the only feedback.
-  function submit() {
-    setSaved(true);
+  async function submit() {
+    const payload = {
+      ...aproposPayload(content, values, portrait),
+      portraitLabel: portraitLabel.trim() || content.portraitLabel,
+    };
+    if (await save.run(payload)) setSaved(true);
   }
 
   return (
-    <section className={styles.page} data-testid="admin-apropos-page">
+    <section className={styles.page} data-testid="admin-apropos-page" data-anim="stagger">
       <div className={styles.topbar}>
         <div className={styles.headerText}>
           <h1 className={styles.title}>Page « À propos »</h1>
           <p className={styles.subtitle}>{SUBTITLE}</p>
         </div>
         <div className={styles.topbarActions}>
-          {saved && (
-            <span className={styles.saveState}>
-              <span className={styles.saveDot} aria-hidden="true" />
-              Enregistré
-            </span>
-          )}
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={submit}
-          >
-            Enregistrer
-          </button>
+          {/* Singleton row: nothing to publish, nothing to delete. */}
+          <EditorActions
+            pending={save.pending}
+            error={save.error}
+            saved={saved}
+            onSave={() => void submit()}
+            saveLabel="Enregistrer"
+            data-testid="apropos-actions"
+          />
         </div>
       </div>
 
-      <div className={styles.body}>
+      <div className={styles.body} data-anim="stagger">
         {/* Portrait beside title + accroche at lg (6f); stacked, portrait
             centred, on the phone (7e). */}
         <div className={styles.identity}>
-          <PortraitField />
+          <PortraitField
+            value={portrait}
+            onChange={(key) => {
+              setPortrait(key);
+              setSaved(false);
+            }}
+            label={portraitLabel}
+            onLabelChange={(next) => {
+              setPortraitLabel(next);
+              setSaved(false);
+            }}
+          />
           <div className={styles.identityFields}>
             <div className={styles.field}>
               <label className={styles.label} htmlFor="apropos-title">

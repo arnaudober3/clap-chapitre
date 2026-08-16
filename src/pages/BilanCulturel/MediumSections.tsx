@@ -1,4 +1,4 @@
-import type { MonthlyBilan } from '../../mock/bilans';
+import type { MonthlyBilan } from '../../../shared/content';
 import { MEDIA } from '../../media';
 import BilanReview from './BilanReview';
 import styles from './BilanCulturel.module.css';
@@ -14,7 +14,7 @@ import styles from './BilanCulturel.module.css';
  */
 export default function MediumSections({ bilan }: { bilan: MonthlyBilan }) {
   return (
-    <div className={styles.sections}>
+    <div className={styles.sections} data-anim="stagger">
       {bilan.mood ? (
         <section className={styles.mood}>
           <p className={styles.moodEyebrow}>L’humeur du mois</p>
@@ -30,7 +30,7 @@ export default function MediumSections({ bilan }: { bilan: MonthlyBilan }) {
               <h2 className={styles.mediumLabel}>{label}</h2>
               <span className={styles.mediumRule} aria-hidden="true" />
             </div>
-            <div className={styles.reviews}>
+            <div className={styles.reviews} data-anim="stagger">
               {avis.map((item) => (
                 <BilanReview key={item.id} item={item} />
               ))}

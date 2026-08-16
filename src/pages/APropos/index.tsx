@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
-import { apropos } from '../../mock/apropos';
+import { useAPropos, type AProposContent } from '../../api/content';
+import { PageError, PageLoading } from '../../components/ui';
+import { Seo } from '../../seo/Seo';
+import { APROPOS_FALLBACK_DESCRIPTION } from '../../seo/staticCopy';
 import Hero from './Hero';
 import YearStats from './YearStats';
 import FollowCard from './FollowCard';
@@ -62,32 +65,59 @@ export function emphasize(text: string, terms: string[]): ReactNode[] {
  * the columns collapse to one below the md breakpoint.
  */
 export default function AProposPage() {
+  const { data, status, reload } = useAPropos();
+
+  if (status === 'loading' || status === 'idle') {
+    return (
+      <div className={styles.page} data-testid="a-propos-page">
+        <Seo title="À propos" description={APROPOS_FALLBACK_DESCRIPTION} path="/a-propos" />
+        <PageLoading />
+      </div>
+    );
+  }
+
+  // A 404 is the row never having been written — an empty database, not a
+  // failure — so it reads as an error the editor can act on either way.
+  if (!data) {
+    return (
+      <div className={styles.page} data-testid="a-propos-page">
+        <Seo title="À propos" description={APROPOS_FALLBACK_DESCRIPTION} path="/a-propos" />
+        <PageError onRetry={reload} />
+      </div>
+    );
+  }
+
+  return <AProposContentView content={data} />;
+}
+
+function AProposContentView({ content }: { content: AProposContent }) {
   const {
     eyebrow,
     greeting,
     name,
     intro,
-    portraitLabel,
+    portraitImage,
     bio,
     bioEmphasis,
     quote,
     statsTitle,
     stats,
     follow,
-  } = apropos;
+  } = content;
 
   return (
-    <div className={styles.page} data-testid="a-propos-page">
+    <div className={styles.page} data-testid="a-propos-page" data-anim="stagger">
+      <Seo title="À propos" description={intro || APROPOS_FALLBACK_DESCRIPTION} path="/a-propos" />
       <Hero
         eyebrow={eyebrow}
         greeting={greeting}
         name={name}
         intro={intro}
-        portraitLabel={portraitLabel}
+        portraitImage={portraitImage}
       />
 
       <div className={styles.body}>
-        <div className={styles.mainColumn}>
+        <div className={styles.mainColumn} data-anim="stagger">
           {bio.map((paragraph, index) => (
             <p key={index} className={styles.bioParagraph} data-testid="bio-paragraph">
               {emphasize(paragraph, bioEmphasis)}
@@ -100,7 +130,7 @@ export default function AProposPage() {
           ) : null}
         </div>
 
-        <aside className={styles.aside}>
+        <aside className={styles.aside} data-anim="stagger">
           <YearStats title={statsTitle} stats={stats} />
           <FollowCard
             title={follow.title}

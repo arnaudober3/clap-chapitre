@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import AdminArticleFormPage from '../pages/AdminArticleForm';
 import AdminArticlesPage from '../pages/AdminArticles';
-import { adminArticleById } from '../mock/adminArticles';
+import { anArticle, SEED } from './fixtures';
+import { useTestDb } from './api-server';
 
 function renderAt(path: string) {
   return render(
@@ -19,7 +20,12 @@ function renderAt(path: string) {
   );
 }
 
-const avis = adminArticleById('un-dernier-ete')!;
+const avis = anArticle();
+
+/** Both the listing and the editor fetch, so every test needs the catalogue. */
+beforeEach(async () => {
+  await useTestDb(SEED);
+});
 
 describe('AA-4 article form — creation', () => {
   it('opens an empty form with no category picked', () => {
@@ -51,18 +57,77 @@ describe('AA-4 article form — creation', () => {
     expect(screen.getByLabelText('Titre')).toHaveValue('Un été de plus');
   });
 
-  it('publishes back to the dashboard (mock — nothing is stored)', async () => {
+  it('refuses to save without a title or a category, and says which is missing', async () => {
     const user = userEvent.setup();
     renderAt('/admin/articles/nouveau');
 
+    // Both columns are NOT NULL with no sensible default. Caught in the form so
+    // the editor reads plain French rather than a 422 naming a wire field.
     await user.click(screen.getByRole('button', { name: 'Publier' }));
-    expect(screen.getByTestId('admin-dashboard-page')).toBeInTheDocument();
+    expect(await screen.findByText('Il manque le titre.')).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Titre'), 'Une nuit blanche');
+    await user.click(screen.getByRole('button', { name: 'Publier' }));
+    expect(await screen.findByText('Choisissez une catégorie.')).toBeInTheDocument();
+  });
+
+  it('stores a draft and stays out of the public feed', async () => {
+    const user = userEvent.setup();
+    const db = await useTestDb(SEED);
+    renderAt('/admin/articles/nouveau');
+
+    await user.type(screen.getByLabelText('Titre'), 'Une nuit blanche');
+    await user.type(screen.getByLabelText('Accroche'), 'Et si la nuit ne finissait pas ?');
+    await user.click(screen.getByRole('button', { name: 'Film' }));
+    await user.click(screen.getByRole('button', { name: 'Enregistrer le brouillon' }));
+
+    // Creating lands on the avis' own editor: the form must stop thinking it is
+    // creating, or the next save would write a second avis.
+    expect(await screen.findByText('Une nuit blanche')).toBeInTheDocument();
+    expect(screen.queryByText('Nouvel article')).toBeNull();
+
+    const row = await db
+      .prepare("SELECT id, title, medium, status, published_at FROM articles WHERE title = 'Une nuit blanche'")
+      .first();
+    expect(row).toEqual({
+      // Derived from the title server-side, which is why the form never asks.
+      id: 'une-nuit-blanche',
+      title: 'Une nuit blanche',
+      medium: 'film',
+      status: 'draft',
+      published_at: null,
+    });
+  });
+
+  it('publishes what it stores, dating it', async () => {
+    const user = userEvent.setup();
+    const db = await useTestDb(SEED);
+    renderAt('/admin/articles/nouveau');
+
+    await user.type(screen.getByLabelText('Titre'), 'Une nuit blanche');
+    await user.click(screen.getByRole('button', { name: 'Film' }));
+    await user.click(screen.getByRole('button', { name: 'Publier' }));
+    await screen.findByText('Une nuit blanche');
+
+    const row = await db
+      .prepare("SELECT status, published_at FROM articles WHERE id = 'une-nuit-blanche'")
+      .first<{ status: string; published_at: string | null }>();
+    expect(row?.status).toBe('published');
+    // The schema pairs the two: published ⇔ dated.
+    expect(row?.published_at).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+    // And exactly one avis, not one per click.
+    const count = await db
+      .prepare("SELECT count(*) AS total FROM articles WHERE title = 'Une nuit blanche'")
+      .first<{ total: number }>();
+    expect(count?.total).toBe(1);
   });
 });
 
 describe('AA-4 article form — editing', () => {
-  it('prefills every field from the shared Article model', () => {
+  it('prefills every field from the shared Article model', async () => {
     renderAt(`/admin/articles/${avis.id}`);
+    await screen.findByTestId('admin-new-article-page');
     const page = screen.getByTestId('admin-new-article-page');
 
     expect(within(page).getByLabelText('Titre')).toHaveValue(avis.title);
@@ -81,25 +146,87 @@ describe('AA-4 article form — editing', () => {
     expect(within(page).getByText(avis.title)).toBeInTheDocument();
   });
 
-  it('splits genreMeta across the three metadata rows', () => {
+  it('splits genreMeta across the three metadata rows', async () => {
     renderAt(`/admin/articles/${avis.id}`);
+    await screen.findByTestId('admin-new-article-page');
     const [genre, duration, year] = avis.genreMeta!.split(' · ');
     expect(screen.getByDisplayValue(genre)).toBeInTheDocument();
     expect(screen.getByDisplayValue(duration)).toBeInTheDocument();
     expect(screen.getByDisplayValue(year)).toBeInTheDocument();
   });
 
-  it('saves back to the listing (mock — the row is unchanged)', async () => {
+  it('saves an edit to the row it was opened on', async () => {
     const user = userEvent.setup();
+    const db = await useTestDb(SEED);
     renderAt(`/admin/articles/${avis.id}`);
+    await screen.findByTestId('admin-new-article-page');
 
-    expect(screen.queryByRole('button', { name: 'Publier' })).toBeNull();
-    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
-    expect(screen.getByTestId('admin-articles-page')).toBeInTheDocument();
+    const title = screen.getByLabelText('Titre');
+    await user.clear(title);
+    await user.type(title, 'Un dernier été, revu');
+    await user.click(screen.getByRole('button', { name: 'Enregistrer les modifications' }));
+
+    expect(await screen.findByText('Enregistré')).toBeInTheDocument();
+    const row = await db
+      .prepare('SELECT title FROM articles WHERE id = ?')
+      .bind(avis.id)
+      .first();
+    expect(row?.title).toBe('Un dernier été, revu');
   });
 
-  it('sends an unknown id back to the listing', () => {
+  it('offers Dépublier on a live avis, and unpublishing clears its date', async () => {
+    const user = userEvent.setup();
+    const db = await useTestDb(SEED);
+    renderAt(`/admin/articles/${avis.id}`);
+    await screen.findByTestId('admin-new-article-page');
+
+    // A published avis has nothing left to publish — the primary action is the
+    // way back out. Nothing distinguished the two before this.
+    expect(screen.queryByRole('button', { name: 'Publier' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Dépublier' }));
+
+    expect(await screen.findByText('Enregistré')).toBeInTheDocument();
+    const row = await db
+      .prepare('SELECT status, published_at FROM articles WHERE id = ?')
+      .bind(avis.id)
+      .first();
+    expect(row).toEqual({ status: 'draft', published_at: null });
+  });
+
+  it('asks before deleting, then removes the avis and returns to the listing', async () => {
+    const user = userEvent.setup();
+    const db = await useTestDb(SEED);
+    renderAt(`/admin/articles/${avis.id}`);
+    await screen.findByTestId('admin-new-article-page');
+
+    // Two steps: the button sits beside "Enregistrer", so one stray click must
+    // not be enough.
+    await user.click(screen.getByRole('button', { name: 'Supprimer' }));
+    expect(screen.getByText('Supprimer cet avis ?')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Confirmer la suppression' }));
+
+    await screen.findByTestId('admin-articles-page');
+    const row = await db.prepare('SELECT id FROM articles WHERE id = ?').bind(avis.id).first();
+    expect(row).toBeNull();
+  });
+
+  it('backs out of the confirmation without deleting anything', async () => {
+    const user = userEvent.setup();
+    const db = await useTestDb(SEED);
+    renderAt(`/admin/articles/${avis.id}`);
+    await screen.findByTestId('admin-new-article-page');
+
+    await user.click(screen.getByRole('button', { name: 'Supprimer' }));
+    await user.click(screen.getByRole('button', { name: 'Annuler' }));
+
+    expect(screen.getByRole('button', { name: 'Supprimer' })).toBeInTheDocument();
+    const row = await db.prepare('SELECT id FROM articles WHERE id = ?').bind(avis.id).first();
+    expect(row).not.toBeNull();
+  });
+
+  it('sends an unknown id back to the listing', async () => {
     renderAt('/admin/articles/nope');
+    await screen.findByTestId('admin-articles-page');
     expect(screen.getByTestId('admin-articles-page')).toBeInTheDocument();
     expect(screen.queryByTestId('admin-new-article-page')).toBeNull();
   });

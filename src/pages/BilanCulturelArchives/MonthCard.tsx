@@ -1,24 +1,29 @@
 import { Link } from 'react-router-dom';
-import type { MonthlyBilan } from '../../mock/bilans';
+import type { BilanSummary } from '../../api/content';
 import { PosterThumb } from '../../components/ui';
 import styles from './BilanCulturelArchives.module.css';
 
 /**
- * An BilanCulturelArchives month card: a bordered --surface card whose top is a collage of
- * up to 3 gradient PosterThumb tiles (the month's first up-to-3 avis[].cover),
- * and whose body is the serif monthLabel, a `N avis` count from avis.length,
- * and — only when isLatest — a "dernier" pill. The whole card deep-links to the
- * bilan (`/bilan-culturel?mois=<id>`), not to an article. A month with fewer
- * than 3 avis renders only the covers available; 0 avis renders no thumbnails.
+ * An archive month card: a bordered --surface card whose top is a collage of up
+ * to 3 gradient PosterThumb tiles, and whose body is the serif monthLabel, an
+ * `N avis` count, and — only when isLatest — a "dernier" pill. The whole card
+ * deep-links to the bilan (`/bilan-culturel?mois=<id>`), not to an article. A
+ * month with fewer than 3 avis renders only the covers available; 0 avis renders
+ * no thumbnails.
+ *
+ * The covers and the count come from the listing endpoint rather than from the
+ * month's avis: the archive shows fifteen months, and loading every avis of
+ * every one of them to render three squares and a number would be the whole
+ * catalogue for one screen.
  */
 export default function MonthCard({
   bilan,
   isLatest = false,
 }: {
-  bilan: MonthlyBilan;
+  bilan: BilanSummary;
   isLatest?: boolean;
 }) {
-  const covers = bilan.avis.slice(0, 3);
+  const covers = bilan.covers;
 
   return (
     <Link
@@ -28,10 +33,12 @@ export default function MonthCard({
     >
       {covers.length > 0 && (
         <div className={styles.collage} data-testid="month-card-collage">
-          {covers.map((avis) => (
+          {covers.map((cover, index) => (
             <PosterThumb
-              key={avis.id}
-              cover={avis.cover}
+              // The covers are gradients, not entities: two avis can legitimately
+              // share one, so the position is the only stable key here.
+              key={index}
+              cover={cover}
               className={styles.collageTile}
             />
           ))}
@@ -46,7 +53,7 @@ export default function MonthCard({
             </span>
           )}
         </div>
-        <p className={styles.monthCardCount}>{bilan.avis.length} avis</p>
+        <p className={styles.monthCardCount}>{bilan.avisCount} avis</p>
       </div>
     </Link>
   );
