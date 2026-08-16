@@ -33,7 +33,7 @@ function ruleBlock(selector: string): string {
 /**
  * SC-6 — the reveal cascade. Vitest runs with `css: false` (no `css` key in the
  * test block of vite.config.ts), so jsdom applies no styles at all: the CSS is
- * asserted by reading the file, the behaviour by reading DOM attributes. Same
+ * asserted by reading the file, the behavior by reading DOM attributes. Same
  * split as sc2-tokens and sc4-layout.
  */
 describe('SC-6 reveal cascade — CSS', () => {
@@ -52,8 +52,11 @@ describe('SC-6 reveal cascade — CSS', () => {
   it('runs nothing until a block carries data-anim-in', () => {
     // The gate. Marking a container must never animate anything by itself.
     const revealed = ruleBlock('[data-anim-in]');
+    // `backwards`, not `both`: data-anim-in is never removed, so a `forwards`
+    // fill would keep the animation permanently "in effect" and saddle every
+    // revealed block with a stacking context — see the comment in global.css.
     expect(revealed).toMatch(
-      /animation:\s*cc-rise var\(--dur-enter\) var\(--ease-enter\) both/,
+      /animation:\s*cc-rise var\(--dur-enter\) var\(--ease-enter\) backwards/,
     );
     expect(revealed).toContain(
       'animation-delay: calc(var(--anim-step) * var(--anim-i, 0))',
@@ -84,7 +87,7 @@ describe('SC-6 reveal cascade — markup', () => {
   it('marks the public page roots and their grids', async () => {
     // The grid only exists once the feed has arrived, so the page needs content
     // for there to be anything to cascade over.
-    useTestDb(SEED + MORE_FILMS);
+    await useTestDb(SEED + MORE_FILMS);
     render(
       <MemoryRouter initialEntries={['/films']}>
         <Routes>
@@ -103,7 +106,7 @@ describe('SC-6 reveal cascade — markup', () => {
   });
 
   it('marks the admin page roots', async () => {
-    useTestDb(SEED);
+    await useTestDb(SEED);
     render(
       <MemoryRouter initialEntries={['/admin']}>
         <Routes>
@@ -118,7 +121,7 @@ describe('SC-6 reveal cascade — markup', () => {
   });
 
   it('remounts the outlet on navigation so the cascade replays', async () => {
-    useTestDb(SEED);
+    await useTestDb(SEED);
     // The case that matters: /films and /series render the very same HomePage,
     // so without the key on <main> React would keep the DOM in place and the
     // cascade would never restart. A new <main> node is what replays it.
@@ -161,19 +164,10 @@ class FakeIntersectionObserver {
   constructor(callback: (entries: Entry[]) => void) {
     fire = callback;
   }
-  observe(el: Element) {
-    if (!observed.includes(el)) observed.push(el);
-  }
-  unobserve(el: Element) {
-    observed = observed.filter((other) => other !== el);
-  }
-  disconnect() {
-    observed = [];
-  }
 }
 
 /**
- * Every rect is 0×0 in jsdom, so on/off screen has to be dictated per node.
+ * Every rect is 0×0 in jsdom, so on/off-screen has to be dictated per node.
  * Width and height come along because the hook reads them too: a node with no
  * box at all is treated differently from one that is merely further down.
  */
@@ -240,7 +234,7 @@ describe('SC-6 reveal cascade — useReveal', () => {
   });
 
   it('never holds a block that has no box', () => {
-    // `display: none` measures 0×0, which reads as off screen. Holding it would
+    // `display: none` measures 0×0, which reads as off-screen. Holding it would
     // pin something the reader may never scroll to at opacity 0 — the mobile FAB
     // is hidden by a media query on desktop. Observe it, but do not hide it.
     placeByTestId({ shown: [0, 100], hidden: [0, 0] });
