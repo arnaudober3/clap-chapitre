@@ -1,4 +1,4 @@
-import type { Medium } from '../../mock/types';
+import type { Medium } from '../../../shared/content';
 import { MEDIUM_ACCENT } from '../../media';
 import styles from './AdminBilans.module.css';
 

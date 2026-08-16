@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { PublishedBilan } from '../../mock/types';
+import type { PublishedBilan } from '../../../shared/content';
 import { frNumber, shortDate } from '../../format';
 import MediumChips from './MediumChips';
 import styles from './AdminBilans.module.css';

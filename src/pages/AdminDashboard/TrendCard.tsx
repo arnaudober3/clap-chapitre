@@ -1,4 +1,4 @@
-import { trend, trendPeak } from '../../mock/dashboard';
+import type { TrendPoint } from '../../content/dashboard';
 import styles from './AdminDashboard.module.css';
 
 const VIEW_W = 300;
@@ -12,9 +12,7 @@ const PAD_BOTTOM = 14;
  * the 12-month trend. The path is computed from the mock data (no chart lib), so
  * the curve always follows the numbers.
  */
-export default function TrendCard() {
-  const points = trend();
-  const peak = trendPeak();
+export default function TrendCard({ points, peak }: { points: TrendPoint[]; peak: TrendPoint }) {
   const values = points.map((p) => p.views);
   const min = Math.min(...values);
   const max = Math.max(...values);

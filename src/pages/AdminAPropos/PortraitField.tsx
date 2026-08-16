@@ -1,24 +1,50 @@
+import { ImageField } from '../../components/ui';
 import styles from './AdminAPropos.module.css';
 
 /**
- * The portrait slot of design 6f / 7e. The public À propos page renders the
- * portrait as a CSS gradient (--portrait-grad), so the field previews that
- * gradient rather than an empty dropzone — same idea as the "Affiche" dropzone
- * of the article form. There is no upload in this prototype: the control is a
- * button so it stays reachable, and it does nothing.
+ * The portrait slot of design 6f / 7e.
+ *
+ * It used to preview the `--portrait-grad` gradient behind a button that did
+ * nothing — the public page had no image to show and the prototype had nowhere
+ * to put one. Both are true no longer: the portrait is a file in R2, and
+ * `page_apropos.portrait_image` holds its key.
+ *
+ * The alt text is edited alongside it. `portrait_label` was a caption for a
+ * gradient, which made it decorative; over a real photograph it is what a screen
+ * reader reads, so it stops being optional.
  */
-export default function PortraitField() {
+export default function PortraitField({
+  value,
+  onChange,
+  label,
+  onLabelChange,
+}: {
+  /** R2 key, or '' while there is no portrait. */
+  value: string;
+  onChange: (key: string) => void;
+  label: string;
+  onLabelChange: (label: string) => void;
+}) {
   return (
     <div className={styles.portraitField}>
       <span className={styles.portraitLabel}>Portrait</span>
-      <button type="button" className={styles.portrait} aria-label="Changer le portrait">
-        <span className={styles.portraitOverlay}>
-          <span className={styles.portraitIcon} aria-hidden="true">
-            ↑
-          </span>
-          <span className={styles.portraitAction}>Changer</span>
-        </span>
-      </button>
+      <ImageField
+        value={value}
+        onChange={onChange}
+        kind="portrait"
+        label="Portrait de la page À propos"
+        hint="Glisser une photo ou parcourir"
+        data-testid="apropos-portrait-field"
+      />
+      <label className={styles.field}>
+        <span className={styles.portraitLabel}>Texte alternatif</span>
+        <input
+          className={styles.input}
+          value={label}
+          onChange={(event) => onLabelChange(event.target.value)}
+          placeholder="Ce que décrit la photo, pour qui ne la voit pas"
+        />
+      </label>
     </div>
   );
 }

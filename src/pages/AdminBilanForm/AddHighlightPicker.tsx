@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MEDIUM_ACCENT, MEDIUM_CHIP_LABEL } from '../../media';
-import { avisForBilanPicker } from '../../mock/adminBilans';
+import { usePickerArticles } from '../../api/admin';
 import { fold } from '../../format';
-import type { PublishedArticle } from '../../mock/types';
+import type { PublishedArticle } from '../../../shared/content';
 import styles from './AdminBilanForm.module.css';
 
 /** How many catalogue avis the panel reveals per "Voir plus". */
@@ -38,10 +38,17 @@ export default function AddHighlightPicker({
   const rootRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const { thisMonth, catalogue } = useMemo(
-    () => avisForBilanPicker(monthId, taken),
-    [monthId, taken],
-  );
+  // The whole published catalogue, newest-first, split here rather than by the
+  // endpoint: "this month" and "the rest" is a way of presenting one list, and
+  // asking the server for the same rows twice would be the slower way to say it.
+  const { data: published } = usePickerArticles();
+  const { thisMonth, catalogue } = useMemo(() => {
+    const available = (published ?? []).filter((avis) => !taken.includes(avis.id));
+    return {
+      thisMonth: available.filter((avis) => avis.publishedAt.startsWith(monthId)),
+      catalogue: available.filter((avis) => !avis.publishedAt.startsWith(monthId)),
+    };
+  }, [published, monthId, taken]);
   const isEmpty = thisMonth.length === 0 && catalogue.length === 0;
 
   // Title search, accent- and case-insensitive like the admin listings' fold().

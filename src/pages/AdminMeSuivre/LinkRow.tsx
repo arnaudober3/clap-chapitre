@@ -1,5 +1,5 @@
 import { useState, type DragEvent, type KeyboardEvent } from 'react';
-import { linkMark, type SocialLinkField } from '../../mock/mesuivre';
+import { linkMark, type SocialLinkField } from '../../content/mesuivre';
 import styles from './AdminMeSuivre.module.css';
 
 /**
@@ -34,6 +34,8 @@ export interface LinkRowProps {
   onDragOver: () => void;
   onDragEnd: () => void;
   onMove: (delta: -1 | 1) => void;
+  /** Validation error message, if any. */
+  error?: string;
 }
 
 /**
@@ -61,8 +63,9 @@ export default function LinkRow({
   onDragOver,
   onDragEnd,
   onMove,
+  error,
 }: LinkRowProps) {
-  const { name, url } = field;
+  const { name, url, handle, glyph, cta } = field;
   const tint = TINT[name.trim().toLowerCase()] ?? NEUTRAL_TINT;
   const label = name.trim() || 'sans nom';
   // Held only while the pointer is down on the handle — see the note above.
@@ -114,7 +117,7 @@ export default function LinkRow({
       </button>
 
       <span className={styles.chip} style={tint} aria-hidden="true">
-        {linkMark(name)}
+        {glyph.trim() || linkMark(name)}
       </span>
 
       <div className={styles.rowBody}>
@@ -124,6 +127,8 @@ export default function LinkRow({
           onChange={(event) => onChange({ name: event.target.value })}
           aria-label={`Nom du lien ${position}`}
           placeholder="Nom du réseau"
+          aria-invalid={!!error}
+          aria-describedby={error ? `link-error-${field.id}` : undefined}
         />
         <input
           className={styles.urlInput}
@@ -131,7 +136,45 @@ export default function LinkRow({
           onChange={(event) => onChange({ url: event.target.value })}
           aria-label={`Adresse du lien ${position}`}
           placeholder="exemple.fr/mon-profil"
+          aria-invalid={!!error}
+          aria-describedby={error ? `link-error-${field.id}` : undefined}
         />
+        {error && (
+          <p
+            id={`link-error-${field.id}`}
+            role="alert"
+            className={styles.linkError}
+          >
+            {error}
+          </p>
+        )}
+        {/* The three columns the public page renders and the form never edited.
+            They are NOT NULL, so a link created here without them would show up
+            incomplete on /me-suivre. */}
+        <div className={styles.rowExtras}>
+          <input
+            className={styles.extraInput}
+            value={handle}
+            onChange={(event) => onChange({ handle: event.target.value })}
+            aria-label={`Pseudo du lien ${position}`}
+            placeholder="@pseudo"
+          />
+          <input
+            className={styles.extraInput}
+            value={glyph}
+            onChange={(event) => onChange({ glyph: event.target.value })}
+            aria-label={`Sigle du lien ${position}`}
+            placeholder="Ab"
+            maxLength={4}
+          />
+          <input
+            className={styles.extraInput}
+            value={cta}
+            onChange={(event) => onChange({ cta: event.target.value })}
+            aria-label={`Libellé du bouton ${position}`}
+            placeholder="Suivre"
+          />
+        </div>
       </div>
 
       <button

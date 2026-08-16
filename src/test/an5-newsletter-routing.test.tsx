@@ -1,9 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
-import { defaultNewsletterSource, editionLabel } from '../mock/newsletter';
+import { editionLabel } from '../newsletter';
+import { aBilan, SEED } from './fixtures';
+import { useTestDb } from './api-server';
+
+// The pages these routes render read the API, so the suite needs content.
+beforeEach(() => {
+  useTestDb(SEED);
+});
 
 function renderAt(path: string) {
   return render(
@@ -14,14 +21,14 @@ function renderAt(path: string) {
 }
 
 describe('AN-5 admin newsletter routing', () => {
-  it('renders the newsletter inside the admin shell at /admin/newsletter', () => {
+  it('renders the newsletter inside the admin shell at /admin/newsletter', async () => {
     renderAt('/admin/newsletter');
-    expect(screen.getByTestId('admin-newsletter-page')).toBeInTheDocument();
+    expect(await screen.findByTestId('admin-newsletter-page')).toBeInTheDocument();
     expect(screen.queryByTestId('admin-not-found-page')).toBeNull();
     expect(screen.queryByTestId('not-found-page')).toBeNull();
   });
 
-  it('marks the rail entry as the current section', () => {
+  it('marks the rail entry as the current section', async () => {
     renderAt('/admin/newsletter');
     const active = screen
       .getAllByRole('link', { name: 'Newsletter' })
@@ -29,18 +36,19 @@ describe('AN-5 admin newsletter routing', () => {
     expect(active.length).toBeGreaterThan(0);
   });
 
-  it('hands the edition month to the shell top bar for mobile', () => {
+  it('hands the edition month to the shell top bar for mobile', async () => {
     renderAt('/admin/newsletter');
     const header = within(screen.getByRole('banner'));
     expect(
-      header.getAllByText(`Édition ${editionLabel(defaultNewsletterSource())}`).length,
-    ).toBeGreaterThan(0);
+      await header.findAllByText(`Édition ${editionLabel(aBilan())}`),
+    ).not.toHaveLength(0);
   });
 
   it('is where the dashboard newsletter CTA leads', async () => {
     const user = userEvent.setup();
     renderAt('/admin');
-    await user.click(screen.getByRole('link', { name: 'Envoyer' }));
-    expect(screen.getByTestId('admin-newsletter-page')).toBeInTheDocument();
+    // The dashboard fetches its cards; the CTA is part of the newsletter one.
+    await user.click(await screen.findByRole('link', { name: 'Envoyer' }));
+    expect(await screen.findByTestId('admin-newsletter-page')).toBeInTheDocument();
   });
 });

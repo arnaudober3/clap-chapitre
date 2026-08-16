@@ -1,5 +1,6 @@
+import { ImageField } from '../../components/ui';
 import { MEDIA, MEDIUM_CHIP_LABEL } from '../../media';
-import type { Medium } from '../../mock/types';
+import type { Medium } from '../../../shared/content';
 import styles from './AdminArticleForm.module.css';
 
 /** The three metadata slots that make up an avis' `genreMeta` line. */
@@ -18,18 +19,20 @@ export default function FormSidebar({
   medium,
   onMediumChange,
   cover,
+  onCoverChange,
   meta,
   onMetaChange,
 }: {
   medium?: Medium;
   onMediumChange: (medium: Medium) => void;
-  /** CSS gradient of the current cover, if the avis already has one. */
-  cover?: string;
+  /** R2 key of the affiche, or '' when the avis has none yet. */
+  cover: string;
+  onCoverChange: (key: string) => void;
   meta: MetaFields;
   onMetaChange: (patch: Partial<MetaFields>) => void;
 }) {
   return (
-    <aside className={styles.sidebar}>
+    <aside className={styles.sidebar} data-anim="stagger">
       <div className={`${styles.sideBlock} ${styles.sideCategory}`}>
         <div className={styles.sideTitle}>Catégorie</div>
         <div className={styles.chips}>
@@ -53,32 +56,19 @@ export default function FormSidebar({
       </div>
 
       {/* Cover + metadata share a row on mobile (design 7b) and stack on desktop. */}
-      <div className={styles.sideRow}>
+      <div className={styles.sideRow} data-anim="stagger">
         <div className={styles.sideBlock}>
           <div className={styles.sideTitle}>Affiche</div>
-          {/* Covers are CSS gradients in this prototype — the dropzone previews the
-            current one and takes no upload. */}
-          <div
-            className={
-              cover
-                ? `${styles.dropzone} ${styles.dropzoneFilled}`
-                : styles.dropzone
-            }
-            style={cover ? { background: cover } : undefined}
-          >
-            {!cover && (
-              <>
-                <span className={styles.dropIcon} aria-hidden="true">
-                  ↑
-                </span>
-                <span className={styles.dropText}>
-                  Glisser une image
-                  <br />
-                  ou parcourir
-                </span>
-              </>
-            )}
-          </div>
+          {/* A real upload now. The dropzone used to be decorative — no onDrop,
+              no file input — because covers were CSS gradients. */}
+          <ImageField
+            value={cover}
+            onChange={onCoverChange}
+            kind="cover"
+            label="Affiche de l’avis"
+            hint="Glisser une image ou parcourir"
+            data-testid="article-cover-field"
+          />
         </div>
 
         <div className={styles.sideBlock}>

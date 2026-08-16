@@ -1,4 +1,4 @@
-import type { YearStat } from '../../mock/apropos';
+import type { YearStat } from '../../content/apropos';
 import styles from './APropos.module.css';
 
 /**

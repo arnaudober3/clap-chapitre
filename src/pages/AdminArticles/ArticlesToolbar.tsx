@@ -7,7 +7,7 @@ import {
   type StatusFilter,
   type MediumFilter,
   type SortId,
-} from '../../mock/adminArticles';
+} from '../../content/query';
 import styles from './AdminArticles.module.css';
 
 /**

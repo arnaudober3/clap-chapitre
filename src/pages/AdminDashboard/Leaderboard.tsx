@@ -1,4 +1,5 @@
-import { leaderboardRanked, type LeaderboardKind } from '../../mock/dashboard';
+import { Link } from 'react-router-dom';
+import { adminEditPath, type LeaderboardKind, type RankedEntry } from '../../content/dashboard';
 import { MEDIUM_ACCENT } from '../../media';
 import { frNumber } from '../../format';
 import styles from './AdminDashboard.module.css';
@@ -13,15 +14,18 @@ const KIND_ACCENT: Record<LeaderboardKind, string> = {
  * "Palmarès des publications" (design 6b): ranked bar rows, each a kind chip +
  * title + view count + a proportional colored bar. On mobile the bars hide and
  * the list caps to three rows, becoming "Publications récentes" (design 6h).
+ *
+ * The title link is stretched over the whole row, so clicking anywhere opens the
+ * editor — `entry.id` and not `entry.articleId`, which is the public link's id
+ * and is absent on a bilan.
  */
-export default function Leaderboard() {
-  const entries = leaderboardRanked();
+export default function Leaderboard({ entries }: { entries: RankedEntry[] }) {
 
   return (
     <section className={styles.card}>
       <h2 className={styles.cardTitle}>Palmarès des publications</h2>
       <p className={styles.cardSubtitle}>Classées par vues</p>
-      <ol className={styles.rankList}>
+      <ol className={styles.rankList} data-anim="stagger">
         {entries.map((entry) => (
           <li
             key={entry.id}
@@ -31,7 +35,12 @@ export default function Leaderboard() {
             <div className={styles.rankHead}>
               <span className={styles.rankTitleWrap}>
                 <span className={styles.rankChip}>{entry.kindLabel}</span>
-                <span className={styles.rankTitle}>{entry.title}</span>
+                <Link
+                  to={adminEditPath(entry.kind, entry.id)}
+                  className={styles.rankTitle}
+                >
+                  {entry.title}
+                </Link>
               </span>
               <span className={styles.rankViews}>{frNumber(entry.views)}</span>
             </div>

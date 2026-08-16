@@ -1,6 +1,10 @@
-import { Outlet } from 'react-router-dom';
+import { useRef } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
+import useReveal from '../../anim/useReveal';
 import { AdminPageMetaProvider } from './adminPageMeta';
+import { Seo } from '../../seo/Seo';
+import { ADMIN_TITLE } from '../../seo/staticCopy';
 import styles from './AdminLayout.module.css';
 
 /**
@@ -10,12 +14,22 @@ import styles from './AdminLayout.module.css';
  * render through the <Outlet>.
  */
 export default function AdminLayout() {
+  // Same as the public Layout, deliberately: remounting the outlet replays the
+  // cascade, and the ref arms the reveal over the subtree. The two shells are
+  // near-copies — a change here belongs in Layout.tsx too.
+  const { pathname, search } = useLocation();
+  const routeKey = `${pathname}${search}`;
+
+  const mainRef = useRef<HTMLElement>(null);
+  useReveal(mainRef, routeKey);
+
   return (
     <AdminPageMetaProvider>
+      <Seo title={ADMIN_TITLE} path={pathname} noindex />
       <div className={styles.shell}>
         <AdminHeader />
         <div className={styles.content}>
-          <main className={styles.main}>
+          <main className={styles.main} key={routeKey} ref={mainRef}>
             <Outlet />
           </main>
         </div>

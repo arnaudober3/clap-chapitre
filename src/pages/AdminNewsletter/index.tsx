@@ -1,142 +1,173 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import EmailPreview from './EmailPreview';
 import SendPanel from './SendPanel';
 import SubscribersPanel from './SubscribersPanel';
+import { PageError, PageLoading } from '../../components/ui';
 import { useAdminPageKicker } from '../../components/layout/adminPageMeta';
-import { ofMonth } from '../../format';
+import { useAdminBilan, useAdminBilans, useAdminNewsletter } from '../../api/admin';
 import {
-  defaultNewsletterSource,
-  editionFor,
-  editionLabel,
-  newsletterSourceById,
-  proposedSlotFor,
-  recentSends,
-  slotLabel,
-  subscriberStats,
-  type ScheduleSlot,
-  type SendRecord,
-} from '../../mock/newsletter';
+  cancelNewsletterSchedule,
+  scheduleNewsletter,
+  sendNewsletter,
+  sendNewsletterTest,
+} from '../../api/mutations';
+import { useMutation } from '../../api/useMutation';
+import { DEFAULT_BILAN_QUERY } from '../../content/query';
+import { editionFor, editionLabel, instantLabel, proposedSlotFor, sourceLabel } from '../../newsletter';
 import styles from './AdminNewsletter.module.css';
 
 /**
- * Admin newsletter (design 6e desktop → 7d mobile). "Le courrier du mois" is
- * never written here: it is generated from a bilan culturel, so the page pairs
- * a preview of the e-mail with the send panel. Picking another source
- * regenerates the whole e-mail — month, headline, humeur, coups de cœur and
- * subject line.
+ * Admin newsletter. "Le courrier du mois" is never written here: it is
+ * generated from a bilan culturel, so the page pairs a preview of the e-mail
+ * with the send panel. Picking another source regenerates the whole e-mail —
+ * month, headline, humeur, coups de cœur and subject line.
  *
- * Nothing is persisted (DEV-29 reads the data, it never writes it): the subject
- * is local state, and "Envoyer maintenant" only records the send in this
- * component so the page can acknowledge it.
+ * The wrapper (`data-testid="admin-newsletter-page"`) always renders, header
+ * included, whatever the loading state — the same shape `AdminArticlesPage`
+ * uses, and for the same reason: a route guard or a screen reader should not
+ * have to wait on a network round trip to know which page it landed on.
+ * `PageLoading`/`PageError` sit in the body instead of replacing the page.
+ *
+ * `sent`/`schedule` come from `useAdminNewsletter()`, the durable server
+ * state — reloaded after every send/schedule/cancel — rather than local
+ * component state, so the page reflects reality even after a refresh.
  */
 export default function AdminNewsletterPage() {
-  const [sourceId, setSourceId] = useState(defaultNewsletterSource().id);
-  const [subject, setSubject] = useState(() => editionFor(defaultNewsletterSource()).subject);
-  // Editions mailed during this session, newest-first. Purely local.
-  const [log, setLog] = useState<SendRecord[]>([]);
-  // Booked slots per edition — an edition can be scheduled while another is
-  // being written, so this is keyed by month rather than a single slot.
-  const [schedules, setSchedules] = useState<Record<string, ScheduleSlot>>({});
+  const bilans = useAdminBilans(DEFAULT_BILAN_QUERY, 1);
+  const newsletter = useAdminNewsletter();
 
-  const source = newsletterSourceById(sourceId);
-  const edition = useMemo(() => editionFor(source), [source]);
-  const sent = log.some((entry) => entry.id === sourceId);
-  const schedule = schedules[sourceId];
-  const stats = subscriberStats();
+  const [sourceId, setSourceId] = useState<string>();
+  // Subjects customized away from the edition's own default, kept per source
+  // so switching away and back does not lose an edit in progress.
+  const [subjects, setSubjects] = useState<Record<string, string>>({});
 
-  // On mobile the shell's top bar is the page header (design 7d), where the
-  // edition's month is the line that matters.
-  useAdminPageKicker(`Édition ${editionLabel(source)}`);
+  // Seeds the picker on the newest published bilan once the list arrives.
+  useEffect(() => {
+    if (sourceId === undefined && bilans.data?.items.length) {
+      setSourceId(bilans.data.items[0].id);
+    }
+  }, [bilans.data, sourceId]);
 
-  // A send this session takes the place of that month's archived send, so an
-  // edition never shows up twice in the list.
-  const sends = [...log, ...recentSends().filter((entry) => !log.some((l) => l.id === entry.id))];
+  const bilan = useAdminBilan(sourceId);
+  const edition = useMemo(() => (bilan.data ? editionFor(bilan.data) : undefined), [bilan.data]);
+  const subject = sourceId ? (subjects[sourceId] ?? edition?.subject ?? '') : '';
 
-  function changeSource(id: string) {
-    setSourceId(id);
-    // The subject is derived from the bilan, so it follows the source rather
-    // than keeping the previous month's headline.
-    setSubject(editionFor(newsletterSourceById(id)).subject);
+  useAdminPageKicker(bilan.data ? `Édition ${editionLabel(bilan.data)}` : 'Newsletter');
+
+  const sendMutation = useMutation(sendNewsletter);
+  const testMutation = useMutation(sendNewsletterTest);
+  const scheduleMutation = useMutation(scheduleNewsletter);
+  const cancelMutation = useMutation(cancelNewsletterSchedule);
+
+  function setSubject(next: string) {
+    if (!sourceId) return;
+    setSubjects((previous) => ({ ...previous, [sourceId]: next }));
   }
 
-  function send() {
-    setLog((previous) => [
-      {
-        id: source.id,
-        title: `Bilan ${ofMonth(source.monthLabel)}`,
-        dateLabel: 'à l’instant',
-      },
-      ...previous.filter((entry) => entry.id !== source.id),
-    ]);
-    // Sending early makes the booking moot.
-    cancelSchedule();
+  async function send() {
+    if (!sourceId) return;
+    const result = await sendMutation.run(sourceId, subject);
+    if (result) newsletter.reload();
   }
 
-  function bookSchedule(slot: ScheduleSlot) {
-    setSchedules((previous) => ({ ...previous, [source.id]: slot }));
+  async function sendTest(email: string) {
+    if (!sourceId) return;
+    await testMutation.run(sourceId, subject, email);
   }
 
-  function cancelSchedule() {
-    setSchedules((previous) =>
-      Object.fromEntries(Object.entries(previous).filter(([id]) => id !== source.id)),
-    );
+  async function schedule(date: string, time: string) {
+    if (!sourceId) return;
+    const result = await scheduleMutation.run(sourceId, subject, date, time);
+    if (result) newsletter.reload();
   }
 
-  return (
-    <section className={styles.page} data-testid="admin-newsletter-page">
-      <div className={styles.header}>
-        <div className={styles.headerTitles}>
-          <h1 className={styles.title}>Newsletter</h1>
-          <p className={styles.subtitle}>
-            Le courrier du mois — édition {editionLabel(source)}
-          </p>
-        </div>
-        <span
-          className={sent ? `${styles.status} ${styles.statusSent}` : styles.status}
-          data-testid="newsletter-status"
-        >
-          <span className={styles.statusDot} aria-hidden="true" />
-          {/* Sent wins over booked: an edition mailed early is simply gone. */}
-          {sent ? (
-            <>
-              Envoyée<span className={styles.statusLong}> · à l’instant</span>
-            </>
-          ) : schedule ? (
-            <>
-              Programmée<span className={styles.statusLong}> · {slotLabel(schedule)}</span>
-            </>
-          ) : (
-            <>
-              Prête<span className={styles.statusLong}> à envoyer</span>
-            </>
-          )}
-        </span>
-      </div>
+  async function cancelSchedule() {
+    if (!sourceId) return;
+    await cancelMutation.run(sourceId);
+    newsletter.reload();
+  }
 
-      <div className={styles.body}>
-        {/* The preview names its own source in its caption bar. */}
+  const sent = newsletter.data?.sends.some((entry) => entry.bilanId === sourceId) ?? false;
+  const booked = newsletter.data?.scheduled.find((entry) => entry.bilanId === sourceId);
+  const stats = newsletter.data?.stats ?? { total: 0, monthDelta: 0 };
+  const sends = newsletter.data?.sends ?? [];
+
+  function body() {
+    if (bilans.status === 'loading' || bilans.status === 'idle') return <PageLoading />;
+    if (bilans.status === 'error') return <PageError onRetry={bilans.reload} />;
+
+    if (!bilans.data?.items.length) {
+      return <p className={styles.subtitle}>Aucun bilan publié pour l'instant — publiez-en un pour composer une édition.</p>;
+    }
+
+    if (!sourceId || bilan.status === 'loading' || bilan.status === 'idle' || !edition) {
+      return <PageLoading />;
+    }
+    if (bilan.status === 'error') return <PageError onRetry={bilan.reload} />;
+
+    return (
+      <div className={styles.body} data-anim="stagger">
         <EmailPreview edition={edition} />
 
-        <div className={styles.panels}>
-          {/* Keyed on the source so the secondary forms close and re-propose
-              the new month's slot when the edition changes. */}
+        <div className={styles.panels} data-anim="stagger">
           <SendPanel
-            key={sourceId}
             subject={subject}
             onSubjectChange={setSubject}
             sourceId={sourceId}
-            onSourceChange={changeSource}
-            stats={stats}
-            slot={proposedSlotFor(source)}
-            schedule={schedule}
-            onSchedule={bookSchedule}
+            onSourceChange={setSourceId}
+            sources={bilans.data.items.map((item) => ({ id: item.id, label: sourceLabel(item) }))}
+            recipientCount={stats.total}
+            slot={bilan.data ? proposedSlotFor(bilan.data) : { date: '', time: '' }}
+            schedule={booked}
+            onSchedule={schedule}
+            schedulePending={scheduleMutation.pending}
+            scheduleError={scheduleMutation.error?.message}
             onCancelSchedule={cancelSchedule}
             sent={sent}
             onSend={send}
+            sendPending={sendMutation.pending}
+            sendError={sendMutation.error?.message}
+            onSendTest={sendTest}
+            testPending={testMutation.pending}
+            testError={testMutation.error?.message}
           />
           <SubscribersPanel stats={stats} sends={sends} />
         </div>
       </div>
+    );
+  }
+
+  return (
+    <section className={styles.page} data-testid="admin-newsletter-page" data-anim="stagger">
+      <div className={styles.header}>
+        <div className={styles.headerTitles}>
+          <h1 className={styles.title}>Newsletter</h1>
+          <p className={styles.subtitle}>
+            {bilan.data ? `Le courrier du mois — édition ${editionLabel(bilan.data)}` : ''}
+          </p>
+        </div>
+        {sourceId && (
+          <span
+            className={sent ? `${styles.status} ${styles.statusSent}` : styles.status}
+            data-testid="newsletter-status"
+          >
+            <span className={styles.statusDot} aria-hidden="true" />
+            {sent ? (
+              <>Envoyée</>
+            ) : booked ? (
+              <>
+                Programmée<span className={styles.statusLong}> · {instantLabel(booked.scheduledAt)}</span>
+              </>
+            ) : (
+              <>
+                Prête<span className={styles.statusLong}> à envoyer</span>
+              </>
+            )}
+          </span>
+        )}
+      </div>
+
+      {body()}
     </section>
   );
 }

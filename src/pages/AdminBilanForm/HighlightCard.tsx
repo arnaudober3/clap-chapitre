@@ -1,6 +1,6 @@
 import { useState, type DragEvent, type KeyboardEvent } from 'react';
 import { MEDIUM_ACCENT, MEDIUM_CHIP_LABEL } from '../../media';
-import type { Medium } from '../../mock/types';
+import type { Medium } from '../../../shared/content';
 import styles from './AdminBilanForm.module.css';
 
 /** One editable coup de cœur — the fields design 6d exposes for an avis. */
@@ -9,6 +9,13 @@ export interface Highlight {
   id: string;
   medium: Medium;
   title: string;
+  /**
+   * Carried, not edited. The card does not show it — design 6d has no summary
+   * field — but `articles.excerpt` is NOT NULL, and saving the bilan writes the
+   * card back to the avis. Dropping it here would blank the line every feed and
+   * grid on the public site renders.
+   */
+  excerpt: string;
   hook: string;
   body: string;
   relatedTitle: string;
@@ -16,8 +23,8 @@ export interface Highlight {
   forThoseWho: string;
 }
 
-/** Everything but `id` and `medium` is editable. */
-export type HighlightPatch = Partial<Omit<Highlight, 'id' | 'medium'>>;
+/** Everything but `id`, `medium` and the carried `excerpt` is editable. */
+export type HighlightPatch = Partial<Omit<Highlight, 'id' | 'medium' | 'excerpt'>>;
 
 /**
  * A "coup de cœur" card (design 6d desktop → 7c mobile): a medium-coloured band,

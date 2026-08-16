@@ -146,8 +146,6 @@
     margin-bottom: 8px;
 }
 
-/* The portrait is a CSS gradient on the public page too — nothing is fetched,
-   and there is no upload behind the button in this prototype. */
 .portrait {
     position: relative;
     width: 96px;

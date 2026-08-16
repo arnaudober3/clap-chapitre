@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
+import { coverStyle } from '../../api/mutations';
 import { Link } from 'react-router-dom';
-import type { Article, Medium } from '../../mock/types';
-import type { MonthlyBilan } from '../../mock/bilans';
+import type { Article, Medium } from '../../../shared/content';
+import type { BilanCrumb } from '../../api/content';
 import {
   MEDIA,
   MEDIUM_ACCENT,
@@ -33,7 +34,7 @@ export default function ArticleHero({
   bilan,
 }: {
   article: Article;
-  bilan?: MonthlyBilan;
+  bilan?: BilanCrumb;
 }) {
   const archiveHref = `/archives/${MEDIUM_TO_SEGMENT[article.medium]}`;
   // The mobile back link targets the same place as the second desktop crumb —
@@ -74,14 +75,14 @@ export default function ArticleHero({
       <div className={styles.heroMain}>
         {/* `.band` is a real painted band on mobile and `display: contents` on
             desktop, so cover / headline become grid items of `.heroMain`. */}
-        <div className={styles.band} style={{ background: article.cover }}>
+        <div className={styles.band} style={coverStyle(article.cover)}>
           <Link className={styles.backLink} to={backHref}>
             ‹ {backLabel}
           </Link>
 
           <div
             className={styles.cover}
-            style={{ background: article.cover }}
+            style={coverStyle(article.cover)}
             data-testid="article-cover"
           >
             <span className={styles.coverEyebrow}>Affiche</span>

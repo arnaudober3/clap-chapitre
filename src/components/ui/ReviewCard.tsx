@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import type { Article } from '../../mock/types';
+import { coverStyle } from '../../api/mutations';
+import type { Article } from '../../../shared/content';
 import { MEDIUM_ACCENT, MEDIUM_LABEL } from '../../media';
 import styles from './ReviewCard.module.css';
 
@@ -26,7 +27,7 @@ export default function ReviewCard({
       className={className ? `${styles.card} ${className}` : styles.card}
       data-testid={testId ?? 'review-card'}
     >
-      <div className={styles.cardCover} style={{ background: item.cover }}>
+      <div className={styles.cardCover} style={coverStyle(item.cover)}>
         <span className={styles.cardCoverTitle}>{item.title}</span>
       </div>
       <div className={styles.cardBody}>

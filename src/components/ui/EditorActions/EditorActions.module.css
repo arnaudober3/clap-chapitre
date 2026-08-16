@@ -1,0 +1,101 @@
+/* The action row shared by the four editors. Lifted from the per-page rules the
+   editors each carried, which had drifted into four near-copies. */
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* ---- The state line ---- */
+.state {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--faint);
+    white-space: nowrap;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border-pill);
+}
+
+/* The one place a save failure is visible. Not `PageError`, which replaces the
+   content — the form is still on screen and still holds the editor's work. */
+.error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--danger, #a2392a);
+    white-space: nowrap;
+    max-width: 40ch;
+}
+
+/* ---- Buttons ---- */
+.primary,
+.secondary,
+.danger {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 9px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border: none;
+}
+
+.primary {
+    color: var(--bg);
+    background: var(--ink);
+}
+
+.primary:hover:not(:disabled) {
+    background: var(--accent);
+}
+
+.secondary {
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--border-pill);
+}
+
+.secondary:hover:not(:disabled) {
+    border-color: var(--ink);
+}
+
+/* Deliberately quiet until hovered: it sits next to the save button, and a red
+   block beside "Enregistrer" would read as an error rather than an action. */
+.danger {
+    color: var(--faint);
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+.danger:hover:not(:disabled) {
+    color: var(--danger, #a2392a);
+    border-color: var(--danger, #a2392a);
+}
+
+.primary:disabled,
+.secondary:disabled,
+.danger:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+@media (max-width: 900px) {
+    .primary,
+    .secondary,
+    .danger {
+        font-size: 12.5px;
+        border-radius: 8px;
+        padding: 8px 16px;
+    }
+}

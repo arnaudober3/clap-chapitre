@@ -26,21 +26,29 @@ describe('AR-1 CardGrid', () => {
 });
 
 describe('AR-1 PosterThumb', () => {
-  it('applies the passed gradient as its background and renders no <img>', () => {
-    const cover = 'linear-gradient(150deg,#d18a5a,#9a4d2c)';
+  it('paints the stored key from /api/media, framed, and still emits no <img>', () => {
+    // The cover used to be the CSS gradient itself. It is an R2 key now, and
+    // the tile stays a painted <div> — an <img> would need a width and a
+    // height the grid does not want to think about.
+    const cover = `cover-${'b'.repeat(64)}.webp`;
     render(<PosterThumb cover={cover} />);
     const tile = screen.getByTestId('poster-thumb');
-    expect(tile.style.background).toContain('linear-gradient');
+
+    expect(tile.style.backgroundImage).toContain(`/api/media/${cover}`);
+    // Without these the tile would show one corner of the poster.
+    expect(tile.style.backgroundSize).toBe('cover');
+    expect(tile.style.backgroundPosition).toBe('center');
     expect(tile.querySelector('img')).toBeNull();
     expect(tile.tagName).not.toBe('IMG');
   });
 
-  it('renders a fallback tile (no crash, no inline gradient) for an empty cover', () => {
+  it('renders a fallback tile (no crash, no inline image) for an empty cover', () => {
     expect(() => render(<PosterThumb cover="" />)).not.toThrow();
     const tile = screen.getByTestId('poster-thumb');
     expect(tile).toHaveAttribute('data-empty', 'true');
-    // No inline background gradient is emitted for the fallback tile.
-    expect(tile.style.background).toBe('');
+    // Nothing inline: the stylesheet's neutral tile shows through, which is
+    // what an avis with no affiche yet should look like.
+    expect(tile.style.backgroundImage).toBe('');
     expect(tile.querySelector('img')).toBeNull();
   });
 });

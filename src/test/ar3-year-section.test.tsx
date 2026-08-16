@@ -3,13 +3,19 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import YearSection from '../pages/BilanCulturelArchives/YearSection';
-import { bilansByYear, latestBilan } from '../mock/bilans';
+import { aBilanSummary } from './fixtures';
+
+const months = [
+  aBilanSummary(),
+  aBilanSummary({ id: '2026-06', month: 6, monthLabel: 'Juin', title: 'Les jours longs' }),
+];
+const currentYear = { year: 2026, months };
+const latestBilan = () => months[0];
 
 function wrap(ui: React.ReactElement) {
   return render(<MemoryRouter>{ui}</MemoryRouter>);
 }
 
-const [currentYear] = bilansByYear();
 
 describe('AR-3 YearSection', () => {
   it('expanded=true renders a MonthCard per month and marks the latest with "dernier"', () => {
@@ -17,6 +23,7 @@ describe('AR-3 YearSection', () => {
       <YearSection
         year={currentYear.year}
         months={currentYear.months}
+        latestId={latestBilan().id}
         expanded
         onToggle={() => {}}
       />,

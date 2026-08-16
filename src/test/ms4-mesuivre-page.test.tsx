@@ -1,12 +1,15 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import MeSuivrePage from '../pages/MeSuivre';
 import App from '../App';
-import { meSuivre } from '../mock/mesuivre';
+import { aMeSuivre, SEED } from './fixtures';
+import { useTestDb } from './api-server';
+
+const meSuivre = aMeSuivre();
 
 const root = resolve(__dirname, '../..');
 const pageDir = resolve(root, 'src/pages/MeSuivre');
@@ -34,9 +37,13 @@ function renderPage() {
 }
 
 describe('MS-4 Me suivre page', () => {
-  it('renders the head, the newsletter feature and the four social links', () => {
+  beforeEach(() => {
+    useTestDb(SEED);
+  });
+
+  it('renders the head, the newsletter feature and the social links', async () => {
     renderPage();
-    expect(screen.getByText(meSuivre.eyebrow)).toBeInTheDocument();
+    expect(await screen.findByText(meSuivre.eyebrow)).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 1, name: 'On garde le contact' }),
     ).toBeInTheDocument();
@@ -48,10 +55,10 @@ describe('MS-4 Me suivre page', () => {
       screen.getByRole('button', { name: meSuivre.newsletter.cta }),
     ).toBeInTheDocument();
 
-    expect(screen.getAllByTestId('social-card')).toHaveLength(4);
+    expect(screen.getAllByTestId('social-card')).toHaveLength(meSuivre.socials.length);
   });
 
-  it('keeps the routing test id and renders at /me-suivre in the App router', () => {
+  it('keeps the routing test id and renders at /me-suivre in the App router', async () => {
     render(
       <MemoryRouter initialEntries={['/me-suivre']}>
         <App />
@@ -59,7 +66,7 @@ describe('MS-4 Me suivre page', () => {
     );
     expect(screen.getByTestId('me-suivre-page')).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 1, name: 'On garde le contact' }),
+      await screen.findByRole('heading', { level: 1, name: 'On garde le contact' }),
     ).toBeInTheDocument();
   });
 
@@ -70,28 +77,29 @@ describe('MS-4 Me suivre page', () => {
         <App />
       </MemoryRouter>,
     );
-    await user.click(screen.getByRole('link', { name: 'Me suivre →' }));
+    await user.click(await screen.findByRole('link', { name: 'Me suivre →' }));
     expect(
       screen.getByRole('heading', { level: 1, name: 'On garde le contact' }),
     ).toBeInTheDocument();
   });
 
   it('renders head and newsletter without throwing when socials is empty', async () => {
-    vi.resetModules();
-    vi.doMock('../mock/mesuivre', () => ({
-      meSuivre: { ...meSuivre, socials: [] },
-    }));
-    const { default: EmptyPage } = await import('../pages/MeSuivre');
+    // The page row with no links at all — a state the editor can reach, so the
+    // page has to survive it.
+    useTestDb(`
+      INSERT INTO page_mesuivre (id,eyebrow,title,intro,newsletter_eyebrow,newsletter_title,newsletter_copy,newsletter_placeholder,newsletter_cta)
+      VALUES (1,'Me suivre','On garde le contact','Choisissez votre endroit préféré.','La newsletter','Le courrier du mois','Le bilan complet.','votre@email.fr','Je m’abonne');
+    `);
     expect(() =>
       render(
         <MemoryRouter>
-          <EmptyPage />
+          <MeSuivrePage />
         </MemoryRouter>,
       ),
     ).not.toThrow();
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'On garde le contact' }),
+      await screen.findByRole('heading', { level: 1, name: 'On garde le contact' }),
     ).toBeInTheDocument();
     expect(screen.getByText('Le courrier du mois')).toBeInTheDocument();
     expect(screen.queryAllByTestId('social-card')).toHaveLength(0);

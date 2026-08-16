@@ -5,6 +5,8 @@ import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 import { TOKEN_KEY, getToken } from '../auth/auth';
 import { TEST_USERNAME as ADMIN_USERNAME, TEST_PASSWORD as PASSWORD } from './credentials';
+import { SEED } from './fixtures';
+import { useTestDb } from './api-server';
 
 function renderAt(path: string) {
   return render(
@@ -61,6 +63,9 @@ describe('AL-2 admin login page', () => {
   });
 
   it('signs in with the right credentials and stores the token', async () => {
+    // Signing in lands on the dashboard, which reads the API: without content
+    // it would render its error panel, and the assertion below reads alerts.
+    useTestDb(SEED);
     renderAt('/admin/login');
     await signIn(ADMIN_USERNAME, PASSWORD);
 
