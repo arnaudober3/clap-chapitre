@@ -18,7 +18,7 @@
 }
 
 .title {
-    font-family: var(--serif), serif;
+    font-family: var(--font-serif), serif;
     font-size: 26px;
     font-weight: 500;
     color: var(--ink);
@@ -148,8 +148,8 @@
 }
 
 .actionDanger:hover:not(:disabled) {
-    color: var(--danger, #a2392a);
-    border-color: var(--danger, #a2392a);
+    color: var(--danger);
+    border-color: var(--danger);
 }
 
 .action:disabled {

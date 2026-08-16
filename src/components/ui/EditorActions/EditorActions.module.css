@@ -14,7 +14,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 11.5px;
+    font-size: 11px;
     color: var(--faint);
     white-space: nowrap;
 }
@@ -32,8 +32,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 11.5px;
-    color: var(--danger, #a2392a);
+    font-size: 11px;
+    color: var(--danger);
     white-space: nowrap;
     max-width: 40ch;
 }
@@ -79,8 +79,8 @@
 }
 
 .danger:hover:not(:disabled) {
-    color: var(--danger, #a2392a);
-    border-color: var(--danger, #a2392a);
+    color: var(--danger);
+    border-color: var(--danger);
 }
 
 .primary:disabled,
@@ -94,7 +94,7 @@
     .primary,
     .secondary,
     .danger {
-        font-size: 12.5px;
+        font-size: 12px;
         border-radius: 8px;
         padding: 8px 16px;
     }

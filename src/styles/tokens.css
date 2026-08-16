@@ -23,6 +23,7 @@
   --gold-hover: #e6b45f;    /* CTA hover */
   --positive: #6a7a45;      /* positive KPI delta (↑ green, admin dashboard) */
   --negative: #a8412b;      /* negative KPI delta (↓ terracotta, admin dashboard) */
+  --danger: #a2392a;        /* destructive actions & errors (Supprimer, form errors) */
 
   /* Publication status pills (admin article listing, design 8a) */
   --status-published-fg: #6a7a45;
@@ -141,6 +142,7 @@
   --gold-hover: #dbaa55;    /* CTA hover */
   --positive: #92a86a;      /* positive KPI delta (brightened for dark) */
   --negative: #d0705a;      /* negative KPI delta (brightened for dark) */
+  --danger: #cc6a53;        /* destructive actions & errors (brightened for dark) */
 
   /* Publication status pills — foregrounds brightened, backgrounds sunk into
      the night palette so the pills stay legible without glowing. */
