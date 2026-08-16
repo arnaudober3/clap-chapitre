@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react';
 import { ApiError } from '../../../api/client';
 import { mediaUrl, uploadImage } from '../../../api/mutations';
+import { toCoverWebp } from '../../../image';
 import styles from './ImageField.module.css';
 
 /**
@@ -65,7 +66,11 @@ export default function ImageField({
     setError(undefined);
     setBusy(true);
     try {
-      const { key } = await uploadImage(file, kind);
+      // Only affiches are re-encoded: they're the images that repeat across
+      // every card, hero and archive tile, so their storage cost multiplies.
+      // The portrait is a single file — its original is kept.
+      const upload = kind === 'cover' ? await toCoverWebp(file) : file;
+      const { key } = await uploadImage(upload, kind);
       onChange(key);
     } catch (cause: unknown) {
       setError(cause instanceof ApiError ? cause.message : "L’envoi a échoué.");
