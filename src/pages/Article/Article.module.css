@@ -2,7 +2,7 @@
    raw Salon hex values; the only literal colors are neutral rgba() overlays
    used on top of an avis' own cover gradient.
 
-   Mobile-first (design 4b): the hero is a full-bleed cover band, the related
+   Mobile-first (design 4b): the hero is a full-bleed band, the related
    block stacks, the composer is a sticky bottom bar and prev/next is dropped.
    At the lg breakpoint (--bp-lg = 1024px) design 4a takes over: cover beside
    the headline, a two-column related grid, an inline composer card. Every swap
@@ -87,10 +87,10 @@
   flex-direction: column;
 }
 
-/* Mobile: the painted, full-bleed cover band. It breaks out of <main>'s
-   padding and its --shell-max cap the same way the À propos hero does —
-   100cqi is the full .content width, so the negative inline margin is exactly
-   half the difference. */
+/* Mobile: the full-bleed band. It breaks out of <main>'s padding and its
+   --shell-max cap the same way the À propos hero does — 100cqi is the full
+   .content width, so the negative inline margin is exactly half the
+   difference. */
 .band {
   display: flex;
   flex-wrap: wrap;
@@ -104,12 +104,12 @@
 .backLink {
   flex-basis: 100%;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--faint);
   text-decoration: none;
 }
 
 .backLink:hover {
-  color: rgba(255, 255, 255, 1);
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -126,11 +126,6 @@
   overflow: hidden;
 }
 
-/* The cover's own serif title is a 4a detail; 4b shows the title in the band. */
-.coverTitle {
-  display: none;
-}
-
 .headline {
   flex: 1;
   min-width: 0;
@@ -144,15 +139,14 @@
   flex-wrap: wrap;
 }
 
-/* The medium accent arrives as the --medium-accent custom property (set inline
-   by ArticleHero) rather than an inline `color`, so the painted band can win
-   on mobile without !important. */
+/* The medium accent arrives as the --medium-accent custom property, set
+   inline by ArticleHero. */
 .mediumLabel {
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--medium-accent, var(--accent));
 }
 
 /* The genre meta line is a 4a detail — 4b's band carries the medium alone. */
@@ -169,7 +163,7 @@
   font-size: 26px;
   line-height: 1.1;
   letter-spacing: -0.015em;
-  color: var(--bg);
+  color: var(--ink);
 }
 
 .heroFoot {
@@ -742,14 +736,6 @@
     box-shadow: 0 22px 44px -16px rgba(36, 26, 18, 0.55);
   }
 
-  .coverTitle {
-    display: block;
-    font-family: var(--font-serif), sans-serif;
-    font-size: 27px;
-    line-height: 1.1;
-    color: rgba(255, 255, 255, 0.95);
-  }
-
   .headline {
     grid-area: headline;
   }
@@ -764,12 +750,6 @@
     font-size: 46px;
     line-height: 1.04;
     letter-spacing: -0.02em;
-    color: var(--ink);
-  }
-
-  /* Off the painted band, the eyebrow recovers its medium accent. */
-  .mediumLabel {
-    color: var(--medium-accent, var(--accent));
   }
 
   .metaDot,
