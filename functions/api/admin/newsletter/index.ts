@@ -13,25 +13,18 @@
  *
  * Behind the admin JWT.
  */
-import { requireAdmin } from '../../../_lib/admin';
+import { requireAdminDb } from '../../../_lib/admin';
 import { WINDOWS } from '../../../_lib/audience';
-import { requireDb } from '../../../_lib/env';
-import { dbUnavailable, getOnly, json, misconfigured } from '../../../_lib/http';
-import type { D1Database, Handler } from '../../../types';
+import { dbUnavailable, getOnly, json } from '../../../_lib/http';
+import type { Handler } from '../../../types';
 
 /** How many sends "Derniers envois" shows. */
 const SENDS_SHOWN = 20;
 
 export const onRequestGet: Handler = async ({ request, env }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const since = `-${WINDOWS['30j']} days`;
 

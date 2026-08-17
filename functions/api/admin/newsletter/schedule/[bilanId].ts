@@ -13,14 +13,12 @@
  *
  * Behind the admin JWT.
  */
-import { requireAdmin } from '../../../../_lib/admin';
+import { requireAdminDb } from '../../../../_lib/admin';
 import { BodyError, MalformedBody, readJson } from '../../../../_lib/body';
-import { requireDb } from '../../../../_lib/env';
 import {
   conflict,
   created,
   dbUnavailable,
-  misconfigured,
   noContent,
   notFound,
   route,
@@ -36,17 +34,13 @@ async function requireScheduleContext(
   env: Env,
   params: FunctionContext['params'],
 ): Promise<{ bilanId: string; db: D1Database } | Response> {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
 
   const bilanId = typeof params?.bilanId === 'string' ? params.bilanId : '';
   if (!bilanId) return notFound();
 
-  try {
-    return { bilanId, db: requireDb(env) };
-  } catch {
-    return misconfigured();
-  }
+  return { bilanId, db: check.db };
 }
 
 export const onRequestPost: Handler = async ({ request, env, params }) => {

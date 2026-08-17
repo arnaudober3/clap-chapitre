@@ -24,10 +24,9 @@
  *
  * Behind the admin JWT.
  */
-import { requireAdmin } from '../../_lib/admin';
+import { requireAdminDb } from '../../_lib/admin';
 import { deltaPct, isPeriod, lastMonths, monthAbbrev, WINDOWS } from '../../_lib/audience';
-import { requireDb } from '../../_lib/env';
-import { dbUnavailable, getOnly, json, misconfigured } from '../../_lib/http';
+import { dbUnavailable, getOnly, json } from '../../_lib/http';
 import type { D1Database, D1PreparedStatement, Handler } from '../../types';
 
 /** The leaderboard shows five rows, as the design does. */
@@ -45,15 +44,9 @@ const KPI_CARDS = [
 ] as const;
 
 export const onRequestGet: Handler = async ({ request, env }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const requested = new URL(request.url).searchParams.get('period') ?? '';
 
@@ -64,14 +57,15 @@ export const onRequestGet: Handler = async ({ request, env }) => {
       // being ordered — ranking each separately would give two top-fives, not one.
       db
         .prepare(
-          `SELECT * FROM (
-             SELECT id, medium AS kind, title, views, id AS article_id
-               FROM articles WHERE status = 'published'
-             UNION ALL
-             SELECT id, 'bilan' AS kind, title, views, NULL AS article_id
-               FROM bilans WHERE status = 'published'
-           )
-           ORDER BY views DESC, id ASC
+          `SELECT *
+           FROM (SELECT id, medium AS kind, title, views, id AS article_id
+                 FROM articles
+                 WHERE status = 'published'
+                 UNION ALL
+                 SELECT id, 'bilan' AS kind, title, views, NULL AS article_id
+                 FROM bilans
+                 WHERE status = 'published')
+           ORDER BY views DESC, id
            LIMIT ?`,
         )
         .bind(LEADERBOARD_SIZE),

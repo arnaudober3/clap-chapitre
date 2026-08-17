@@ -11,11 +11,10 @@
  *
  * Behind the admin JWT.
  */
-import { requireAdmin } from '../../../_lib/admin';
-import { requireDb } from '../../../_lib/env';
-import { badRequest, dbUnavailable, json, misconfigured, route } from '../../../_lib/http';
+import { requireAdminDb } from '../../../_lib/admin';
+import { badRequest, dbUnavailable, json, route } from '../../../_lib/http';
 import { QueryError, readPage, readPerPage } from '../../../_lib/query';
-import type { D1Database, Handler } from '../../../types';
+import type { Handler } from '../../../types';
 
 const DEFAULT_PER_PAGE = 20;
 const MAX_PER_PAGE = 100;
@@ -23,15 +22,9 @@ const MAX_PER_PAGE = 100;
 const STATUSES = ['pending', 'approved'] as const;
 
 export const onRequestGet: Handler = async ({ request, env }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const url = new URL(request.url);
   let page: number;

@@ -5,8 +5,8 @@
  * `_lib/admin.ts` because that gate is generic across every `/api/admin/**`
  * route — this one is specific to the two newsletter-sending routes.
  */
-import { requireAdmin } from './admin';
-import { requireDb, requireNewsletterFrom, requireResendKey, requireUnsubSecret } from './env';
+import { requireAdminDb } from './admin';
+import { requireNewsletterFrom, requireResendKey, requireUnsubSecret } from './env';
 import { misconfigured, notFound } from './http';
 import type { D1Database, Env, FunctionContext } from '../types';
 
@@ -23,8 +23,8 @@ export async function requireNewsletterSendContext(
   env: Env,
   params: FunctionContext['params'],
 ): Promise<NewsletterSendContext | Response> {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
 
   const bilanId = typeof params?.bilanId === 'string' ? params.bilanId : '';
   if (!bilanId) return notFound();
@@ -32,7 +32,7 @@ export async function requireNewsletterSendContext(
   try {
     return {
       bilanId,
-      db: requireDb(env),
+      db: check.db,
       apiKey: requireResendKey(env),
       from: requireNewsletterFrom(env),
       unsubSecret: requireUnsubSecret(env),

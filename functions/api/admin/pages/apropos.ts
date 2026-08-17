@@ -8,21 +8,14 @@
  *
  * Behind the admin JWT; the *reading* half stays public on /api/pages/apropos.
  */
-import { requireAdmin } from '../../../_lib/admin';
+import { requireAdminDb } from '../../../_lib/admin';
 import { BodyError, MalformedBody, readJson } from '../../../_lib/body';
-import { requireBucket, requireDb } from '../../../_lib/env';
-import {
-  badRequest,
-  dbUnavailable,
-  json,
-  misconfigured,
-  route,
-  unprocessable,
-} from '../../../_lib/http';
+import { requireBucket } from '../../../_lib/env';
+import { badRequest, dbUnavailable, json, route, unprocessable } from '../../../_lib/http';
 import { readAproposInput } from '../../../_lib/inputs';
 import { forget } from '../../../_lib/media';
 import { now } from '../../../_lib/write';
-import type { D1Database, Handler } from '../../../types';
+import type { Handler } from '../../../types';
 
 const COLUMNS = [
   'eyebrow',
@@ -42,15 +35,9 @@ const COLUMNS = [
 ] as const;
 
 export const onRequestPut: Handler = async ({ request, env }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   let input: ReturnType<typeof readAproposInput>;
   try {

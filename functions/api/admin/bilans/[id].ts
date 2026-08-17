@@ -12,19 +12,19 @@
  * yet, which the "nouveau bilan" form needs and which has no row to return. It
  * is computed from the highest id, so December rolls over to January of the
  * following year, and it never reads a clock — the same catalogue always yields
- * the same answer.
+ * the same answer. Before any bilan exists, there is no id to roll forward
+ * from, so it falls back to the oldest published avis instead — otherwise the
+ * very first bilan could never be created.
  *
  * Behind the admin JWT.
  */
-import { requireAdmin } from '../../../_lib/admin';
+import { requireAdminDb } from '../../../_lib/admin';
 import { cardEdits, mediaOf, selection, updateBilan } from '../../../_lib/bilan-write';
 import { BodyError, MalformedBody, readJson } from '../../../_lib/body';
-import { requireDb } from '../../../_lib/env';
 import {
   badRequest,
   dbUnavailable,
   json,
-  misconfigured,
   noContent,
   notFound,
   route,
@@ -40,15 +40,9 @@ import type { D1Database, Handler } from '../../../types';
 const NEXT = 'next';
 
 export const onRequestGet: Handler = async ({ request, env, params }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const id = typeof params?.id === 'string' ? params.id : '';
   if (!id) return notFound();
@@ -87,24 +81,40 @@ export const onRequestGet: Handler = async ({ request, env, params }) => {
  * The month after the newest one on file, whatever its status — a draft already
  * covering July means the next new bilan is August, not July again.
  *
- * An empty catalogue has no "next month" to derive, so it answers null and the
- * form asks the editor instead of inventing a date from the server's clock.
+ * With no bilan on file yet, there is nothing to roll forward from, so the
+ * first one covers the oldest published avis's own month instead — the month
+ * that actually has something to summarise.
+ *
+ * An empty catalogue — no bilan *and* no published avis — has no "next month"
+ * to derive at all, so it answers null and the form asks the editor instead of
+ * inventing a date from the server's clock.
  */
 async function nextMonth(db: D1Database): Promise<{ id: string; year: number; month: number } | null> {
   const row = await db.prepare('SELECT max(id) AS last FROM bilans').first();
   const last = typeof row?.last === 'string' ? row.last : '';
-  if (!last) return null;
 
-  const [year, month] = last.split('-').map(Number);
-  const rolls = month === 12;
+  const stamp = last || (await oldestPublishedAvisMonth(db));
+  if (!stamp) return null;
+
+  const [year, month] = stamp.split('-').map(Number);
+  const rolls = last ? month === 12 : false;
   const nextYear = rolls ? year + 1 : year;
-  const nextMonthNumber = rolls ? 1 : month + 1;
+  const nextMonthNumber = rolls ? 1 : last ? month + 1 : month;
 
   return {
     id: `${nextYear}-${String(nextMonthNumber).padStart(2, '0')}`,
     year: nextYear,
     month: nextMonthNumber,
   };
+}
+
+/** The month of the oldest published avis, or '' when none is published yet. */
+async function oldestPublishedAvisMonth(db: D1Database): Promise<string> {
+  const row = await db
+    .prepare("SELECT min(published_at) AS first FROM articles WHERE status = 'published'")
+    .first();
+  const first = typeof row?.first === 'string' ? row.first : '';
+  return first ? first.slice(0, 7) : '';
 }
 
 /**
@@ -117,15 +127,9 @@ async function nextMonth(db: D1Database): Promise<{ id: string; year: number; mo
  * key that `bilan_avis` points at.
  */
 export const onRequestPut: Handler = async ({ request, env, params }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const id = typeof params?.id === 'string' ? params.id : '';
   if (!id || id === NEXT) return notFound();
@@ -168,15 +172,9 @@ export const onRequestPut: Handler = async ({ request, env, params }) => {
  * grouping disappears, which is what deleting a bilan means.
  */
 export const onRequestDelete: Handler = async ({ request, env, params }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const id = typeof params?.id === 'string' ? params.id : '';
   if (!id || id === NEXT) return notFound();
