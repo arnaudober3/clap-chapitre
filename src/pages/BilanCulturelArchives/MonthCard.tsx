@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom';
-import type { BilanSummary } from '../../api/content';
-import { PosterThumb } from '../../components/ui';
-import styles from './BilanCulturelArchives.module.css';
+import { Link } from "react-router-dom";
+import type { BilanSummary } from "../../api/content";
+import { PosterThumb } from "../../components/ui";
+import styles from "./BilanCulturelArchives.module.css";
 
 /**
  * An archive month card: a bordered --surface card whose top is a collage of up
@@ -22,6 +22,7 @@ export default function MonthCard({
 }: {
   bilan: BilanSummary;
   isLatest?: boolean;
+  key?: string;
 }) {
   const covers = bilan.covers;
 
