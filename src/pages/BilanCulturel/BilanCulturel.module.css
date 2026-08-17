@@ -40,11 +40,6 @@
   color: var(--ink);
 }
 
-.caret {
-  color: var(--muted-2);
-  font-size: 0.7em;
-}
-
 .switcher {
   display: flex;
   flex-direction: column;

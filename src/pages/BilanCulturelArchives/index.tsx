@@ -25,19 +25,20 @@ export default function BilanCulturelArchivesPage() {
   // it stays here rather than shaping the response.
   const years = useMemo(() => groupByYear(months), [months]);
 
-  // Which years are open. It starts empty rather than holding the newest year,
-  // because at first render there is no list yet — the default is applied below
-  // instead, where the data is known.
-  const [openYears, setOpenYears] = useState<Set<number>>(() => new Set());
+  // Years whose expand state has been explicitly flipped away from the
+  // default (newest year open, others closed) — an empty set is unambiguous,
+  // unlike tracking "open years" directly, since the newest year toggled
+  // closed-then-open would otherwise collide with "no clicks yet".
+  const [toggledYears, setToggledYears] = useState<Set<number>>(() => new Set());
   const newestYear = years[0]?.year;
-  const isOpen = (year: number) =>
-    openYears.size === 0 ? year === newestYear : openYears.has(year);
+  const isOpen = (year: number) => {
+    const defaultOpen = year === newestYear;
+    return toggledYears.has(year) ? !defaultOpen : defaultOpen;
+  };
 
   const toggleYear = (year: number) => {
-    setOpenYears((previous) => {
-      // The first click materialises that implicit default, so collapsing the
-      // newest year does not silently re-expand it.
-      const next = new Set(previous.size === 0 && newestYear ? [newestYear] : previous);
+    setToggledYears((previous) => {
+      const next = new Set(previous);
       if (next.has(year)) next.delete(year);
       else next.add(year);
       return next;

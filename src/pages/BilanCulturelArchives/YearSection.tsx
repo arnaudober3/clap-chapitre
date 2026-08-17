@@ -1,7 +1,7 @@
-import type { BilanSummary } from '../../api/content';
-import { CardGrid } from '../../components/ui';
-import MonthCard from './MonthCard';
-import styles from './BilanCulturelArchives.module.css';
+import type { BilanSummary } from "../../api/content";
+import { CardGrid } from "../../components/ui";
+import MonthCard from "./MonthCard";
+import styles from "./BilanCulturelArchives.module.css";
 
 /**
  * One year in the BilanCulturelArchives index. The year header is a real <button> with
@@ -25,8 +25,8 @@ export default function YearSection({
   latestId?: string;
   expanded: boolean;
   onToggle: () => void;
+  key?: number;
 }) {
-
   return (
     <section className={styles.yearSection} data-testid="year-section">
       <button
@@ -40,14 +40,14 @@ export default function YearSection({
       >
         <span
           className={`${styles.yearLabel} ${
-            expanded ? '' : styles.yearLabelCollapsed
+            expanded ? "" : styles.yearLabelCollapsed
           }`}
         >
           {year}
         </span>
         <span className={styles.yearCount}>{months.length} bilans</span>
         <span className={styles.yearCaret} aria-hidden="true">
-          {expanded ? '▾' : '▸'}
+          {expanded ? "▾" : "▸"}
         </span>
       </button>
       {expanded && (
