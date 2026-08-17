@@ -5,12 +5,11 @@ import styles from './Article.module.css';
 
 /**
  * The social bar, between two hairlines. Desktop (4a): a "♡ J'aime · n" pill,
- * an "Enregistrer" text link, a spacer and an outlined "Partager" pill.
- * Mobile (4b): the compact row — "♡ n", the comment count and "Partager";
- * "Enregistrer" is hidden by CSS at the mobile breakpoint.
+ * a spacer and an outlined "Partager" pill. Mobile (4b): the compact row —
+ * "♡ n", the comment count and "Partager".
  *
- * "Partager" opens the share menu. "Enregistrer" is inert. The like pill now
- * calls POST /api/likes to toggle the visitor's ♡, deduped per address.
+ * "Partager" opens the share menu. The like pill calls POST /api/likes to
+ * toggle the visitor's ♡, deduped per address.
  */
 export default function SocialBar({ article }: { article: Article }) {
   const like = useLike('article', article.id, article.likes);
@@ -35,10 +34,6 @@ export default function SocialBar({ article }: { article: Article }) {
         <span aria-hidden="true">✎</span> {article.comments}
         <span className={styles.srOnly}> commentaires</span>
       </span>
-
-      <button type="button" className={styles.saveLink}>
-        Enregistrer
-      </button>
 
       <span className={styles.socialSpacer} aria-hidden="true" />
 

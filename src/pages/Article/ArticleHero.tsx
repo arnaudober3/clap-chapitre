@@ -85,7 +85,6 @@ export default function ArticleHero({
             style={coverStyle(article.cover)}
             data-testid="article-cover"
           >
-            <span className={styles.coverEyebrow}>Affiche</span>
             <span className={styles.coverTitle} aria-hidden="true">
               {article.title}
             </span>

@@ -41,14 +41,13 @@ beforeEach(() => {
 });
 
 describe('ART-4 SocialBar', () => {
-  it('renders the like pill, Enregistrer, and Partager buttons', () => {
+  it('renders the like pill and Partager button', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const before = window.location.href;
     renderSocialBar();
 
     const like = screen.getByRole('button', { name: /J'aime/ });
     expect(like).toHaveTextContent(String(avis.likes));
-    const save = screen.getByRole('button', { name: 'Enregistrer' });
     expect(screen.getByRole('button', { name: 'Partager' }).tagName).toBe('BUTTON');
 
     // The compact mobile row shows the comment count.
@@ -57,7 +56,6 @@ describe('ART-4 SocialBar', () => {
     ).toHaveTextContent(String(avis.comments));
 
     expect(like.tagName).toBe('BUTTON');
-    expect(save.tagName).toBe('BUTTON');
     expect(window.location.href).toBe(before);
     expect(errorSpy).not.toHaveBeenCalled();
     errorSpy.mockRestore();
@@ -159,12 +157,10 @@ function ruleOf(source: string, name: string): string {
 }
 
 describe('ART-4 responsive rules', () => {
-  it('keeps Enregistrer and prev/next desktop-only', () => {
+  it('keeps prev/next desktop-only', () => {
     expect(css).toContain(LG);
-    for (const name of ['saveLink', 'prevNext']) {
-      expect(ruleOf(mobileCss, name)).toMatch(/display:\s*none/);
-      expect(ruleOf(desktopCss, name)).toMatch(/display:\s*(inline|grid|flex)/);
-    }
+    expect(ruleOf(mobileCss, 'prevNext')).toMatch(/display:\s*none/);
+    expect(ruleOf(desktopCss, 'prevNext')).toMatch(/display:\s*(inline|grid|flex)/);
   });
 
   it('shows "J\'aime ·" only on desktop and the comment count only on mobile', () => {
