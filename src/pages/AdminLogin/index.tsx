@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/AuthContext';
 import useReveal from '../../anim/useReveal';
 import { Seo } from '../../seo/Seo';
 import { ADMIN_LOGIN_TITLE } from '../../seo/staticCopy';
+import { LogoMark } from '../../components/ui';
 import styles from './AdminLogin.module.css';
 
 /**
@@ -67,6 +68,7 @@ export default function AdminLoginPage() {
     >
       <Seo title={ADMIN_LOGIN_TITLE} path="/admin/login" noindex />
       <section className={styles.card}>
+        <LogoMark size={48} className={styles.mark} />
         <p className={styles.eyebrow}>Espace admin</p>
         <h1 className={styles.title}>
           Clap <span className={styles.et}>et</span> chapitre
