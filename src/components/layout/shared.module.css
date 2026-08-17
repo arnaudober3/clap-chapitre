@@ -1,0 +1,97 @@
+/* Rules shared byte-for-byte between the public Layout and the admin shell —
+   composed via CSS Modules `composes` (see Layout.module.css and
+   AdminLayout.module.css) so the two shells' common nav-link and mobile-drawer
+   mechanics can't drift out of sync the way two copy-pasted blocks would. */
+
+.navGroup {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+  gap: 2px;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--radius-nav);
+  font-size: 14px;
+  color: var(--nav-idle);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  background: var(--nav-hover);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.navLinkActive,
+.navLinkActive:hover {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+/* ---- Mobile drawer overlay ---- */
+.drawerRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.drawerOpen {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.drawerOpen .scrim {
+  opacity: 1;
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--drawer-width);
+  max-width: 320px;
+  background: var(--surface);
+  box-shadow: 16px 0 40px rgba(36, 26, 18, 0.4);
+  padding: 26px 0 24px;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.2s ease;
+  overflow-y: auto;
+}
+
+.drawerOpen .drawer {
+  transform: translateX(0);
+}
+
+.drawerHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0 22px 22px;
+}
+
+.close {
+  font-size: 19px;
+  line-height: 1;
+  color: var(--muted-2);
+  background: none;
+  border: none;
+  padding: 0;
+}

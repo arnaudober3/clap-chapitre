@@ -1,4 +1,5 @@
 /** Shared, page-agnostic Salon UI primitives. */
+export { LogoMark } from './Logo/Logo';
 export { default as CardGrid } from './CardGrid';
 export { default as PosterThumb } from './PosterThumb';
 export { default as SectionHeader } from './SectionHeader';
@@ -25,3 +26,4 @@ export type { ShareMenuProps } from './ShareMenu';
 export type { EditorActionsProps } from './EditorActions';
 export type { ImageFieldProps } from './ImageField';
 export type { CommentComposerProps } from './CommentComposer';
+export type { LogoProps, LogoMarkProps } from './Logo/Logo';

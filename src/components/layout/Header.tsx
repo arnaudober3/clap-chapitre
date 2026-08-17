@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useResolvedPath } from 'react-router-dom';
 import { primaryNav, secondaryNav, drawerNav, type NavItem } from './nav';
 import { useActiveMedium } from './activeMedium';
 import { MEDIUM_TO_SEGMENT } from '../../media';
-import { ThemeToggle } from '../ui';
+import { ThemeToggle, LogoMark } from '../ui';
 import { useAuth } from '../../auth/AuthContext';
 import styles from './Layout.module.css';
 
@@ -14,14 +14,17 @@ import styles from './Layout.module.css';
  */
 const feedRoutes = new Set<string>(['/', ...primaryNav.map((item) => item.to)]);
 
-/** Brand wordmark: "Clap et chapitre" with an italic terracotta "et". */
+/** Brand lockup: the blob monogram + "Clap et chapitre", with an italic terracotta "et". */
 function Brand({ stacked, onNavigate }: { stacked?: boolean; onNavigate?: () => void }) {
   return (
     <div className={styles.brand}>
-      <Link to="/" className={styles.wordmark} onClick={onNavigate}>
-        Clap <span className={styles.brandEt}>et</span>
-        {stacked ? <br /> : ' '}
-        chapitre
+      <Link to="/" className={styles.brandLink} onClick={onNavigate}>
+        <LogoMark size={stacked ? 44 : 34} />
+        <span className={styles.wordmark}>
+          Clap <span className={styles.brandEt}>et</span>
+          {stacked ? <br /> : ' '}
+          chapitre
+        </span>
       </Link>
       <span className={styles.underlineMark} aria-hidden="true" />
       <div className={styles.tagline}>Trouve ta prochaine histoire</div>
@@ -71,16 +74,17 @@ function MediumTabs() {
  * an article view), so the rail keeps a selection off the feed routes.
  */
 function NavItemLink({
-  item,
-  onNavigate,
-  forceActive,
-}: {
-  item: NavItem;
-  onNavigate?: () => void;
-  forceActive?: boolean;
+                       item,
+                       onNavigate,
+                       forceActive
+                     }: {
+  item: NavItem,
+  onNavigate?: () => void,
+  forceActive?: boolean,
+  key?: string
 }) {
-  // Replicate NavLink's matching (exact for '/', prefix otherwise) so we can OR in
-  // `forceActive` — NavLink hardwires aria-current to its own URL match and would
+  // Replicate NavLink's matching (exact for '/', prefix otherwise) so we can use "OR" in
+  // `forceActive` — NavLink hard-wires aria-current to its own URL match and would
   // drop a forced selection.
   const { pathname } = useLocation();
   const { pathname: toPathname } = useResolvedPath(item.to);
@@ -161,7 +165,7 @@ export default function Header() {
   const activeFeed = useActiveFeedRoute();
 
   return (
-    <header className={styles.header}>
+    <header>
       {/* Desktop left rail */}
       <aside className={styles.rail}>
         <div className={styles.railBrand}>
@@ -177,6 +181,7 @@ export default function Header() {
       {/* Mobile top bar */}
       <div className={styles.topbar}>
         <Link to="/" className={styles.topbarWordmark}>
+          <LogoMark size={28} />
           Clap <span className={styles.brandEt}>et</span> chapitre
         </Link>
         <span className={styles.topbarSpacer} aria-hidden="true" />

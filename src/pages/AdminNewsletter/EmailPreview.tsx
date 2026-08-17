@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { PosterThumb } from '../../components/ui';
+import { PosterThumb, LogoMark } from '../../components/ui';
 import { MEDIUM_ACCENT } from '../../media';
 import type { NewsletterEdition } from '../../newsletter';
 import styles from './AdminNewsletter.module.css';
@@ -23,6 +23,7 @@ export default function EmailPreview({ edition }: { edition: NewsletterEdition }
 
       <div className={styles.mailBody}>
         <div className={styles.masthead}>
+          <LogoMark size={30} className={styles.mastheadMark} />
           Clap <span className={styles.mastheadEt}>et</span> chapitre
         </div>
         <div className={styles.mastheadRule} aria-hidden="true" />
@@ -39,7 +40,7 @@ export default function EmailPreview({ edition }: { edition: NewsletterEdition }
             <div>
               <div
                 className={styles.highlightLabel}
-                style={{ ['--highlight-accent' as string]: MEDIUM_ACCENT[highlight.medium]  }}
+                style={{ ['--highlight-accent']: MEDIUM_ACCENT[highlight.medium]  }}
               >
                 {highlight.label}
               </div>

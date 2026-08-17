@@ -34,20 +34,7 @@
 }
 
 .brandMark {
-  width: 34px;
-  height: 34px;
   flex: none;
-  border-radius: var(--radius-nav);
-  background: var(--ink);
-  color: var(--bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-serif), serif;
-  font-size: 18px;
-  font-style: italic;
-  text-box: trim-both cap alphabetic;
-  padding-top: 4px;
 }
 
 .brandText {
@@ -58,7 +45,7 @@
 
 .brandTitle {
   font-family: var(--font-serif), serif;
-  font-size: 15.5px;
+  font-size: 15px;
   line-height: 1;
   color: var(--ink);
   white-space: nowrap;
@@ -67,7 +54,7 @@
 }
 
 .brandKicker {
-  font-size: 10.5px;
+  font-size: 10px;
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--faint);
@@ -94,42 +81,24 @@
 }
 
 .navGroup {
-  display: flex;
-  flex-direction: column;
-  padding: 0 16px;
-  gap: 2px;
+  composes: navGroup from './shared.module.css';
 }
 
 .navLink {
-  display: flex;
-  align-items: center;
-  padding: 10px 12px;
-  border-radius: var(--radius-nav);
-  font-size: 14px;
-  color: var(--nav-idle);
-  text-decoration: none;
-}
-
-.navLink:hover {
-  background: var(--nav-hover);
-  color: var(--ink);
-  text-decoration: none;
+  composes: navLink from './shared.module.css';
 }
 
 .navLabel {
   min-width: 0;
 }
 
-.navLinkActive,
-.navLinkActive:hover {
-  background: var(--ink);
-  color: var(--bg);
-  font-weight: 600;
+.navLinkActive {
+  composes: navLinkActive from './shared.module.css';
 }
 
 .badge {
   margin-left: auto;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--faint);
   background: var(--border-2);
@@ -258,65 +227,27 @@
 
 /* ---- Mobile drawer ---- */
 .drawerRoot {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  visibility: hidden;
-  pointer-events: none;
+  composes: drawerRoot from './shared.module.css';
 }
 
 .drawerOpen {
-  visibility: visible;
-  pointer-events: auto;
+  composes: drawerOpen from './shared.module.css';
 }
 
 .scrim {
-  position: absolute;
-  inset: 0;
-  background: var(--scrim);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.drawerOpen .scrim {
-  opacity: 1;
+  composes: scrim from './shared.module.css';
 }
 
 .drawer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: var(--drawer-width);
-  max-width: 320px;
-  background: var(--surface);
-  box-shadow: 16px 0 40px rgba(36, 26, 18, 0.4);
-  padding: 26px 0 24px;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(-100%);
-  transition: transform 0.2s ease;
-  overflow-y: auto;
-}
-
-.drawerOpen .drawer {
-  transform: translateX(0);
+  composes: drawer from './shared.module.css';
 }
 
 .drawerHead {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 0 22px 22px;
+  composes: drawerHead from './shared.module.css';
 }
 
 .close {
-  font-size: 19px;
-  line-height: 1;
-  color: var(--muted-2);
-  background: none;
-  border: none;
-  padding: 0;
+  composes: close from './shared.module.css';
 }
 
 /* ---- Desktop (lg) — rail on, mobile chrome off ---- */
