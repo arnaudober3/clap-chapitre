@@ -11,7 +11,7 @@ import {
   adminNav,
   type AdminNavItem,
 } from "./adminNav";
-import { ThemeToggle } from "../ui";
+import { ThemeToggle, LogoMark } from "../ui";
 import { useAuth } from "../../auth/AuthContext";
 import { useAdminKicker } from "./adminPageMeta";
 import { useAdminArticles, useAdminBilans, useAdminComments } from "../../api/admin";
@@ -36,9 +36,7 @@ function isItemActive(pathname: string, to: string): boolean {
 function BrandMark({ label, kicker }: { label: string; kicker?: string }) {
   return (
     <div className={styles.brand}>
-      <span className={styles.brandMark} aria-hidden="true">
-        C
-      </span>
+      <LogoMark size={34} className={styles.brandMark} />
       <div className={styles.brandText}>
         <span className={styles.brandTitle}>{label}</span>
         <span className={kicker ? `${styles.brandKicker} ${styles.brandKickerPlain}` : styles.brandKicker}>

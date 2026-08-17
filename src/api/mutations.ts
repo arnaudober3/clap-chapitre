@@ -165,7 +165,7 @@ export function saveMeSuivre(payload: unknown): Promise<{ ok: true }> {
  * file's own content type — no multipart envelope for a single file.
  */
 export function uploadImage(
-  file: File,
+  file: Blob,
   kind: 'cover' | 'portrait' = 'cover',
 ): Promise<{ key: string }> {
   return apiUpload<{ key: string }>(`/api/admin/uploads?kind=${kind}`, file, ADMIN);

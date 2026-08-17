@@ -155,9 +155,15 @@ export function renderEmailHtml(
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
             <tr>
               <td style="padding-bottom:24px;text-align:center;">
-                <span style="font:400 22px/1 Georgia,serif;color:#3f2e20;">Clap</span>
-                <span style="font:italic 400 22px/1 Georgia,serif;color:#b0502f;"> et </span>
-                <span style="font:400 22px/1 Georgia,serif;color:#3f2e20;">chapitre</span>
+                <svg width="30" height="30" viewBox="0 0 100 100" style="vertical-align:middle;margin-right:8px;">
+                  <path transform="rotate(-4 50 50)" fill="#b0502f"
+                        d="M42,0 A58,45 0 0 1 100,45 A55,55 0 0 1 45,100 A45,55 0 0 1 0,45 A42,45 0 0 1 42,0 Z" />
+                  <text x="50" y="50" dx="-3.5" dy="5" text-anchor="middle" dominant-baseline="central"
+                        font-family="Georgia,serif" font-style="italic" font-size="50" fill="#fdf8f0">C</text>
+                </svg>
+                <span style="font:400 22px/1 Georgia,serif;color:#3f2e20;vertical-align:middle;">Clap</span>
+                <span style="font:italic 400 22px/1 Georgia,serif;color:#b0502f;vertical-align:middle;"> et </span>
+                <span style="font:400 22px/1 Georgia,serif;color:#3f2e20;vertical-align:middle;">chapitre</span>
               </td>
             </tr>
             <tr>
