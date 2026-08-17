@@ -162,6 +162,9 @@
   font-size: 20px;
   color: var(--ink);
   text-decoration: none;
+}
+
+.topbarText {
   text-box: trim-both cap alphabetic;
 }
 
