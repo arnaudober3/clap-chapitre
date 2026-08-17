@@ -2,7 +2,7 @@
    raw Salon hex values; the only literal colors are neutral rgba() overlays
    used on top of an avis' own cover gradient.
 
-   Mobile-first (design 4b): the hero is a full-bleed cover band, the related
+   Mobile-first (design 4b): the hero is a full-bleed band, the related
    block stacks, the composer is a sticky bottom bar and prev/next is dropped.
    At the lg breakpoint (--bp-lg = 1024px) design 4a takes over: cover beside
    the headline, a two-column related grid, an inline composer card. Every swap
@@ -33,7 +33,7 @@
 }
 
 .notFoundLink {
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--accent);
   text-decoration: none;
 }
@@ -87,10 +87,10 @@
   flex-direction: column;
 }
 
-/* Mobile: the painted, full-bleed cover band. It breaks out of <main>'s
-   padding and its --shell-max cap the same way the À propos hero does —
-   100cqi is the full .content width, so the negative inline margin is exactly
-   half the difference. */
+/* Mobile: the full-bleed band. It breaks out of <main>'s padding and its
+   --shell-max cap the same way the À propos hero does — 100cqi is the full
+   .content width, so the negative inline margin is exactly half the
+   difference. */
 .band {
   display: flex;
   flex-wrap: wrap;
@@ -103,13 +103,13 @@
 
 .backLink {
   flex-basis: 100%;
-  font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  color: var(--faint);
   text-decoration: none;
 }
 
 .backLink:hover {
-  color: rgba(255, 255, 255, 1);
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -126,18 +126,6 @@
   overflow: hidden;
 }
 
-.coverEyebrow {
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* The cover's own serif title is a 4a detail; 4b shows the title in the band. */
-.coverTitle {
-  display: none;
-}
-
 .headline {
   flex: 1;
   min-width: 0;
@@ -151,22 +139,21 @@
   flex-wrap: wrap;
 }
 
-/* The medium accent arrives as the --medium-accent custom property (set inline
-   by ArticleHero) rather than an inline `color`, so the painted band can win
-   on mobile without !important. */
+/* The medium accent arrives as the --medium-accent custom property, set
+   inline by ArticleHero. */
 .mediumLabel {
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--medium-accent, var(--accent));
 }
 
 /* The genre meta line is a 4a detail — 4b's band carries the medium alone. */
 .metaDot,
 .genreMeta {
   display: none;
-  font-size: 11.5px;
+  font-size: 11px;
 }
 
 .title {
@@ -176,7 +163,7 @@
   font-size: 26px;
   line-height: 1.1;
   letter-spacing: -0.015em;
-  color: var(--bg);
+  color: var(--ink);
 }
 
 .heroFoot {
@@ -234,7 +221,7 @@
 }
 
 .bylineDate {
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--faint);
 }
 
@@ -262,7 +249,7 @@
 
 .paragraph {
   margin: 0 0 15px;
-  font-size: 13.5px;
+  font-size: 13px;
   line-height: 1.75;
   color: var(--body);
 }
@@ -340,7 +327,7 @@
 }
 
 .relatedMedium {
-  font-size: 9.5px;
+  font-size: 9px;
   letter-spacing: 0.13em;
   text-transform: uppercase;
   font-weight: 600;
@@ -354,7 +341,7 @@
 }
 
 .relatedNote {
-  font-size: 11.5px;
+  font-size: 11px;
   line-height: 1.45;
   color: var(--muted-2);
 }
@@ -436,22 +423,6 @@
   border: 0;
 }
 
-/* "Enregistrer" is a 4a detail — 4b's compact row drops it. */
-.saveLink {
-  display: none;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--body);
-  font-family: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.saveLink:hover {
-  color: var(--accent);
-}
-
 .socialSpacer {
   flex: 1;
 }
@@ -507,7 +478,7 @@
 }
 
 .prevNextLabel {
-  font-size: 10.5px;
+  font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--faint);
@@ -561,7 +532,7 @@
   background: var(--surface);
   color: var(--ink);
   font-family: var(--font-sans), sans-serif;
-  font-size: 13.5px;
+  font-size: 13px;
   resize: none;
 }
 
@@ -586,7 +557,7 @@
   background: var(--surface);
   color: var(--ink);
   font-family: var(--font-sans), sans-serif;
-  font-size: 13.5px;
+  font-size: 13px;
 }
 
 .composerName::placeholder {
@@ -600,7 +571,7 @@
   background: var(--gold);
   color: var(--ink);
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -675,7 +646,7 @@
 }
 
 .commentName {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink);
 }
@@ -685,19 +656,19 @@
   border-radius: var(--radius-pill);
   background: var(--accent);
   color: var(--bg);
-  font-size: 9.5px;
+  font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .commentDate {
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--faint);
 }
 
 .commentText {
   margin: 0 0 7px;
-  font-size: 13.5px;
+  font-size: 13px;
   line-height: 1.55;
   color: var(--body);
 }
@@ -765,18 +736,6 @@
     box-shadow: 0 22px 44px -16px rgba(36, 26, 18, 0.55);
   }
 
-  .coverEyebrow {
-    font-size: 10px;
-  }
-
-  .coverTitle {
-    display: block;
-    font-family: var(--font-serif), sans-serif;
-    font-size: 27px;
-    line-height: 1.1;
-    color: rgba(255, 255, 255, 0.95);
-  }
-
   .headline {
     grid-area: headline;
   }
@@ -791,12 +750,6 @@
     font-size: 46px;
     line-height: 1.04;
     letter-spacing: -0.02em;
-    color: var(--ink);
-  }
-
-  /* Off the painted band, the eyebrow recovers its medium accent. */
-  .mediumLabel {
-    color: var(--medium-accent, var(--accent));
   }
 
   .metaDot,
@@ -826,7 +779,7 @@
   }
 
   .paragraph {
-    font-size: 14.5px;
+    font-size: 14px;
     line-height: 1.8;
   }
 
@@ -846,10 +799,6 @@
   }
 
   .likeWord {
-    display: inline;
-  }
-
-  .saveLink {
     display: inline;
   }
 
@@ -917,7 +866,7 @@
    moderation, and the failure when it did not go at all. */
 .composerNotice {
     grid-column: 1 / -1;
-    font-size: 12.5px;
+    font-size: 12px;
     line-height: 1.5;
     color: var(--muted-2);
     margin: 8px 0 0;

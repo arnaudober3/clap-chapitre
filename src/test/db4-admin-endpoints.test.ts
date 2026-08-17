@@ -20,7 +20,7 @@ import type { Env } from '../../functions/types';
 
 function env(sql = SEED): Env {
   const db = createTestDb();
-  if (sql) db.exec(sql);
+  if (sql) void db.exec(sql);
   return { ...TEST_ENV, DB: db };
 }
 
@@ -200,6 +200,25 @@ describe('DB-4 /api/admin/bilans', () => {
     // Null rather than a guess from the server's clock, which would make the
     // form say something different depending on when it was opened.
     expect((await json<{ next: unknown }>(response)).next).toBeNull();
+  });
+
+  it('offers the oldest published avis\'s month for the very first bilan', async () => {
+    const response = await adminBilan({
+      request: await get('/api/admin/bilans/next'),
+      env: env(`
+        INSERT INTO articles (id,title,medium,excerpt,cover,author,status,published_at,likes,views)
+        VALUES ('un-dernier-ete','Un dernier été','film','','','Marie-Zoé','published','2026-07-18',0,0),
+               ('l-annee-de-la-pluie','L’année de la pluie','livre','','','Marie-Zoé','published','2026-05-04',0,0);
+      `),
+      params: { id: 'next' },
+    });
+    // No bilan exists yet, so there is no id to roll forward from — the first
+    // bilan should cover the oldest avis on file, not the newest.
+    expect((await json<{ next: { id: string } }>(response)).next).toMatchObject({
+      id: '2026-05',
+      year: 2026,
+      month: 5,
+    });
   });
 });
 

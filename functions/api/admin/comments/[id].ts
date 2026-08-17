@@ -9,35 +9,27 @@
  * `BEFORE INSERT` only, so `parent_id` and `target_id` have no guard once a row
  * exists. Not writing them is what keeps that gap harmless.
  */
-import { requireAdmin } from '../../../_lib/admin';
+import { requireAdminDb } from '../../../_lib/admin';
 import { BodyError, MalformedBody, readJson } from '../../../_lib/body';
 import { oneOf } from '../../../_lib/body';
-import { requireDb } from '../../../_lib/env';
 import {
   badRequest,
   dbUnavailable,
   json,
-  misconfigured,
   noContent,
   notFound,
   route,
   unprocessable,
 } from '../../../_lib/http';
 import { changes } from '../../../_lib/write';
-import type { D1Database, Handler } from '../../../types';
+import type { Handler } from '../../../types';
 
 const STATUSES = ['pending', 'approved'] as const;
 
 export const onRequestPut: Handler = async ({ request, env, params }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const id = typeof params?.id === 'string' ? params.id : '';
   if (!id) return notFound();
@@ -70,15 +62,9 @@ export const onRequestPut: Handler = async ({ request, env, params }) => {
  * otherwise leave rows pointing at nothing.
  */
 export const onRequestDelete: Handler = async ({ request, env, params }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const id = typeof params?.id === 'string' ? params.id : '';
   if (!id) return notFound();

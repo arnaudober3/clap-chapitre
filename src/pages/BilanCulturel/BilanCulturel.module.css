@@ -185,13 +185,6 @@
   padding: 16px;
 }
 
-.reviewCoverTitle {
-  font-family: var(--font-serif), sans-serif;
-  font-size: 18px;
-  line-height: 1.15;
-  color: var(--bg);
-}
-
 .reviewBody {
   min-width: 0;
 }
@@ -223,7 +216,7 @@
 
 .reviewParagraph {
   margin: 0 0 14px;
-  font-size: 14.5px;
+  font-size: 14px;
   line-height: 1.6;
   color: var(--body);
 }
@@ -279,6 +272,7 @@
 .socialBar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
   padding: 18px 0;
@@ -314,11 +308,6 @@
 .socialButton:hover {
   border-color: var(--accent);
   color: var(--accent);
-}
-
-.socialCount {
-  font-size: 13px;
-  color: var(--muted-2);
 }
 
 .commentsHeading {
@@ -479,7 +468,7 @@
   border: none;
   background: none;
   color: var(--muted-2);
-  font-size: 12.5px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -535,7 +524,7 @@
    moderation, and the failure when it did not go at all. */
 .composerNotice {
     grid-column: 1 / -1;
-    font-size: 12.5px;
+    font-size: 12px;
     line-height: 1.5;
     color: var(--muted-2);
     margin: 8px 0 0;

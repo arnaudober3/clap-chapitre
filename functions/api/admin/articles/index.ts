@@ -15,19 +15,10 @@
  * Drafts sort first whatever the sort: what is being written belongs above what
  * is already online, and sorting by date would otherwise bury it.
  */
-import { requireAdmin } from '../../../_lib/admin';
+import { requireAdminDb } from '../../../_lib/admin';
 import { hasMissingRelated, insertArticle } from '../../../_lib/article-write';
 import { BodyError, MalformedBody, readJson } from '../../../_lib/body';
-import { requireDb } from '../../../_lib/env';
-import {
-  badRequest,
-  created,
-  dbUnavailable,
-  json,
-  misconfigured,
-  route,
-  unprocessable,
-} from '../../../_lib/http';
+import { badRequest, created, dbUnavailable, json, route, unprocessable } from '../../../_lib/http';
 import { readArticleInput } from '../../../_lib/inputs';
 import { now, publication, uniqueId } from '../../../_lib/write';
 import {
@@ -42,22 +33,16 @@ import {
 import { articleOrderBy, DRAFTS_FIRST, folded, likeTerm } from '../../../_lib/sql';
 import { rowToArticle } from '../../../_lib/rows';
 import { ARTICLE_COLUMNS } from '../../../_lib/articles';
-import type { D1Database, Handler } from '../../../types';
+import type { Handler } from '../../../types';
 
 /** The listing shows seven rows a page, as the design does. */
 const DEFAULT_PER_PAGE = 7;
 const MAX_PER_PAGE = 100;
 
 export const onRequestGet: Handler = async ({ request, env }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const url = new URL(request.url);
   let status: string | undefined;
@@ -143,15 +128,9 @@ export const onRequestGet: Handler = async ({ request, env }) => {
  * schema's published ⇔ dated invariant true either way.
  */
 export const onRequestPost: Handler = async ({ request, env }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   let input: ReturnType<typeof readArticleInput>;
   try {

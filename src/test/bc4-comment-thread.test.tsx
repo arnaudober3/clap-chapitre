@@ -53,13 +53,10 @@ describe('BC-4 CommentThread', () => {
     expect(screen.getByText('autrice')).toBeInTheDocument();
   });
 
-  it('renders a "J\'aime" control and a "<n> commentaires" count derived from the thread', () => {
+  it('renders a "J\'aime" control', () => {
     renderThread();
     expect(
       screen.getByRole('button', { name: /J’aime/ }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(`${expectedCount} commentaires`),
     ).toBeInTheDocument();
   });
 
