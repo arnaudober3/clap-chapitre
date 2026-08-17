@@ -12,21 +12,16 @@ function paragraphs(body: string): string[] {
 }
 
 /**
- * A single review inside a Bilan month: the gradient cover (2/3, title
- * overlaid) beside the body — colored medium label, serif H2 title, optional
- * italic hook, the body split into paragraphs, an optional "À rapprocher de"
- * callout (from `relatedTo`) and an optional "Pour ceux qui…" box (from
- * `forThoseWho`). Each optional element is omitted without error when absent.
+ * A single review inside a Bilan month: the gradient cover (2/3) beside the
+ * body — colored medium label, serif H2 title, optional italic hook, the body
+ * split into paragraphs, an optional "À rapprocher de" callout (from
+ * `relatedTo`) and an optional "Pour ceux qui…" box (from `forThoseWho`). Each
+ * optional element is omitted without error when absent.
  */
 export default function BilanReview({ item }: { item: Article }) {
   return (
     <article className={styles.review}>
-      <div
-        className={styles.reviewCover}
-        style={coverStyle(item.cover)}
-      >
-        <span className={styles.reviewCoverTitle}>{item.title}</span>
-      </div>
+      <div className={styles.reviewCover} style={coverStyle(item.cover)} />
       <div className={styles.reviewBody}>
         <span
           className={styles.reviewMedium}

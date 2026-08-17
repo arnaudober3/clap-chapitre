@@ -53,10 +53,9 @@ function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
 
 /**
  * The whole-bilan social bar and its comment thread. The social bar shows the
- * ♡ (now a real toggle, deduplicated per visitor server-side), a "<n>
- * commentaires" count derived from the thread, and a "Partager" control. Below:
- * a "Commentaires · <n>" heading, the composer, and the entries — with an
- * "autrice" badge on the author's and one nested reply.
+ * ♡ (now a real toggle, deduplicated per visitor server-side) and a "Partager"
+ * control. Below: a "Commentaires · <n>" heading, the composer, and the
+ * entries — with an "autrice" badge on the author's and one nested reply.
  *
  * "Partager" opens the share menu, which needs the month it is sharing, so the
  * page passes `bilan` down. The thread holds approved comments only: a new one
@@ -84,7 +83,6 @@ export default function CommentThread({
         >
           {like.liked ? '♥' : '♡'} J’aime · {like.likes}
         </button>
-        <span className={styles.socialCount}>{count} commentaires</span>
         <ShareMenu
           title={bilan.title}
           excerpt={bilan.mood}
