@@ -40,7 +40,7 @@ export default function EmailPreview({ edition }: { edition: NewsletterEdition }
             <div>
               <div
                 className={styles.highlightLabel}
-                style={{ ['--highlight-accent']: MEDIUM_ACCENT[highlight.medium]  }}
+                style={{ ['--highlight-accent' as string]: MEDIUM_ACCENT[highlight.medium]  }}
               >
                 {highlight.label}
               </div>
