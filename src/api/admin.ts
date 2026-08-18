@@ -124,11 +124,12 @@ export function useAdminBilan(id: string | undefined): Mapped<Bilan> {
 }
 
 /**
- * The month a new bilan would cover: the one after the newest on file.
+ * The month a new bilan would cover: the one after the newest bilan on file,
+ * or — before any bilan exists — the oldest published avis's own month.
  *
- * Absent when the catalogue is empty — there is nothing to count from, and
- * guessing from the server's clock would make the form say something different
- * depending on when it was opened.
+ * Absent only when there is no bilan *and* no published avis to count from,
+ * since guessing from the server's clock would make the form say something
+ * different depending on when it was opened.
  */
 export function useNextBilanMonth(): Mapped<{ id: string; year: number; month: number } | undefined> {
   const result = useApi<{ next: { id: string; year: number; month: number } | null }>(

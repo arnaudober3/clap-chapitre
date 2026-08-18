@@ -11,10 +11,10 @@
  * whole reason this exists: the public endpoints can be read by anyone, these
  * cannot.
  */
-import { requireEnv, type AdminConfig } from './env';
+import { requireDb, requireEnv, type AdminConfig } from './env';
 import { misconfigured, unauthorized } from './http';
 import { verifyToken } from './jwt';
-import type { Env } from '../types';
+import type { D1Database, Env } from '../types';
 
 const BEARER = /^Bearer\s+(\S+)$/i;
 
@@ -49,6 +49,27 @@ export async function requireAdmin(request: Request, env: Env): Promise<AdminChe
   if (claims.sub !== config.username) return { ok: false, response: unauthorized() };
 
   return { ok: true, username: claims.sub, config };
+}
+
+/**
+ * The pair almost every `/api/admin/**` handler needs before it can do
+ * anything: the caller is the editor, and the D1 binding is there to query.
+ * Collapses the `requireAdmin` check and the `requireDb` try/catch that used
+ * to be copied at the top of every handler into the one line callers actually
+ * care about.
+ */
+export async function requireAdminDb(
+  request: Request,
+  env: Env,
+): Promise<{ db: D1Database; username: string; config: AdminConfig } | Response> {
+  const check = await requireAdmin(request, env);
+  if (!check.ok) return check.response;
+
+  try {
+    return { db: requireDb(env), username: check.username, config: check.config };
+  } catch {
+    return misconfigured();
+  }
 }
 
 /**

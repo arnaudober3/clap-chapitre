@@ -19,6 +19,14 @@
   container-name: content;
 }
 
+/* Below lg, the avis page's comment composer is a bar fixed to the viewport
+   bottom (Article.module.css .composer, position: fixed) — it sits outside
+   <main>'s flow, so it would otherwise cover the footer that follows it here.
+   Applied only on /article/:id — see Layout.tsx. */
+.contentWithComposer {
+  padding-bottom: 56px;
+}
+
 .main {
   flex: 1;
   min-width: 0;
@@ -162,6 +170,9 @@
   font-size: 20px;
   color: var(--ink);
   text-decoration: none;
+}
+
+.topbarText {
   text-box: trim-both cap alphabetic;
 }
 
@@ -293,5 +304,9 @@
 
   .main {
     padding: 40px 44px 42px;
+  }
+
+  .contentWithComposer {
+    padding-bottom: 0;
   }
 }

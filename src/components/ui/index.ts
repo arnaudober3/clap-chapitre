@@ -13,6 +13,7 @@ export { default as ShareMenu } from './ShareMenu';
 export { default as EditorActions } from './EditorActions';
 export { default as ImageField } from './ImageField';
 export { default as CommentComposer } from './CommentComposer';
+export { default as ReplyComposer } from './ReplyComposer';
 export { PageLoading, PageError } from './LoadState';
 export type { PageErrorProps } from './LoadState';
 export type {
@@ -26,4 +27,5 @@ export type { ShareMenuProps } from './ShareMenu';
 export type { EditorActionsProps } from './EditorActions';
 export type { ImageFieldProps } from './ImageField';
 export type { CommentComposerProps } from './CommentComposer';
+export type { ReplyComposerProps } from './ReplyComposer';
 export type { LogoProps, LogoMarkProps } from './Logo/Logo';

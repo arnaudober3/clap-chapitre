@@ -13,17 +13,15 @@
  *
  * Behind the admin JWT.
  */
-import { requireAdmin } from '../../../_lib/admin';
+import { requireAdminDb } from '../../../_lib/admin';
 import { cardEdits, insertBilan, mediaOf, selection } from '../../../_lib/bilan-write';
 import { BodyError, MalformedBody, readJson } from '../../../_lib/body';
-import { requireDb } from '../../../_lib/env';
 import {
   badRequest,
   conflict,
   created,
   dbUnavailable,
   json,
-  misconfigured,
   route,
   unprocessable,
 } from '../../../_lib/http';
@@ -32,7 +30,7 @@ import { now, publication } from '../../../_lib/write';
 import { QueryError, readBilanSort, readPage, readPerPage, readSearch } from '../../../_lib/query';
 import { bilanOrderBy, folded, likeTerm } from '../../../_lib/sql';
 import { groupCounts, rowToBilan, type Row } from '../../../_lib/rows';
-import type { D1Database, Handler } from '../../../types';
+import type { Handler } from '../../../types';
 
 const DEFAULT_PER_PAGE = 7;
 const MAX_PER_PAGE = 100;
@@ -41,15 +39,9 @@ const BILAN_COLUMNS =
   'id, year, month, month_label, title, mood, status, published_at, updated_at, views, likes';
 
 export const onRequestGet: Handler = async ({ request, env }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const url = new URL(request.url);
   let search: string | undefined;
@@ -132,15 +124,9 @@ export const onRequestGet: Handler = async ({ request, env }) => {
  * mistake, not a legitimate pair.
  */
 export const onRequestPost: Handler = async ({ request, env }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   let input: ReturnType<typeof readBilanInput>;
   try {

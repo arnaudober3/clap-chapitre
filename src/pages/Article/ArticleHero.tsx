@@ -21,9 +21,9 @@ function archiveLabel(medium: Medium): string {
  *
  * Desktop (design 4a) is a 250px gradient cover beside the medium eyebrow +
  * genre meta line, the H1, the italic hook and the byline. Mobile (design 4b)
- * repaints the same DOM as a full-bleed cover band (back link, poster thumb,
- * eyebrow and title in white) with the hook + byline below on `--bg`. The swap
- * is CSS-only — one `<h1>`, no window-width JS.
+ * repaints the same DOM as a full-bleed band (back link, poster thumb, eyebrow
+ * and title) with the hook + byline below. The swap is CSS-only — one `<h1>`,
+ * no window-width JS.
  *
  * Missing optional data degrades: no `genreMeta` drops the meta line and its
  * dot, no `hook` drops the italic line, no `readingTime` leaves the date alone
@@ -73,9 +73,9 @@ export default function ArticleHero({
       </nav>
 
       <div className={styles.heroMain}>
-        {/* `.band` is a real painted band on mobile and `display: contents` on
+        {/* `.band` is a real band on mobile and `display: contents` on
             desktop, so cover / headline become grid items of `.heroMain`. */}
-        <div className={styles.band} style={coverStyle(article.cover)}>
+        <div className={styles.band}>
           <Link className={styles.backLink} to={backHref}>
             ‹ {backLabel}
           </Link>
@@ -84,12 +84,7 @@ export default function ArticleHero({
             className={styles.cover}
             style={coverStyle(article.cover)}
             data-testid="article-cover"
-          >
-            <span className={styles.coverEyebrow}>Affiche</span>
-            <span className={styles.coverTitle} aria-hidden="true">
-              {article.title}
-            </span>
-          </div>
+          />
 
           <div className={styles.headline}>
             <p className={styles.metaRow}>

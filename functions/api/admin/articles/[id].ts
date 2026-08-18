@@ -9,15 +9,14 @@
  *
  * Behind the admin JWT.
  */
-import { requireAdmin } from '../../../_lib/admin';
+import { requireAdminDb } from '../../../_lib/admin';
 import { hasMissingRelated, updateArticle } from '../../../_lib/article-write';
 import { BodyError, MalformedBody, readJson } from '../../../_lib/body';
-import { requireBucket, requireDb } from '../../../_lib/env';
+import { requireBucket } from '../../../_lib/env';
 import {
   badRequest,
   dbUnavailable,
   json,
-  misconfigured,
   noContent,
   notFound,
   route,
@@ -28,18 +27,12 @@ import { forget } from '../../../_lib/media';
 import { rowToArticle, type Row } from '../../../_lib/rows';
 import { changes, now, publication } from '../../../_lib/write';
 import { ARTICLE_COLUMNS_FULL } from '../../../_lib/articles';
-import type { D1Database, Handler } from '../../../types';
+import type { Handler } from '../../../types';
 
 export const onRequestGet: Handler = async ({ request, env, params }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const id = typeof params?.id === 'string' ? params.id : '';
   if (!id) return notFound();
@@ -68,15 +61,9 @@ export const onRequestGet: Handler = async ({ request, env, params }) => {
  * cover, so a replaced image can be swept up.
  */
 export const onRequestPut: Handler = async ({ request, env, params }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const id = typeof params?.id === 'string' ? params.id : '';
   if (!id) return notFound();
@@ -126,15 +113,9 @@ export const onRequestPut: Handler = async ({ request, env, params }) => {
  * that would leave rows nothing can ever reach or delete.
  */
 export const onRequestDelete: Handler = async ({ request, env, params }) => {
-  const check = await requireAdmin(request, env);
-  if (!check.ok) return check.response;
-
-  let db: D1Database;
-  try {
-    db = requireDb(env);
-  } catch {
-    return misconfigured();
-  }
+  const check = await requireAdminDb(request, env);
+  if (check instanceof Response) return check;
+  const { db } = check;
 
   const id = typeof params?.id === 'string' ? params.id : '';
   if (!id) return notFound();

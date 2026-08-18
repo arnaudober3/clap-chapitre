@@ -1,20 +1,33 @@
-import { useLike } from '../../api/useLike';
-import { CommentComposer, ShareMenu } from '../../components/ui';
-import type { MonthlyBilan } from '../../../shared/content';
-import type { Comment } from '../../../shared/content';
-import styles from './BilanCulturel.module.css';
+import { useEffect, useState } from "react";
+import { useLike } from "../../api/useLike";
+import { useAuth } from "../../auth/AuthContext";
+import { CommentComposer, ReplyComposer, ShareMenu } from "../../components/ui";
+import type { Comment, MonthlyBilan } from "../../../shared/content";
+import styles from "./BilanCulturel.module.css";
 
 /** Total comment count: top-level entries plus any nested replies. */
 function countComments(entries: Comment[]): number {
-  return entries.reduce(
-    (total, entry) => total + 1 + (entry.reply ? 1 : 0),
-    0,
-  );
+  return entries.reduce((total, entry) => total + 1 + (entry.reply ? 1 : 0), 0);
 }
 
 /** A single thread entry: avatar, name (+ author badge), date, body, affordances. */
-function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
-  const like = useLike('comment', entry.id, entry.likes);
+function Entry({
+  entry,
+  nested,
+  onReplied,
+}: {
+  entry: Comment;
+  nested?: boolean;
+  onReplied?: (parentId: string, reply: Comment) => void;
+  key?: string;
+}) {
+  const like = useLike("comment", entry.id, entry.likes);
+  const { status } = useAuth();
+  const [replying, setReplying] = useState(false);
+  // Only an admin may reply, only to a root comment, and only once — the
+  // thread renders a single reply, so a second one would have nowhere to go.
+  const canReply =
+    !nested && !entry.isAuthor && !entry.reply && status === "authenticated";
 
   return (
     <div className={nested ? styles.commentReply : styles.comment}>
@@ -38,13 +51,39 @@ function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
             disabled={like.pending}
             aria-pressed={like.liked}
           >
-            {like.liked ? '♥' : '♡'} {like.likes}
+            {like.liked ? "♥" : "♡"} {like.likes}
           </button>
-          {/* Still inert — see the same button on the avis thread. */}
-          <button type="button" className={styles.commentAction}>
-            Répondre
-          </button>
+          {/* Hidden outright for a visitor: only a signed-in editor may
+              answer a comment. Hidden while the composer itself is open, so
+              the two "Répondre" labels are never both on screen at once. */}
+          {canReply && !replying ? (
+            <button
+              type="button"
+              className={styles.commentAction}
+              onClick={() => setReplying(true)}
+            >
+              Répondre
+            </button>
+          ) : null}
         </p>
+        {replying ? (
+          <ReplyComposer
+            commentId={entry.id}
+            classes={{
+              form: styles.replyForm,
+              field: styles.replyField,
+              actions: styles.replyActions,
+              button: styles.replyButton,
+              cancel: styles.replyCancel,
+              notice: styles.replyNotice,
+            }}
+            onCancel={() => setReplying(false)}
+            onReplied={(reply) => {
+              setReplying(false);
+              onReplied?.(entry.id, reply);
+            }}
+          />
+        ) : null}
         {entry.reply ? <Entry entry={entry.reply} nested /> : null}
       </div>
     </div>
@@ -53,10 +92,9 @@ function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
 
 /**
  * The whole-bilan social bar and its comment thread. The social bar shows the
- * ♡ (now a real toggle, deduplicated per visitor server-side), a "<n>
- * commentaires" count derived from the thread, and a "Partager" control. Below:
- * a "Commentaires · <n>" heading, the composer, and the entries — with an
- * "autrice" badge on the author's and one nested reply.
+ * ♡ (now a real toggle, deduplicated per visitor server-side) and a "Partager"
+ * control. Below: a "Commentaires · <n>" heading, the composer, and the
+ * entries — with an "autrice" badge on the author's and one nested reply.
  *
  * "Partager" opens the share menu, which needs the month it is sharing, so the
  * page passes `bilan` down. The thread holds approved comments only: a new one
@@ -64,13 +102,26 @@ function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
  */
 export default function CommentThread({
   bilan,
-  comments,
+  comments: fetched,
 }: {
   bilan: MonthlyBilan;
   comments: Comment[];
 }) {
+  // Local so an admin reply — approved on the spot, unlike a visitor's — can
+  // join the thread immediately instead of waiting on a refetch.
+  const [comments, setComments] = useState(fetched);
+  useEffect(() => setComments(fetched), [fetched]);
+
+  function handleReplied(parentId: string, reply: Comment) {
+    setComments((current) =>
+      current.map((entry) =>
+        entry.id === parentId ? { ...entry, reply } : entry,
+      ),
+    );
+  }
+
   const count = countComments(comments);
-  const like = useLike('bilan', bilan.id, bilan.likes);
+  const like = useLike("bilan", bilan.id, bilan.likes);
 
   return (
     <section className={styles.social} data-anim="stagger">
@@ -82,9 +133,8 @@ export default function CommentThread({
           disabled={like.pending}
           aria-pressed={like.liked}
         >
-          {like.liked ? '♥' : '♡'} J’aime · {like.likes}
+          {like.liked ? "♥" : "♡"} J’aime · {like.likes}
         </button>
-        <span className={styles.socialCount}>{count} commentaires</span>
         <ShareMenu
           title={bilan.title}
           excerpt={bilan.mood}
@@ -113,7 +163,7 @@ export default function CommentThread({
 
       <div className={styles.thread} data-anim="stagger">
         {comments.map((entry) => (
-          <Entry key={entry.id} entry={entry} />
+          <Entry key={entry.id} entry={entry} onReplied={handleReplied} />
         ))}
       </div>
     </section>

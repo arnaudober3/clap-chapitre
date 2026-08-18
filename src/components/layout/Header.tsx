@@ -182,7 +182,9 @@ export default function Header() {
       <div className={styles.topbar}>
         <Link to="/" className={styles.topbarWordmark}>
           <LogoMark size={28} />
-          Clap <span className={styles.brandEt}>et</span> chapitre
+          <span className={styles.topbarText}>
+            Clap <span className={styles.brandEt}>et</span> chapitre
+          </span>
         </Link>
         <span className={styles.topbarSpacer} aria-hidden="true" />
         <button
