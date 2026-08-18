@@ -1,8 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import CommentThread from '../pages/BilanCulturel/CommentThread';
-import { aBilan, aComment } from './fixtures';
+import { AuthProvider } from '../auth/AuthContext';
+import { aBilan, aComment, SEED } from './fixtures';
+import { useTestDb } from './api-server';
 
 /**
  * The design's bilan thread. It used to be a module under src/pages/; the
@@ -20,6 +23,17 @@ function renderThread() {
     <MemoryRouter initialEntries={['/bilan-culturel']}>
       <CommentThread bilan={latestBilan()} comments={thread} />
     </MemoryRouter>,
+  );
+}
+
+/** Same, but with a real admin session — needed to see/use "Répondre". */
+function renderThreadAsAdmin() {
+  return render(
+    <AuthProvider>
+      <MemoryRouter initialEntries={['/bilan-culturel']}>
+        <CommentThread bilan={latestBilan()} comments={thread} />
+      </MemoryRouter>
+    </AuthProvider>,
   );
 }
 
@@ -74,5 +88,40 @@ describe('BC-4 CommentThread', () => {
     expect(window.location.href).toBe(before);
     expect(errorSpy).not.toHaveBeenCalled();
     errorSpy.mockRestore();
+  });
+});
+
+describe('BC-4 admin reply', () => {
+  /** `thread[1]` (Léa) has no reply yet — c-bilan-1 already carries one. */
+  async function seedWithRoot() {
+    return useTestDb(`${SEED}
+INSERT INTO comments (id,target_type,target_id,parent_id,author,is_author,body,comment_date,likes,position)
+VALUES ('c-bilan-2','bilan','2026-07',NULL,'Léa',0,'Merci !','2026-08-03',4,2);`);
+  }
+
+  it('hides Répondre from a visitor and offers it only on a comment with no reply yet', async () => {
+    await seedWithRoot();
+    renderThread();
+    expect(screen.queryByRole('button', { name: 'Répondre' })).toBeNull();
+
+    renderThreadAsAdmin();
+    const buttons = await screen.findAllByRole('button', { name: 'Répondre' });
+    expect(buttons).toHaveLength(1);
+  });
+
+  it('lets the editor answer, and the reply joins the thread with no moderation', async () => {
+    const user = userEvent.setup();
+    await seedWithRoot();
+    renderThreadAsAdmin();
+
+    await user.click(await screen.findByRole('button', { name: 'Répondre' }));
+    await user.type(screen.getByLabelText('Votre réponse'), 'Merci à vous !');
+    await user.click(screen.getByRole('button', { name: 'Répondre' }));
+
+    expect(await screen.findByText('Merci à vous !')).toBeInTheDocument();
+    // Camille's existing reply, plus the new one under Léa's comment.
+    expect(screen.getAllByText('autrice')).toHaveLength(2);
+    // Approved immediately: it renders without ever going through moderation.
+    expect(screen.queryByText(/sera publié après relecture/)).toBeNull();
   });
 });

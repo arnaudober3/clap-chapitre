@@ -1,7 +1,9 @@
-import { useLike } from '../../api/useLike';
-import { CommentComposer } from '../../components/ui';
-import type { Comment } from '../../../shared/content';
-import styles from './Article.module.css';
+import { useEffect, useState } from "react";
+import { useLike } from "../../api/useLike";
+import { useAuth } from "../../auth/AuthContext";
+import { CommentComposer, ReplyComposer } from "../../components/ui";
+import type { Comment } from "../../../shared/content";
+import styles from "./Article.module.css";
 
 /** Total comment count: top-level entries plus any nested replies. */
 function countComments(entries: Comment[]): number {
@@ -10,25 +12,40 @@ function countComments(entries: Comment[]): number {
 
 /** Anonymous entries get a `?` monogram on a neutral border-colored avatar. */
 function monogramOf(author: string): string {
-  return author === 'Anonyme' ? '?' : author.charAt(0);
+  return author === "Anonyme" ? "?" : author.charAt(0);
 }
 
 /** One entry: avatar, name (+ autrice pill), date, body and its ♡. */
-function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
-  const anonymous = entry.author === 'Anonyme';
-  const like = useLike('comment', entry.id, entry.likes);
+function Entry({
+  entry,
+  nested,
+  onReplied,
+}: {
+  entry: Comment;
+  nested?: boolean;
+  onReplied?: (parentId: string, reply: Comment) => void;
+  key?: string;
+}) {
+  const anonymous = entry.author === "Anonyme";
+  const like = useLike("comment", entry.id, entry.likes);
+  const { status } = useAuth();
+  const [replying, setReplying] = useState(false);
+  // Only an admin may reply, only to a root comment, and only once — the
+  // thread renders a single reply, so a second one would have nowhere to go.
+  const canReply =
+    !nested && !entry.isAuthor && !entry.reply && status === "authenticated";
   const avatarClass = [
     styles.commentAvatar,
-    entry.isAuthor ? styles.commentAvatarAuthor : '',
-    anonymous ? styles.commentAvatarAnon : '',
+    entry.isAuthor ? styles.commentAvatarAuthor : "",
+    anonymous ? styles.commentAvatarAnon : "",
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   return (
     <div
       className={nested ? styles.commentReply : styles.comment}
-      data-testid={nested ? 'comment-reply' : 'comment-entry'}
+      data-testid={nested ? "comment-reply" : "comment-entry"}
     >
       <span className={avatarClass} aria-hidden="true">
         {monogramOf(entry.author)}
@@ -54,15 +71,40 @@ function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
               disabled={like.pending}
               aria-pressed={like.liked}
             >
-              {like.liked ? '♥' : '♡'} {like.likes}
+              {like.liked ? "♥" : "♡"} {like.likes}
             </button>
-            {/* Still inert: a reply needs its own composer targeting this
-                entry, and the thread is one level deep — see DEV notes. */}
-            <button type="button" className={styles.commentAction}>
-              Répondre
-            </button>
+            {/* Hidden outright for a visitor: only a signed-in editor may
+                answer a comment. Hidden while the composer itself is open, so
+                the two "Répondre" labels are never both on screen at once. */}
+            {canReply && !replying ? (
+              <button
+                type="button"
+                className={styles.commentAction}
+                onClick={() => setReplying(true)}
+              >
+                Répondre
+              </button>
+            ) : null}
           </p>
         )}
+        {replying ? (
+          <ReplyComposer
+            commentId={entry.id}
+            classes={{
+              form: styles.replyForm,
+              field: styles.replyField,
+              actions: styles.replyActions,
+              button: styles.replyButton,
+              cancel: styles.replyCancel,
+              notice: styles.replyNotice,
+            }}
+            onCancel={() => setReplying(false)}
+            onReplied={(reply) => {
+              setReplying(false);
+              onReplied?.(entry.id, reply);
+            }}
+          />
+        ) : null}
         {entry.reply ? <Entry entry={entry.reply} nested /> : null}
       </div>
     </div>
@@ -81,12 +123,25 @@ function Entry({ entry, nested }: { entry: Comment; nested?: boolean }) {
  * composer answers with a sentence saying so.
  */
 export default function CommentThread({
-  comments,
+  comments: fetched,
   articleId,
 }: {
   comments: Comment[];
   articleId: string;
 }) {
+  // Local so an admin reply — approved on the spot, unlike a visitor's — can
+  // join the thread immediately instead of waiting on a refetch.
+  const [comments, setComments] = useState(fetched);
+  useEffect(() => setComments(fetched), [fetched]);
+
+  function handleReplied(parentId: string, reply: Comment) {
+    setComments((current) =>
+      current.map((entry) =>
+        entry.id === parentId ? { ...entry, reply } : entry,
+      ),
+    );
+  }
+
   const count = countComments(comments);
 
   return (
@@ -112,7 +167,7 @@ export default function CommentThread({
 
       <div className={styles.thread} data-anim="stagger">
         {comments.map((entry) => (
-          <Entry key={entry.id} entry={entry} />
+          <Entry key={entry.id} entry={entry} onReplied={handleReplied} />
         ))}
       </div>
     </section>

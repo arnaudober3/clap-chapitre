@@ -16,6 +16,33 @@
 import { fold } from './text';
 import type { D1Database, D1PreparedStatement } from '../types';
 
+/**
+ * A primary key for a comment, derived rather than random.
+ *
+ * `Date.now()` and `Math.random()` are both out — the suite pins generated ids
+ * so a test can assert on them. The author's slug plus the thread's next free
+ * number is stable, readable in a database console, and unique by construction.
+ * Shared by the public composer (`POST /api/comments`) and the editor's own
+ * reply (`POST /api/admin/comments/:id/reply`) — the two only callers.
+ */
+export async function commentId(db: D1Database, author: string): Promise<string> {
+  const base = slugify(author);
+  const row = await db
+    .prepare("SELECT count(*) AS total FROM comments WHERE id LIKE ? ESCAPE '\\'")
+    .bind(`${base.replace(/[\\%_]/g, '\\$&')}-%`)
+    .first<{ total: number }>();
+
+  for (let offset = 0; offset <= 500; offset += 1) {
+    const candidate = `${base}-${(row?.total ?? 0) + offset + 1}`;
+    const clash = await db
+      .prepare('SELECT 1 AS taken FROM comments WHERE id = ?')
+      .bind(candidate)
+      .first();
+    if (!clash) return candidate;
+  }
+  throw new Error('Impossible de dériver un identifiant de commentaire.');
+}
+
 /** ISO instant, second precision — the format `datetime('now')` produces. */
 export function now(): string {
   return new Date().toISOString().replace('T', ' ').slice(0, 19);

@@ -4,6 +4,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CommentThread from '../pages/Article/CommentThread';
+import { AuthProvider } from '../auth/AuthContext';
 import { aComment, SEED } from './fixtures';
 import { useTestDb } from './api-server';
 
@@ -96,13 +97,13 @@ describe('ART-5 CommentThread', () => {
     expect(screen.getAllByTestId('comment-entry')[0]).toContainElement(reply);
   });
 
-  it('gives every entry a ♡ that writes, and keeps Répondre inert', () => {
+  it('gives every entry a ♡ that writes, and hides Répondre from a visitor', () => {
     useTestDb(SEED);
     render(<CommentThread comments={thread} articleId="un-dernier-ete" />);
 
-    // Still a placeholder: a reply needs its own composer aimed at the entry,
-    // and the thread is one level deep by design.
-    expect(screen.getAllByRole('button', { name: 'Répondre' })).toHaveLength(2);
+    // Only a signed-in editor may answer a comment — an anonymous visitor
+    // never sees the affordance at all.
+    expect(screen.queryByRole('button', { name: 'Répondre' })).toBeNull();
 
     // The ♡ used to be inert too. It is a real toggle now, and starts
     // unpressed — the server dedupes on a hashed address.
@@ -178,6 +179,54 @@ describe('ART-5 CommentThread', () => {
       .prepare("SELECT count(*) AS total FROM comments WHERE body = 'Premier !'")
       .first<{ total: number }>();
     expect(row?.total).toBe(0);
+  });
+});
+
+describe('ART-5 admin reply', () => {
+  /** `thread[1]` (Anonyme) has no reply yet — c-article-1 already carries one. */
+  async function seedWithRoot() {
+    return useTestDb(`${SEED}
+INSERT INTO comments (id,target_type,target_id,parent_id,author,is_author,body,comment_date,likes,position)
+VALUES ('c-article-2','article','un-dernier-ete',NULL,'Anonyme',0,'Merci pour cet avis.','2026-07-19',3,2);`);
+  }
+
+  it('offers Répondre only where a signed-in editor may still answer', async () => {
+    await seedWithRoot();
+    render(
+      <AuthProvider>
+        <CommentThread comments={thread} articleId="un-dernier-ete" />
+      </AuthProvider>,
+    );
+
+    // Camille's entry already has a reply; only Anonyme's is open.
+    const buttons = await screen.findAllByRole('button', { name: 'Répondre' });
+    expect(buttons).toHaveLength(1);
+  });
+
+  it('lets the editor answer, and the reply joins the thread with no moderation', async () => {
+    const user = userEvent.setup();
+    await seedWithRoot();
+    render(
+      <AuthProvider>
+        <CommentThread comments={thread} articleId="un-dernier-ete" />
+      </AuthProvider>,
+    );
+
+    // Opens the composer; the trigger itself disappears while it is open, so
+    // there is exactly one "Répondre" button on screen at each step.
+    await user.click(await screen.findByRole('button', { name: 'Répondre' }));
+    await user.type(screen.getByLabelText('Votre réponse'), 'Merci à vous !');
+    await user.click(screen.getByRole('button', { name: 'Répondre' }));
+
+    expect(await screen.findByText('Merci à vous !')).toBeInTheDocument();
+    const replies = screen.getAllByTestId('comment-reply');
+    // The original autrice reply under Camille, plus the new one under Anonyme.
+    expect(replies).toHaveLength(2);
+    const newReply = replies.find((node) => node.textContent?.includes('Merci à vous !'));
+    expect(newReply).toBeDefined();
+    expect(within(newReply!).getByText('autrice')).toBeInTheDocument();
+    // Approved immediately: it renders without the moderation notice at all.
+    expect(screen.queryByText(/sera publié après relecture/)).toBeNull();
   });
 });
 
