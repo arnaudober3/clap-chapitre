@@ -405,24 +405,6 @@
   display: none;
 }
 
-.commentCount {
-  font-size: 13px;
-  color: var(--muted-2);
-}
-
-/* Available to assistive tech, out of the way visually. */
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 .socialSpacer {
   flex: 1;
 }
@@ -800,11 +782,6 @@
 
   .likeWord {
     display: inline;
-  }
-
-  /* The comment-count glyph belongs to 4b's compact row. */
-  .commentCount {
-    display: none;
   }
 
   .prevNext {
