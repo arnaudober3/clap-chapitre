@@ -3,15 +3,17 @@
  * DELETE /api/admin/comments/:id → 204        | 404
  *
  * Releasing a comment from the queue, or removing it. Behind the admin JWT.
+ * `./reply.ts`, next to this file, answers POST on the same `:id` — the
+ * editor's reply to a root comment.
  *
  * The PUT touches `status` and nothing else — deliberately. The triggers that
  * keep the thread one level deep and a reply on its parent's target are
  * `BEFORE INSERT` only, so `parent_id` and `target_id` have no guard once a row
  * exists. Not writing them is what keeps that gap harmless.
  */
-import { requireAdminDb } from '../../../_lib/admin';
-import { BodyError, MalformedBody, readJson } from '../../../_lib/body';
-import { oneOf } from '../../../_lib/body';
+import { requireAdminDb } from '../../../../_lib/admin';
+import { BodyError, MalformedBody, readJson } from '../../../../_lib/body';
+import { oneOf } from '../../../../_lib/body';
 import {
   badRequest,
   dbUnavailable,
@@ -20,9 +22,9 @@ import {
   notFound,
   route,
   unprocessable,
-} from '../../../_lib/http';
-import { changes } from '../../../_lib/write';
-import type { Handler } from '../../../types';
+} from '../../../../_lib/http';
+import { changes } from '../../../../_lib/write';
+import type { Handler } from '../../../../types';
 
 const STATUSES = ['pending', 'approved'] as const;
 

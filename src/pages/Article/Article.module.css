@@ -673,6 +673,77 @@
   color: var(--accent);
 }
 
+/* The editor's inline reply form, opened by "Répondre" under a root comment. */
+.replyForm {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.replyField {
+  min-height: 60px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-pill);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.replyField::placeholder {
+  color: var(--faint);
+}
+
+.replyActions {
+  display: flex;
+  gap: 8px;
+}
+
+.replyButton {
+  padding: 7px 14px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.replyButton:hover {
+  background: var(--gold-hover);
+}
+
+.replyButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.replyCancel {
+  padding: 7px 14px;
+  border: 1px solid var(--border-pill);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--muted-2);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.replyCancel:hover {
+  color: var(--accent);
+}
+
+.replyNotice {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted-2);
+}
+
 /* ---- Desktop (lg) — design 4a ---- */
 @media (min-width: 1024px) {
   .column {

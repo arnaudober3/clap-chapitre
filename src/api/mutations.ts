@@ -226,6 +226,28 @@ export function deleteComment(id: string): Promise<void> {
   return apiSend<void>(`/api/admin/comments/${encodeURIComponent(id)}`, 'DELETE', undefined, ADMIN);
 }
 
+export interface CommentReplyResult {
+  id: string;
+  author: string;
+  body: string;
+  isAuthor: true;
+  likes: number;
+}
+
+/**
+ * Posts the editor's reply to a root comment. Approved immediately — the
+ * author's own voice needs no moderation — so the row comes back whole rather
+ * than as a bare `{ queued: true }`, and the thread can render it without a refetch.
+ */
+export function replyToComment(commentId: string, body: string): Promise<CommentReplyResult> {
+  return apiSend<CommentReplyResult>(
+    `/api/admin/comments/${encodeURIComponent(commentId)}/reply`,
+    'POST',
+    { body },
+    ADMIN,
+  );
+}
+
 /* -------------------------------------------------------------------------- *
  * Public writes — no token, and the only two anonymous callers can reach
  * -------------------------------------------------------------------------- */

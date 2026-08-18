@@ -3,7 +3,7 @@
  *
  * `npm run dev` therefore needs a single process on a single port, and — more
  * importantly — runs the *actual* handler code rather than a re-implementation,
- * so local behaviour cannot drift from production. `wrangler pages dev` stays
+ * so local behavior cannot drift from production. `wrangler pages dev` stays
  * available (`npm run preview:cf`) to confirm the real runtime before deploying.
  *
  * Handlers are pulled in through `server.ssrLoadModule` instead of a static
@@ -52,7 +52,8 @@ const ROUTES: ReadonlyArray<RoutePattern<string>> = [
   { pattern: '/api/admin/bilans', target: '/functions/api/admin/bilans/index.ts' },
   { pattern: '/api/admin/bilans/:id', target: '/functions/api/admin/bilans/[id].ts' },
   { pattern: '/api/admin/comments', target: '/functions/api/admin/comments/index.ts' },
-  { pattern: '/api/admin/comments/:id', target: '/functions/api/admin/comments/[id].ts' },
+  { pattern: '/api/admin/comments/:id', target: '/functions/api/admin/comments/[id]/index.ts' },
+  { pattern: '/api/admin/comments/:id/reply', target: '/functions/api/admin/comments/[id]/reply.ts' },
   { pattern: '/api/admin/pages/apropos', target: '/functions/api/admin/pages/apropos.ts' },
   { pattern: '/api/admin/pages/me-suivre', target: '/functions/api/admin/pages/me-suivre.ts' },
   { pattern: '/api/admin/newsletter', target: '/functions/api/admin/newsletter/index.ts' },
@@ -67,7 +68,7 @@ const ROUTES: ReadonlyArray<RoutePattern<string>> = [
 
 type Handler = (context: {
   request: Request;
-  // Not `Record<string, string>` any more: D1 hands over an object, not a value
+  // Not `Record<string, string>` anymore: D1 hands over an object, not a value
   // that can come out of a dotenv file.
   env: Record<string, unknown>;
   params: Record<string, string>;
@@ -95,7 +96,7 @@ function bindings(root: string): Promise<PlatformProxy> {
   platform ??= (async () => {
     // Imported here, not at module scope: wrangler's CJS bundle weighs about ten
     // megabytes, and `vite.config.ts` is evaluated by `vite build` and by Vitest
-    // too — neither of which ever reaches this plugin.
+    // too — neither of whichever reaches this plugin.
     const { getPlatformProxy } = await import('wrangler');
     return getPlatformProxy({
       configPath: join(root, 'wrangler.toml'),
@@ -128,14 +129,6 @@ export function devApiPlugin(): Plugin {
 
     configResolved(config) {
       root = config.root;
-    },
-
-    // Vite runs `buildEnd`/`closeBundle` when the dev server shuts down too, so
-    // this is where the workerd child process gets reaped.
-    async closeBundle() {
-      const started = platform;
-      platform = undefined;
-      await (await started)?.dispose();
     },
 
     configureServer(server: ViteDevServer) {
@@ -211,7 +204,7 @@ function allowedMethods(module: FunctionModule): string[] {
 
 /** Node's IncomingMessage → the Request a Pages Function expects. */
 async function toWebRequest(req: IncomingMessage): Promise<Request> {
-  const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
+  const url = new URL(req.url ?? '/', `https://${req.headers.host ?? 'localhost'}`);
 
   const headers = new Headers();
   for (const [key, value] of Object.entries(req.headers)) {

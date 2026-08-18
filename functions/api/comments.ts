@@ -28,7 +28,7 @@ import {
   unprocessable,
 } from '../_lib/http';
 import { allow, COMMENT_WINDOW } from '../_lib/rate-limit';
-import { slugify, today } from '../_lib/write';
+import { commentId, today } from '../_lib/write';
 import type { D1Database, Handler } from '../types';
 
 const TARGETS = ['article', 'bilan'] as const;
@@ -157,30 +157,5 @@ export const onRequestPost: Handler = async ({ request, env }) => {
     return dbUnavailable();
   }
 };
-
-/**
- * A primary key for a comment, derived rather than random.
- *
- * `Date.now()` and `Math.random()` are both out — the suite pins generated ids
- * so a test can assert on them. The author's slug plus the thread's next free
- * number is stable, readable in a database console, and unique by construction.
- */
-async function commentId(db: D1Database, author: string): Promise<string> {
-  const base = slugify(author);
-  const row = await db
-    .prepare("SELECT count(*) AS total FROM comments WHERE id LIKE ? ESCAPE '\\'")
-    .bind(`${base.replace(/[\\%_]/g, '\\$&')}-%`)
-    .first<{ total: number }>();
-
-  for (let offset = 0; offset <= 500; offset += 1) {
-    const candidate = `${base}-${(row?.total ?? 0) + offset + 1}`;
-    const clash = await db
-      .prepare('SELECT 1 AS taken FROM comments WHERE id = ?')
-      .bind(candidate)
-      .first();
-    if (!clash) return candidate;
-  }
-  throw new Error('Impossible de dériver un identifiant de commentaire.');
-}
 
 export const onRequest = postOnly(onRequestPost);
