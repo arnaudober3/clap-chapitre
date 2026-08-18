@@ -6,7 +6,7 @@ import styles from './Article.module.css';
 /**
  * The social bar, between two hairlines. Desktop (4a): a "♡ J'aime · n" pill,
  * a spacer and an outlined "Partager" pill. Mobile (4b): the compact row —
- * "♡ n", the comment count and "Partager".
+ * "♡ n" and "Partager".
  *
  * "Partager" opens the share menu. The like pill calls POST /api/likes to
  * toggle the visitor's ♡, deduped per address.
@@ -29,11 +29,6 @@ export default function SocialBar({ article }: { article: Article }) {
         <span aria-hidden="true">{like.liked ? '♥' : '♡'}</span>
         <span className={styles.likeWord}>J'aime ·</span> {like.likes}
       </button>
-
-      <span className={styles.commentCount}>
-        <span aria-hidden="true">✎</span> {article.comments}
-        <span className={styles.srOnly}> commentaires</span>
-      </span>
 
       <span className={styles.socialSpacer} aria-hidden="true" />
 
