@@ -17,7 +17,7 @@ export default function Layout() {
   // Keying <main> on the location remounts the outlet on every navigation, so
   // the cascade replays even when the same component stays on screen: /films →
   // /series renders the very same HomePage. `search` is in the key because
-  // BilanCulturel is the one page driven by a query param (?mois=).
+  // BilanCulturel is the one-page driven by a query param (?mois=).
   const { pathname, search } = useLocation();
   const routeKey = `${pathname}${search}`;
 
@@ -25,11 +25,19 @@ export default function Layout() {
   const mainRef = useRef<HTMLElement>(null);
   useReveal(mainRef, routeKey);
 
+  // The avis view ends in a comment thread whose composer is a bar fixed to
+  // the viewport bottom below lg — .content needs room reserved so it doesn't
+  // cover the footer. No other route renders that fixed composer.
+  const hasFixedComposer = pathname.startsWith('/article/');
+  const contentClass = hasFixedComposer
+    ? `${styles.content} ${styles.contentWithComposer}`
+    : styles.content;
+
   return (
     <ActiveMediumProvider>
       <div className={styles.shell}>
         <Header />
-        <div className={styles.content}>
+        <div className={contentClass}>
           <main className={styles.main} key={routeKey} ref={mainRef}>
             <Outlet />
           </main>
