@@ -566,8 +566,6 @@
   display: flex;
   flex-direction: column;
   gap: 22px;
-  /* Room reserved so the sticky composer never covers the last entry. */
-  padding-bottom: 76px;
 }
 
 .comment {
