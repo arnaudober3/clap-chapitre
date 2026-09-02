@@ -217,6 +217,14 @@
     flex-direction: column;
 }
 
+/* Name + URL only. They are the pair 6g puts on one line at lg; the error and
+   the extras are siblings of this wrapper so they keep their own line there. */
+.rowMain {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
 .nameInput,
 .urlInput {
     box-sizing: border-box;
@@ -376,8 +384,9 @@
         font-size: 12px;
     }
 
-    /* Name beside the URL rather than above it. */
-    .rowBody {
+    /* Name beside the URL rather than above it. Only this pair turns: .rowBody
+       stays a column, so the error and the extras still land underneath. */
+    .rowMain {
         flex-direction: row;
         align-items: center;
         gap: 12px;

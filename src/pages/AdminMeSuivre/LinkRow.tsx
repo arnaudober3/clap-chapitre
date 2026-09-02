@@ -39,9 +39,10 @@ export interface LinkRowProps {
 }
 
 /**
- * One editable link of designs 6g/7f. Desktop lays it out on a single line
- * (handle · chip · name · underlined URL · ✕); the phone stacks the name over
- * the URL and drops the handle — on a phone the order is the model's.
+ * One editable link of designs 6g/7f. Desktop puts the name beside the
+ * underlined URL on one line (handle · chip · name · URL · ✕) with the error and
+ * the three secondary fields on a second line underneath; the phone stacks the
+ * name over the URL and drops the handle — on a phone the order is the model's.
  *
  * Reordering follows the bilan editor's coups de cœur: `draggable` is only
  * switched on while the handle is held, so the whole row doesn't become one big
@@ -121,24 +122,28 @@ export default function LinkRow({
       </span>
 
       <div className={styles.rowBody}>
-        <input
-          className={styles.nameInput}
-          value={name}
-          onChange={(event) => onChange({ name: event.target.value })}
-          aria-label={`Nom du lien ${position}`}
-          placeholder="Nom du réseau"
-          aria-invalid={!!error}
-          aria-describedby={error ? `link-error-${field.id}` : undefined}
-        />
-        <input
-          className={styles.urlInput}
-          value={url}
-          onChange={(event) => onChange({ url: event.target.value })}
-          aria-label={`Adresse du lien ${position}`}
-          placeholder="exemple.fr/mon-profil"
-          aria-invalid={!!error}
-          aria-describedby={error ? `link-error-${field.id}` : undefined}
-        />
+        {/* Only these two go side by side on desktop; the error and the extras
+            below stay stacked, which is why they sit outside this wrapper. */}
+        <div className={styles.rowMain}>
+          <input
+            className={styles.nameInput}
+            value={name}
+            onChange={(event) => onChange({ name: event.target.value })}
+            aria-label={`Nom du lien ${position}`}
+            placeholder="Nom du réseau"
+            aria-invalid={!!error}
+            aria-describedby={error ? `link-error-${field.id}` : undefined}
+          />
+          <input
+            className={styles.urlInput}
+            value={url}
+            onChange={(event) => onChange({ url: event.target.value })}
+            aria-label={`Adresse du lien ${position}`}
+            placeholder="exemple.fr/mon-profil"
+            aria-invalid={!!error}
+            aria-describedby={error ? `link-error-${field.id}` : undefined}
+          />
+        </div>
         {error && (
           <p
             id={`link-error-${field.id}`}
