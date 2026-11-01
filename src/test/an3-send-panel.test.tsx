@@ -219,8 +219,10 @@ describe('AN-3 SubscribersPanel', () => {
   const stats: NewsletterStats = { total: 1284, monthDelta: 38 };
   const sends: NewsletterSendRecord[] = [
     {
+      kind: 'bilan',
       id: 'bilan-de-juin',
       bilanId: '2026-06',
+      articleId: '',
       title: 'Bilan de juin',
       subject: 'Clap et chapitre — Juin',
       sentAt: '2026-07-03 07:00:00',

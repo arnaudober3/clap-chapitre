@@ -327,6 +327,31 @@ export function sendNewsletterTest(
   );
 }
 
+/**
+ * Announces one published avis to every subscriber — at most once per avis
+ * (a second call is a 409). Called by the editor *after* a save, never by it.
+ */
+export function announceArticle(
+  articleId: string,
+): Promise<{ recipientCount: number; failureCount: number; sentAt: string }> {
+  return apiSend(
+    `/api/admin/newsletter/announce/${encodeURIComponent(articleId)}`,
+    'POST',
+    undefined,
+    ADMIN,
+  );
+}
+
+/** Sends a proof of an avis' announcement to one private address. Writes nothing. */
+export function sendAnnouncementTest(articleId: string, email: string): Promise<{ sent: true }> {
+  return apiSend(
+    `/api/admin/newsletter/announce-test/${encodeURIComponent(articleId)}`,
+    'POST',
+    { email },
+    ADMIN,
+  );
+}
+
 /** Books a future send — the date/time are Europe/Paris local, converted server-side. */
 export function scheduleNewsletter(
   bilanId: string,

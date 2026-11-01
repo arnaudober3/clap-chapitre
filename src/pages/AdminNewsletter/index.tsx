@@ -87,7 +87,8 @@ export default function AdminNewsletterPage() {
     newsletter.reload();
   }
 
-  const sent = newsletter.data?.sends.some((entry) => entry.bilanId === sourceId) ?? false;
+  const sent =
+    newsletter.data?.sends.some((entry) => entry.kind === 'bilan' && entry.bilanId === sourceId) ?? false;
   const booked = newsletter.data?.scheduled.find((entry) => entry.bilanId === sourceId);
   const stats = newsletter.data?.stats ?? { total: 0, monthDelta: 0 };
   const sends = newsletter.data?.sends ?? [];

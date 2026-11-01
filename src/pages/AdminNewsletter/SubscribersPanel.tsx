@@ -52,7 +52,10 @@ export default function SubscribersPanel({
         )}
         {sends.map((send) => (
           <li key={send.id} className={styles.sendRow}>
-            <span>{send.title}</span>
+            <span>
+              <span className={styles.sendKind}>{send.kind === 'avis' ? 'Avis' : 'Bilan'}</span>{' '}
+              {send.title}
+            </span>
             <span className={styles.sendMeta}>{instantLabel(send.sentAt)}</span>
           </li>
         ))}

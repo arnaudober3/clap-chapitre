@@ -12,7 +12,7 @@
 import { requireAdminDb } from '../../../_lib/admin';
 import { hasMissingRelated, updateArticle } from '../../../_lib/article-write';
 import { BodyError, MalformedBody, readJson } from '../../../_lib/body';
-import { requireBucket } from '../../../_lib/env';
+import { requireBucket, testSendsEnabled } from '../../../_lib/env';
 import {
   badRequest,
   dbUnavailable,
@@ -44,7 +44,21 @@ export const onRequestGet: Handler = async ({ request, env, params }) => {
       .first();
 
     if (!row) return notFound();
-    return json({ article: rowToArticle(row as Row) });
+
+    // Whether the avis was already mailed out — the editor shows « Abonné·es
+    // prévenu·es le … » instead of the checkbox. `null`, not absent: the wire
+    // says "never announced" rather than leaving it to a missing key.
+    const announcement = await db
+      .prepare('SELECT sent_at FROM article_announcements WHERE article_id = ?')
+      .bind(id)
+      .first<{ sent_at: string }>();
+
+    return json({
+      article: rowToArticle(row as Row),
+      announcedAt: announcement?.sent_at ?? null,
+      // Whether the "Envoyer un test" field shows — local and Preview only.
+      testSends: testSendsEnabled(env),
+    });
   } catch {
     return dbUnavailable();
   }

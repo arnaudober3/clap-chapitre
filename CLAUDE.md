@@ -42,7 +42,17 @@ and unsubscribe for real (`/api/newsletter/subscribe`, `/api/newsletter/
 unsubscribe`, the latter reached from `/desinscription?token=...`); the admin
 can send now, send a test to a private address, or schedule a send for later
 (Europe/Paris local time, converted to UTC — `functions/_lib/schedule.ts`).
-Scheduled sends fire unattended: `functions/api/admin/newsletter/dispatch.ts`
+A published avis can also be **announced** — one
+e-mail per avis, at most once, ever (`article_announcements`, keyed on the avis,
+claimed *before* sending; only a send where nothing went out gives the slot
+back). It is never a side effect of a save: the editor ticks « Prévenir les
+abonné·es » and the form calls `announce/:articleId` *after* a save that leaves
+the avis published, so a misclicked Publier mails nobody and a failed mail
+never fails a save. **The avis proof copy is local and Preview only**:
+`announce-test/:articleId` answers 404 unless `NEWSLETTER_TEST_SENDS=1`, and
+`GET /api/admin/articles/:id` carries `testSends` so the field disappears with
+it — production leaves the variable unset. The bilan's `test/:bilanId` is not
+affected. Scheduled sends fire unattended: `functions/api/admin/newsletter/dispatch.ts`
 is polled by a small, **separate** Cloudflare Worker with a Cron Trigger —
 `cron-newsletter/`, its own `wrangler.toml`, deployed on its own — since Pages
 Functions carry no cron support. `src/mock/` no longer exists.
@@ -123,6 +133,8 @@ POST   /api/admin/newsletter/test/:bilanId                      sends one proof 
 POST   /api/admin/newsletter/schedule/:bilanId                  books a future send → 201 | 422 | 409
 DELETE /api/admin/newsletter/schedule/:bilanId                  cancels a booking → 204
 POST   /api/admin/newsletter/dispatch                           fires due sends; X-Cron-Secret, not the admin JWT
+POST   /api/admin/newsletter/announce/:articleId                mails one avis to every subscriber, once → 201 | 404 | 409 | 502
+POST   /api/admin/newsletter/announce-test/:articleId           one proof copy of that announcement → 200 (404 without NEWSLETTER_TEST_SENDS)
 ```
 
 Two rules run through all of them. **One page, one request**: the avis view
@@ -248,7 +260,8 @@ is the content schema, `migrations/0002_ecriture.sql` adds moderation, the likes
 registry and the rate limiter, `migrations/0003_audience.sql` adds the
 audience events (`view_hits`, `share_hits`) the dashboard now reads, and
 `migrations/0004_newsletter.sql` adds `newsletter_subscribers` and
-`newsletter_sends`. Its decisions, worth knowing before changing a query:
+`newsletter_sends`, and `migrations/0006_annonce-avis.sql` adds
+`article_announcements` (no foreign key: the history outlives a deleted avis). Its decisions, worth knowing before changing a query:
 
 - **One `articles` table** for the feed avis and the bilan ones alike. The
   prototype kept two sets, which is why an avis could be reachable at
