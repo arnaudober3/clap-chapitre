@@ -66,13 +66,28 @@ export function useAdminArticles(query: ArticleQuery, page: number): Mapped<Admi
   return useMapped(result, (payload) => ({ ...payload, items: payload.items.map(toArticle) }));
 }
 
+/**
+ * One avis as the editor opens it: the avis itself, plus whether it was ever
+ * announced to the subscribers — an ISO instant, or `undefined` if never.
+ */
+export interface AdminArticle {
+  article: Article;
+  announcedAt?: string;
+  /** Whether this deployment offers proof copies — local and Preview only. */
+  testSends: boolean;
+}
+
 /** One avis for the editor — a draft included, which the public route refuses. */
-export function useAdminArticle(id: string | undefined): Mapped<Article> {
-  const result = useApi<{ article: WireArticle }>(
+export function useAdminArticle(id: string | undefined): Mapped<AdminArticle> {
+  const result = useApi<{ article: WireArticle; announcedAt: string | null; testSends?: boolean }>(
     id ? `/api/admin/articles/${encodeURIComponent(id)}` : null,
     ADMIN,
   );
-  return useMapped(result, (payload) => toArticle(payload.article));
+  return useMapped(result, (payload) => ({
+    article: toArticle(payload.article),
+    announcedAt: payload.announcedAt ?? undefined,
+    testSends: payload.testSends === true,
+  }));
 }
 
 export interface AdminBilanList {
@@ -217,10 +232,15 @@ export interface NewsletterStats {
   monthDelta: number;
 }
 
-/** A real, mailed edition — "Derniers envois". */
+/**
+ * A real send — "Derniers envois": a monthly edition (`kind: 'bilan'`) or an
+ * avis announcement (`kind: 'avis'`, whose `bilanId` is empty).
+ */
 export interface NewsletterSendRecord {
+  kind: 'bilan' | 'avis';
   id: string;
   bilanId: string;
+  articleId: string;
   title: string;
   subject: string;
   sentAt: string;

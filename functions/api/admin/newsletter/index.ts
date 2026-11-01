@@ -11,6 +11,11 @@
  * length), and the mock this replaces always showed a signed absolute number
  * ("+38"), which a net count is and a ratio is not.
  *
+ * "Derniers envois" merges both kinds of real send — the monthly edition
+ * (`kind: 'bilan'`) and the one-off avis announcements (`kind: 'avis'`) —
+ * newest first. An avis entry carries its id in `articleId` and an empty
+ * `bilanId`, so the page's "already sent?" check on a bilan cannot match it.
+ *
  * Behind the admin JWT.
  */
 import { requireAdminDb } from '../../../_lib/admin';
@@ -39,11 +44,18 @@ export const onRequestGet: Handler = async ({ request, env }) => {
         .bind(since),
       db
         .prepare(
-          `SELECT id, bilan_id, title, subject, sent_at, recipient_count, failure_count
-             FROM newsletter_sends
-            WHERE status = 'sent'
-            ORDER BY sent_at DESC
-            LIMIT ?`,
+          `SELECT * FROM (
+             SELECT 'bilan' AS kind, id, bilan_id, '' AS article_id, title, subject, sent_at,
+                    recipient_count, failure_count
+               FROM newsletter_sends
+              WHERE status = 'sent'
+             UNION ALL
+             SELECT 'avis' AS kind, 'avis-' || article_id AS id, '' AS bilan_id, article_id, title,
+                    subject, sent_at, recipient_count, failure_count
+               FROM article_announcements
+           )
+           ORDER BY sent_at DESC
+           LIMIT ?`,
         )
         .bind(SENDS_SHOWN),
       db.prepare(
@@ -57,8 +69,10 @@ export const onRequestGet: Handler = async ({ request, env }) => {
         monthDelta: Number(gained.results[0]?.n ?? 0) - Number(lost.results[0]?.n ?? 0),
       },
       sends: sends.results.map((row) => ({
+        kind: row.kind === 'avis' ? 'avis' : 'bilan',
         id: String(row.id),
         bilanId: String(row.bilan_id),
+        articleId: String(row.article_id),
         title: String(row.title),
         subject: String(row.subject),
         sentAt: String(row.sent_at),

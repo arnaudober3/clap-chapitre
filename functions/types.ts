@@ -117,6 +117,13 @@ export interface Env {
    * is called by a machine, not a signed-in editor.
    */
   CRON_SECRET?: string;
+  /**
+   * '1' turns on the avis announcement's proof copy
+   * (`announce-test/:articleId`) and the field that calls it. Set in
+   * `.dev.vars` and on the Preview environment only: production leaves it
+   * unset, and an absent or other value means off — see `testSendsEnabled`.
+   */
+  NEWSLETTER_TEST_SENDS?: string;
 }
 
 /** The slice of the Pages Function context our handlers actually read. */

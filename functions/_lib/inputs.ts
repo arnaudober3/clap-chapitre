@@ -302,6 +302,11 @@ export function readNewsletterTestInput(body: Record<string, unknown>): Newslett
   };
 }
 
+/** The avis announcement's proof: only the address — its subject is derived from the avis. */
+export function readAnnounceTestInput(body: Record<string, unknown>): { email: string } {
+  return { email: email(body, 'email', { max: 254 }) };
+}
+
 export interface NewsletterScheduleInput extends NewsletterSendInput {
   date: string;
   time: string;

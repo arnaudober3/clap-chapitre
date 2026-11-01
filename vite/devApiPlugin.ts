@@ -61,6 +61,14 @@ const ROUTES: ReadonlyArray<RoutePattern<string>> = [
   { pattern: '/api/admin/newsletter/send/:bilanId', target: '/functions/api/admin/newsletter/send/[bilanId].ts' },
   { pattern: '/api/admin/newsletter/test/:bilanId', target: '/functions/api/admin/newsletter/test/[bilanId].ts' },
   {
+    pattern: '/api/admin/newsletter/announce/:articleId',
+    target: '/functions/api/admin/newsletter/announce/[articleId].ts',
+  },
+  {
+    pattern: '/api/admin/newsletter/announce-test/:articleId',
+    target: '/functions/api/admin/newsletter/announce-test/[articleId].ts',
+  },
+  {
     pattern: '/api/admin/newsletter/schedule/:bilanId',
     target: '/functions/api/admin/newsletter/schedule/[bilanId].ts',
   },

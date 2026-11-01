@@ -42,6 +42,8 @@ import { onRequest as adminNewsletterDispatchRoute } from "../../functions/api/a
 import { onRequest as adminNewsletterSendRoute } from "../../functions/api/admin/newsletter/send/[bilanId]";
 import { onRequest as adminNewsletterTestRoute } from "../../functions/api/admin/newsletter/test/[bilanId]";
 import { onRequest as adminNewsletterScheduleRoute } from "../../functions/api/admin/newsletter/schedule/[bilanId]";
+import { onRequest as adminNewsletterAnnounceRoute } from "../../functions/api/admin/newsletter/announce/[articleId]";
+import { onRequest as adminNewsletterAnnounceTestRoute } from "../../functions/api/admin/newsletter/announce-test/[articleId]";
 import { sha256Hex } from "../../functions/_lib/crypto";
 import { signToken, TOKEN_TTL_MS } from "../../functions/_lib/jwt";
 import type { D1Database, Env, Handler } from "../../functions/types";
@@ -68,6 +70,9 @@ export const TEST_ENV: Env = {
   // to run without answering misconfigured().
   RESEND_API_KEY: "cle-de-test-resend",
   NEWSLETTER_FROM: '"Clap et chapitre" <newsletter@test.local>',
+  // On, like `.dev.vars`: the suite exercises the avis proof-copy route. The
+  // tests that prove production has none drop it explicitly.
+  NEWSLETTER_TEST_SENDS: "1",
 };
 
 /**
@@ -171,6 +176,14 @@ const ROUTES: ReadonlyArray<RoutePattern<Handler>> = [
   {
     pattern: "/api/admin/newsletter/schedule/:bilanId",
     target: adminNewsletterScheduleRoute,
+  },
+  {
+    pattern: "/api/admin/newsletter/announce/:articleId",
+    target: adminNewsletterAnnounceRoute,
+  },
+  {
+    pattern: "/api/admin/newsletter/announce-test/:articleId",
+    target: adminNewsletterAnnounceTestRoute,
   },
 ];
 
