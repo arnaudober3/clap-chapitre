@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import BodyEditor from './BodyEditor';
+import AnnounceBlock from './AnnounceBlock';
 import FormSidebar, { type MetaFields } from './FormSidebar';
 import { useAdminArticle } from '../../api/admin';
+import { ApiError } from '../../api/client';
 import { useMutation } from '../../api/useMutation';
-import { deleteArticle, saveArticle, type ArticlePayload } from '../../api/mutations';
+import {
+  announceArticle,
+  deleteArticle,
+  saveArticle,
+  type ArticlePayload,
+} from '../../api/mutations';
 import { EditorActions, PageError, PageLoading } from '../../components/ui';
 import type { Article, Medium } from '../../../shared/content';
 import styles from './AdminArticleForm.module.css';
@@ -34,7 +41,17 @@ function joinMeta(meta: MetaFields): string {
  * whole form: the API replaces an avis rather than patching it, which is what
  * makes clearing a field possible at all.
  */
-function ArticleForm({ article }: { article?: Article }) {
+function ArticleForm({
+  article,
+  announcedAt: initialAnnouncedAt,
+  testSends = false,
+}: {
+  article?: Article;
+  /** Whether this deployment offers proof copies — local and Preview only. */
+  testSends?: boolean;
+  /** When the avis was mailed to the subscribers, if it ever was. */
+  announcedAt?: string;
+}) {
   const navigate = useNavigate();
   const editing = article !== undefined;
 
@@ -49,6 +66,10 @@ function ArticleForm({ article }: { article?: Article }) {
   const [saved, setSaved] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(article?.status);
   const [invalid, setInvalid] = useState<string>();
+  const [notify, setNotify] = useState(false);
+  const [announcedAt, setAnnouncedAt] = useState(initialAnnouncedAt);
+  const [announceOutcome, setAnnounceOutcome] = useState<string>();
+  const [announcing, setAnnouncing] = useState(false);
 
   const save = useMutation(saveArticle);
   const remove = useMutation(deleteArticle);
@@ -103,9 +124,40 @@ function ArticleForm({ article }: { article?: Article }) {
 
     setSaved(true);
     setCurrentStatus(status);
+
+    // After the save, never instead of it: the avis is stored whatever the
+    // mail does. Only a published avis is announced — a ticked draft waits for
+    // its publication.
+    if (notify && status === 'published' && !announcedAt) {
+      await announce(result.id);
+    }
     // A new avis has no id in the URL yet; land on its own editor rather than
     // leaving the form thinking it is still creating.
     if (!editing) navigate(`/admin/articles/${result.id}`, { replace: true });
+  }
+
+  async function announce(id: string) {
+    setAnnouncing(true);
+    setAnnounceOutcome(undefined);
+    try {
+      const sent = await announceArticle(id);
+      setAnnouncedAt(sent.sentAt);
+      setNotify(false);
+      setAnnounceOutcome(
+        sent.failureCount > 0
+          ? `Annonce envoyée à ${sent.recipientCount} abonné·es, ${sent.failureCount} en échec.`
+          : `Annonce envoyée à ${sent.recipientCount} abonné·es.`,
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 409) {
+        setNotify(false);
+        setAnnounceOutcome('Cet avis avait déjà été annoncé.');
+      } else {
+        setAnnounceOutcome('L’annonce n’a pas pu partir. L’avis est bien enregistré.');
+      }
+    } finally {
+      setAnnouncing(false);
+    }
   }
 
   async function destroy() {
@@ -135,7 +187,7 @@ function ArticleForm({ article }: { article?: Article }) {
           )}
           <EditorActions
             status={currentStatus}
-            pending={save.pending || remove.pending}
+            pending={save.pending || remove.pending || announcing}
             error={save.error ?? remove.error}
             saved={saved}
             onSave={() => void submit(currentStatus ?? 'draft')}
@@ -218,7 +270,17 @@ function ArticleForm({ article }: { article?: Article }) {
             setMeta((previous) => ({ ...previous, ...patch }));
             setSaved(false);
           }}
-        />
+        >
+          <AnnounceBlock
+            articleId={article?.id}
+            published={currentStatus === 'published'}
+            announcedAt={announcedAt}
+            notify={notify}
+            onNotifyChange={setNotify}
+            outcome={announceOutcome}
+            testSends={testSends}
+          />
+        </FormSidebar>
       </div>
     </section>
   );
@@ -236,11 +298,18 @@ function ArticleForm({ article }: { article?: Article }) {
  */
 export default function AdminArticleFormPage() {
   const { id } = useParams();
-  const { data: article, status, notFound, reload } = useAdminArticle(id);
+  const { data, status, notFound, reload } = useAdminArticle(id);
 
   if (!id) return <ArticleForm />;
   if (status === 'loading' || status === 'idle') return <PageLoading />;
   if (notFound) return <Navigate to="/admin/articles" replace />;
-  if (!article) return <PageError onRetry={reload} />;
-  return <ArticleForm key={article.id} article={article} />;
+  if (!data) return <PageError onRetry={reload} />;
+  return (
+    <ArticleForm
+      key={data.article.id}
+      article={data.article}
+      announcedAt={data.announcedAt}
+      testSends={data.testSends}
+    />
+  );
 }

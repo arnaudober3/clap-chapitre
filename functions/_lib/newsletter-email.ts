@@ -96,6 +96,78 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;');
 }
 
+/** The masthead logo — shared by the monthly edition and the avis announcement. */
+const MASTHEAD = `
+                <svg width="30" height="30" viewBox="0 0 100 100" style="vertical-align:middle;margin-right:8px;">
+                  <path transform="rotate(-4 50 50)" fill="#b0502f"
+                        d="M42,0 A58,45 0 0 1 100,45 A55,55 0 0 1 45,100 A45,55 0 0 1 0,45 A42,45 0 0 1 42,0 Z" />
+                  <text x="50" y="50" dx="-3.5" dy="5" text-anchor="middle" dominant-baseline="central"
+                        font-family="Georgia,serif" font-style="italic" font-size="50" fill="#fdf8f0">C</text>
+                </svg>
+                <span style="font:400 22px/1 Georgia,serif;color:#3f2e20;vertical-align:middle;">Clap</span>
+                <span style="font:italic 400 22px/1 Georgia,serif;color:#b0502f;vertical-align:middle;"> et </span>
+                <span style="font:400 22px/1 Georgia,serif;color:#3f2e20;vertical-align:middle;">chapitre</span>`;
+
+/** The gold call-to-action button, centred under the card's content. */
+function ctaButton(href: string, label: string): string {
+  return `
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
+                  <tr>
+                    <td align="center">
+                      <a href="${escapeHtml(href)}"
+                         style="display:inline-block;background:#d8a24a;color:#3f2e20;
+                                font:600 14px/1 Georgia,serif;text-decoration:none;
+                                padding:14px 28px;border-radius:4px;">
+                        ${escapeHtml(label)}
+                      </a>
+                    </td>
+                  </tr>
+                </table>`;
+}
+
+/**
+ * The envelope every e-mail shares: masthead, the white card holding `card`
+ * (already-escaped HTML), and the footer with the two links a recipient needs.
+ */
+function renderShell(subject: string, card: string, unsubscribeUrl: string, siteUrl: string): string {
+  return `<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(subject)}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#fdf8f0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8f0;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+            <tr>
+              <td style="padding-bottom:24px;text-align:center;">${MASTHEAD}
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#fff;border-radius:8px;padding:32px;">${card}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 8px;text-align:center;">
+                <p style="font:400 12px/1.6 Georgia,serif;color:#8a7a68;margin:0;">
+                  Vous recevez ce courrier, car vous êtes abonné·e à Clap et chapitre.<br />
+                  <a href="${escapeHtml(unsubscribeUrl)}" style="color:#8a7a68;">Se désabonner</a>
+                  ·
+                  <a href="${escapeHtml(siteUrl)}" style="color:#8a7a68;">Voir sur le site</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}
+
 /**
  * Standalone, inline-styled HTML — no external stylesheet, no CSS custom
  * property, both silently ignored by mail clients. Mirrors `EmailPreview.tsx`'s
@@ -141,33 +213,7 @@ export function renderEmailHtml(
     )
     .join('');
 
-  return `<!doctype html>
-<html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${escapeHtml(edition.subject)}</title>
-  </head>
-  <body style="margin:0;padding:0;background:#fdf8f0;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fdf8f0;">
-      <tr>
-        <td align="center" style="padding:32px 16px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
-            <tr>
-              <td style="padding-bottom:24px;text-align:center;">
-                <svg width="30" height="30" viewBox="0 0 100 100" style="vertical-align:middle;margin-right:8px;">
-                  <path transform="rotate(-4 50 50)" fill="#b0502f"
-                        d="M42,0 A58,45 0 0 1 100,45 A55,55 0 0 1 45,100 A45,55 0 0 1 0,45 A42,45 0 0 1 42,0 Z" />
-                  <text x="50" y="50" dx="-3.5" dy="5" text-anchor="middle" dominant-baseline="central"
-                        font-family="Georgia,serif" font-style="italic" font-size="50" fill="#fdf8f0">C</text>
-                </svg>
-                <span style="font:400 22px/1 Georgia,serif;color:#3f2e20;vertical-align:middle;">Clap</span>
-                <span style="font:italic 400 22px/1 Georgia,serif;color:#b0502f;vertical-align:middle;"> et </span>
-                <span style="font:400 22px/1 Georgia,serif;color:#3f2e20;vertical-align:middle;">chapitre</span>
-              </td>
-            </tr>
-            <tr>
-              <td style="background:#fff;border-radius:8px;padding:32px;">
+  const card = `
                 <div style="font:600 12px/1.4 Georgia,serif;text-transform:uppercase;
                             letter-spacing:.04em;color:#b0502f;">
                   ${escapeHtml(edition.eyebrow)}
@@ -184,35 +230,66 @@ export function renderEmailHtml(
                 }
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
                   ${highlights}
-                </table>
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
-                  <tr>
-                    <td align="center">
-                      <a href="${escapeHtml(bilanUrl)}"
-                         style="display:inline-block;background:#d8a24a;color:#3f2e20;
-                                font:600 14px/1 Georgia,serif;text-decoration:none;
-                                padding:14px 28px;border-radius:4px;">
-                        Lire le bilan complet →
-                      </a>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:20px 8px;text-align:center;">
-                <p style="font:400 12px/1.6 Georgia,serif;color:#8a7a68;margin:0;">
-                  Vous recevez ce courrier, car vous êtes abonné·e à Clap et chapitre.<br />
-                  <a href="${escapeHtml(unsubscribeUrl)}" style="color:#8a7a68;">Se désabonner</a>
-                  ·
-                  <a href="${escapeHtml(bilanUrl)}" style="color:#8a7a68;">Voir sur le site</a>
-                </p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>`;
+                </table>${ctaButton(bilanUrl, 'Lire le bilan complet →')}`;
+
+  return renderShell(edition.subject, card, unsubscribeUrl, bilanUrl);
+}
+
+/* -------------------------------------------------------------------------- *
+ * The avis announcement — one e-mail per avis, sent at most once
+ * -------------------------------------------------------------------------- */
+
+export interface AvisAnnouncement {
+  id: string;
+  medium: Medium;
+  eyebrow: string;
+  title: string;
+  hook: string;
+  coverUrl: string;
+  subject: string;
+  articleUrl: string;
+}
+
+/** Builds the announcement from one `articles` row. */
+export function buildAvisAnnouncement(row: Row, siteOrigin: string): AvisAnnouncement {
+  const id = text(row.id);
+  const medium = text(row.medium) as Medium;
+  const title = text(row.title);
+  const cover = text(row.cover);
+  return {
+    id,
+    medium,
+    eyebrow: `Nouvel avis · ${MEDIUM_CHIP_LABEL[medium] ?? medium}`,
+    title,
+    hook: text(row.hook) || text(row.excerpt),
+    coverUrl: cover ? `${siteOrigin}/api/media/${cover}` : '',
+    subject: `Clap et chapitre — Nouvel avis : ${title}`,
+    articleUrl: `${siteOrigin}/article/${encodeURIComponent(id)}`,
+  };
+}
+
+export function renderAvisEmailHtml(announcement: AvisAnnouncement, unsubscribeUrl: string): string {
+  const card = `
+                <div style="font:600 12px/1.4 Georgia,serif;text-transform:uppercase;
+                            letter-spacing:.04em;color:${MEDIUM_ACCENT[announcement.medium] ?? '#b0502f'};">
+                  ${escapeHtml(announcement.eyebrow)}
+                </div>
+                ${
+                  announcement.coverUrl
+                    ? `<img src="${escapeHtml(announcement.coverUrl)}" width="160" height="220" alt=""
+                            style="display:block;margin:16px 0 0;border-radius:4px;object-fit:cover;" />`
+                    : ''
+                }
+                <h1 style="font:600 26px/1.3 Georgia,serif;color:#3f2e20;margin:16px 0 0;">
+                  ${escapeHtml(announcement.title)}
+                </h1>
+                ${
+                  announcement.hook
+                    ? `<p style="font:italic 400 15px/1.5 Georgia,serif;color:#5a4130;margin:12px 0 0;">
+                         ${escapeHtml(announcement.hook)}
+                       </p>`
+                    : ''
+                }${ctaButton(announcement.articleUrl, 'Lire l’avis →')}`;
+
+  return renderShell(announcement.subject, card, unsubscribeUrl, announcement.articleUrl);
 }

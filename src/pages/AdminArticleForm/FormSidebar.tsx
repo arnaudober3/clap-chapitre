@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { ImageField } from '../../components/ui';
 import { MEDIA, MEDIUM_CHIP_LABEL } from '../../media';
 import type { Medium } from '../../../shared/content';
@@ -22,6 +23,7 @@ export default function FormSidebar({
   onCoverChange,
   meta,
   onMetaChange,
+  children,
 }: {
   medium?: Medium;
   onMediumChange: (medium: Medium) => void;
@@ -30,6 +32,8 @@ export default function FormSidebar({
   onCoverChange: (key: string) => void;
   meta: MetaFields;
   onMetaChange: (patch: Partial<MetaFields>) => void;
+  /** Extra blocks under the metadata — the "Annonce" block. */
+  children?: ReactNode;
 }) {
   return (
     <aside className={styles.sidebar} data-anim="stagger">
@@ -108,6 +112,8 @@ export default function FormSidebar({
           </div>
         </div>
       </div>
+
+      {children}
     </aside>
   );
 }

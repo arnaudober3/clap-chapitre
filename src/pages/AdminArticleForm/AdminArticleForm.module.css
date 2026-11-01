@@ -436,3 +436,34 @@
     width: 50px;
   }
 }
+
+/* ---- Annonce: tell the subscribers about this avis ---- */
+.announceCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.announceCheck input {
+  accent-color: var(--accent);
+}
+
+.announceNote {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.announceTest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.announceTest > input {
+  flex: 1 1 140px;
+}

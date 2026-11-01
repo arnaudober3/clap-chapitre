@@ -9,7 +9,7 @@ export default function Newsletter() {
     <NewsletterBlock
       variant="band"
       title="Le courrier du mois"
-      copy="Une lettre par mois : les avis marquants, les découvertes et les histoires à ne pas manquer."
+      copy="Une lettre par mois, et un mot à chaque nouvel avis : les avis marquants, les découvertes et les histoires à ne pas manquer."
       placeholder="votre@email.fr"
       cta="S’abonner"
     />

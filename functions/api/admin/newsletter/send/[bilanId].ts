@@ -24,7 +24,7 @@ import type { Handler } from '../../../../types';
 export const onRequestPost: Handler = async ({ request, env, params }) => {
   const ctx = await requireNewsletterSendContext(request, env, params);
   if (ctx instanceof Response) return ctx;
-  const { bilanId, db, apiKey, from, unsubSecret } = ctx;
+  const { id: bilanId, db, apiKey, from, unsubSecret } = ctx;
 
   let subject: string;
   try {

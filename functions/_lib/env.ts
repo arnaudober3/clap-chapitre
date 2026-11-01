@@ -146,3 +146,12 @@ export function requireCronSecret(env: Partial<Env> | undefined): string {
   }
   return secret;
 }
+
+/**
+ * Whether the newsletter's proof copies are available on this deployment.
+ * Off unless explicitly '1' — a production that forgot the variable gets no
+ * test route, which is the safe direction to fail in.
+ */
+export function testSendsEnabled(env: Partial<Env> | undefined): boolean {
+  return env?.NEWSLETTER_TEST_SENDS?.trim() === '1';
+}
